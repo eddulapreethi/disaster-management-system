@@ -106,11 +106,11 @@ Generates alerts for relevant users when the predicted risk reaches a configured
 
 The system works with multiple categories of disaster-related data:
 
-🌦 Weather Data
-💧 Hydrological Data
-📚 Historical Disaster Data
-🛰 Satellite Data
-🗺 GIS Data
+🌦 Weather Data  
+💧 Hydrological Data  
+📚 Historical Disaster Data  
+🛰 Satellite Data  
+🗺 GIS Data  
 
 These data sources are processed and integrated before being used for disaster-risk prediction.
 
