@@ -41,7 +41,6 @@ DisasterGuard AI is an AI-powered disaster management and early warning platform
 
 ## 📂 Project Structure
 
-```text
 DisasterGuard-AI
 │
 ├── backend/
@@ -71,7 +70,7 @@ DisasterGuard-AI
 
 ---
 
-##🏗 System Modules
+## 🏗 System Modules
 
 🤖 Disaster Risk Prediction
 
@@ -103,7 +102,7 @@ Generates alerts for relevant users when the predicted risk reaches a configured
 
 ---
 
-##📊 Data Sources
+## 📊 Data Sources
 
 The system works with multiple categories of disaster-related data:
 
@@ -117,7 +116,7 @@ These data sources are processed and integrated before being used for disaster-r
 
 ---
 
-##🚀 Project Workflow
+## 🚀 Project Workflow
 
 Data Collection
       │
@@ -150,7 +149,7 @@ Risk Assessment
 
 ---
 
-##⚙ Installation
+## ⚙ Installation
 
 Clone the Repository
 git clone https://github.com/YOUR_USERNAME/DisasterGuard-AI.git
@@ -183,7 +182,7 @@ npm run dev
 
 ---
 
-##🎯 Project Objectives
+## 🎯 Project Objectives
 
 Predict potential disaster risks using AI/ML.
 Integrate multiple disaster-related data sources.
@@ -197,7 +196,7 @@ Support data-driven emergency decision-making.
 
 ---
 
-##👨‍💻 Developed By
+## 👨‍💻 Developed By
 
 DisasterGuard AI Team
 
@@ -209,7 +208,7 @@ GitHub: https://github.com/eddulapreethi/disaster-management-system.git
 
 ---
 
-##📄 License
+## 📄 License
 
 This project is developed for educational and academic purposes.
 
