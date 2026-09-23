@@ -68,7 +68,11 @@ DisasterGuard-AI
 ├── .env.example
 ├── .gitignore
 └── README.md
-🏗 System Modules
+
+---
+
+##🏗 System Modules
+
 🤖 Disaster Risk Prediction
 
 Uses environmental and historical disaster data to predict potential disaster risks and classify them into different risk levels.
@@ -97,7 +101,9 @@ Supports emergency resource allocation based on predicted risk areas and availab
 
 Generates alerts for relevant users when the predicted risk reaches a configured level.
 
-📊 Data Sources
+---
+
+##📊 Data Sources
 
 The system works with multiple categories of disaster-related data:
 
@@ -109,7 +115,10 @@ The system works with multiple categories of disaster-related data:
 
 These data sources are processed and integrated before being used for disaster-risk prediction.
 
-🚀 Project Workflow
+---
+
+##🚀 Project Workflow
+
 Data Collection
       │
       ▼
@@ -138,7 +147,11 @@ Risk Assessment
                     │
                     ▼
              Emergency Alerts
-⚙ Installation
+
+---
+
+##⚙ Installation
+
 Clone the Repository
 git clone https://github.com/YOUR_USERNAME/DisasterGuard-AI.git
 Navigate to the Project
@@ -168,7 +181,10 @@ Start the frontend:
 
 npm run dev
 
-🎯 Project Objectives
+---
+
+##🎯 Project Objectives
+
 Predict potential disaster risks using AI/ML.
 Integrate multiple disaster-related data sources.
 Explain AI predictions using SHAP.
@@ -178,7 +194,10 @@ Generate AI-based emergency recommendations.
 Optimize emergency resource allocation.
 Provide timely disaster alerts.
 Support data-driven emergency decision-making.
-👨‍💻 Developed By
+
+---
+
+##👨‍💻 Developed By
 
 DisasterGuard AI Team
 
@@ -188,6 +207,10 @@ Academic Project – 2026-27
 
 GitHub: https://github.com/eddulapreethi/disaster-management-system.git
 
-📄 License
+---
+
+##📄 License
 
 This project is developed for educational and academic purposes.
+
+---
