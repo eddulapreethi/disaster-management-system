@@ -1,10 +1,8 @@
 # 🌍 DisasterGuard AI
 
-## AI-Based Disaster Prediction, Simulation, GIS Mapping, Resource Optimization & Emergency Alert System
+## AI-Powered Disaster Prediction & Decision Support System
 
-DisasterGuard AI is an AI-powered disaster management and decision-support platform designed to help citizens, emergency response teams, and disaster management authorities monitor disaster risks, understand AI predictions, simulate disaster scenarios, optimize emergency resources, and receive timely alerts.
-
-The system integrates Artificial Intelligence, Explainable AI (XAI), GIS mapping, Digital Twin simulation, AI-based recommendations, resource optimization, and emergency notifications into a unified platform.
+DisasterGuard AI is an AI-powered disaster management and early warning platform designed to predict potential disaster risks and support emergency decision-making. By integrating weather, hydrological, historical disaster, satellite, and GIS data with AI/ML, the platform provides risk prediction, explainable AI analysis, GIS-based visualization, Digital Twin simulation, emergency recommendations, resource optimization, and disaster alerts.
 
 ---
 
@@ -12,37 +10,32 @@ The system integrates Artificial Intelligence, Explainable AI (XAI), GIS mapping
 
 - 🤖 AI-Based Disaster Risk Prediction
 - 🔍 Explainable AI using SHAP
-- 🗺️ GIS-Based Disaster Risk Mapping
+- 🗺 GIS-Based Risk Visualization
 - 🧪 Digital Twin Disaster Simulation
-- 🧠 AI Assistant & Recommendation System
+- 🧠 AI-Based Emergency Recommendations
 - 🚑 Emergency Resource Optimization
-- 🚨 Automated Disaster Alerts
-- 🌦️ Disaster & Environmental Data Monitoring
-- 📊 Risk Analysis Dashboard
-- 👥 Role-Based Access Control
-- 🏢 Disaster Management Administration
-- 📍 Geographic Visualization
-- 📈 Simulation-Based Decision Support
-- 💾 Disaster Data & Prediction Storage
+- 🚨 Emergency Alerts & Notifications
+- 🌦 Weather Data Integration
+- 💧 Hydrological Data Integration
+- 🛰 Satellite Data Integration
+- 📚 Historical Disaster Data Analysis
+- 📊 Disaster Risk Analysis
+- 👥 Role-Based Access
 
 ---
 
 ## 🛠 Tech Stack
 
-| Category | Technologies |
-|---|---|
-| Frontend | React.js |
-| Backend | Python / FastAPI or Node.js / Express |
-| AI/ML | Python, Scikit-learn / TensorFlow |
+| **Category** | **Technologies** |
+|--------------|------------------|
+| Frontend | React.js, HTML, CSS, JavaScript |
+| Backend | Python, FastAPI |
+| Machine Learning | Scikit-learn |
 | Explainable AI | SHAP |
-| Database | PostgreSQL / MongoDB |
-| GIS | Leaflet.js / OpenStreetMap |
-| Digital Twin | Python-based Simulation |
-| AI Assistant | AI / LLM Integration |
-| APIs | Weather / Environmental / Disaster APIs |
-| Version Control | Git, GitHub |
-
-> Update this table according to the technologies actually used in the final implementation.
+| Database | PostgreSQL |
+| GIS | Leaflet.js, OpenStreetMap |
+| Data Processing | Pandas, NumPy |
+| Tools | Git, GitHub |
 
 ---
 
@@ -51,45 +44,150 @@ The system integrates Artificial Intelligence, Explainable AI (XAI), GIS mapping
 ```text
 DisasterGuard-AI
 │
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   ├── services/
-│   ├── assets/
-│   └── ...
-│
 ├── backend/
-│   ├── api/
-│   ├── models/
-│   ├── services/
-│   ├── database/
-│   └── ...
+│   └── FastAPI Application
+│
+├── frontend/
+│   └── React Application
 │
 ├── ml/
 │   ├── datasets/
 │   ├── preprocessing/
 │   ├── models/
-│   ├── training/
-│   ├── prediction/
-│   └── explainability/
+│   └── prediction/
 │
 ├── gis/
-│   ├── maps/
-│   ├── layers/
-│   └── spatial-data/
 │
 ├── digital-twin/
-│   ├── scenarios/
-│   ├── simulation/
-│   └── models/
 │
 ├── docs/
-│   ├── diagrams/
-│   ├── architecture/
-│   └── reports/
+│   └── diagrams/
 │
 ├── screenshots/
 │
 ├── .env.example
 ├── .gitignore
 └── README.md
+🏗 System Modules
+🤖 Disaster Risk Prediction
+
+Uses environmental and historical disaster data to predict potential disaster risks and classify them into different risk levels.
+
+🔍 Explainable AI
+
+Uses SHAP-based analysis to identify the important factors contributing to a disaster-risk prediction and provide understandable explanations.
+
+🗺 GIS Risk Visualization
+
+Displays predicted disaster-risk areas and locations using an interactive GIS map.
+
+🧪 Digital Twin Simulation
+
+Provides what-if scenario analysis by simulating changes in environmental conditions and observing their possible impact on disaster risk.
+
+🧠 AI Emergency Recommendations
+
+Generates emergency guidance and recommendations based on predicted risks, explanations, and simulation results.
+
+🚑 Resource Optimization
+
+Supports emergency resource allocation based on predicted risk areas and available resources.
+
+🚨 Emergency Alerts
+
+Generates alerts for relevant users when the predicted risk reaches a configured level.
+
+📊 Data Sources
+
+The system works with multiple categories of disaster-related data:
+
+🌦 Weather Data
+💧 Hydrological Data
+📚 Historical Disaster Data
+🛰 Satellite Data
+🗺 GIS Data
+
+These data sources are processed and integrated before being used for disaster-risk prediction.
+
+🚀 Project Workflow
+Data Collection
+      │
+      ▼
+Data Preprocessing
+      │
+      ▼
+Feature Engineering
+      │
+      ▼
+AI/ML Disaster Prediction
+      │
+      ▼
+Risk Assessment
+      │
+      ├──► SHAP Explanation
+      │
+      ├──► GIS Risk Map
+      │
+      └──► Digital Twin Simulation
+                    │
+                    ▼
+            AI Recommendations
+                    │
+                    ▼
+            Resource Optimization
+                    │
+                    ▼
+             Emergency Alerts
+⚙ Installation
+Clone the Repository
+git clone https://github.com/YOUR_USERNAME/DisasterGuard-AI.git
+Navigate to the Project
+cd DisasterGuard-AI
+Backend Setup
+cd backend
+python -m venv venv
+
+Activate the virtual environment and install dependencies:
+
+pip install -r requirements.txt
+Frontend Setup
+cd frontend
+npm install
+Configure
+Configure the database
+Add required API keys
+Configure environment variables
+Ensure all required dependencies are installed
+Run the Project
+
+Start the backend:
+
+uvicorn app.main:app --reload
+
+Start the frontend:
+
+npm run dev
+
+🎯 Project Objectives
+Predict potential disaster risks using AI/ML.
+Integrate multiple disaster-related data sources.
+Explain AI predictions using SHAP.
+Visualize disaster risks using GIS.
+Simulate disaster scenarios using Digital Twin technology.
+Generate AI-based emergency recommendations.
+Optimize emergency resource allocation.
+Provide timely disaster alerts.
+Support data-driven emergency decision-making.
+👨‍💻 Developed By
+
+DisasterGuard AI Team
+
+B.Tech – Information Technology
+
+Academic Project – 2026-27
+
+GitHub: https://github.com/eddulapreethi/disaster-management-system.git
+
+📄 License
+
+This project is developed for educational and academic purposes.
