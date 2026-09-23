@@ -118,6 +118,8 @@ These data sources are processed and integrated before being used for disaster-r
 
 ## 🚀 Project Workflow
 
+```text
+
 Data Collection
       │
       ▼
@@ -146,13 +148,13 @@ Risk Assessment
                     │
                     ▼
              Emergency Alerts
-
+```
 ---
 
 ## ⚙ Installation
 
 Clone the Repository
-git clone https://github.com/YOUR_USERNAME/DisasterGuard-AI.git
+git clone https://github.com/eddulapreethi/disaster-management-system.git
 Navigate to the Project
 cd DisasterGuard-AI
 Backend Setup
