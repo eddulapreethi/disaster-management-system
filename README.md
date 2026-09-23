@@ -153,25 +153,25 @@ Risk Assessment
 
 ## ⚙ Installation
 
-Clone the Repository
-git clone https://github.com/eddulapreethi/disaster-management-system.git
-Navigate to the Project
-cd DisasterGuard-AI
-Backend Setup
-cd backend
+Clone the Repository  
+git clone https://github.com/eddulapreethi/disaster-management-system.git  
+Navigate to the Project  
+cd DisasterGuard-AI  
+Backend Setup  
+cd backend  
 python -m venv venv
 
 Activate the virtual environment and install dependencies:
 
-pip install -r requirements.txt
-Frontend Setup
-cd frontend
-npm install
-Configure
-Configure the database
-Add required API keys
-Configure environment variables
-Ensure all required dependencies are installed
+pip install -r requirements.txt  
+Frontend Setup  
+cd frontend  
+npm install  
+Configure  
+Configure the database  
+Add required API keys  
+Configure environment variables  
+Ensure all required dependencies are installed  
 Run the Project
 
 Start the backend:
@@ -186,15 +186,15 @@ npm run dev
 
 ## 🎯 Project Objectives
 
-Predict potential disaster risks using AI/ML.
-Integrate multiple disaster-related data sources.
-Explain AI predictions using SHAP.
-Visualize disaster risks using GIS.
-Simulate disaster scenarios using Digital Twin technology.
-Generate AI-based emergency recommendations.
-Optimize emergency resource allocation.
-Provide timely disaster alerts.
-Support data-driven emergency decision-making.
+- Predict potential disaster risks using AI/ML.
+- Integrate multiple disaster-related data sources.
+- Explain AI predictions using SHAP.
+- Visualize disaster risks using GIS.
+- Simulate disaster scenarios using Digital Twin technology.
+- Generate AI-based emergency recommendations.
+- Optimize emergency resource allocation.
+- Provide timely disaster alerts.
+- Support data-driven emergency decision-making.
 
 ---
 
