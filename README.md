@@ -154,19 +154,19 @@ Risk Assessment
 ## ⚙ Installation
 
 Clone the Repository  
-git clone https://github.com/eddulapreethi/disaster-management-system.git  
+- git clone https://github.com/eddulapreethi/disaster-management-system.git  
 Navigate to the Project  
-cd DisasterGuard-AI  
+- cd DisasterGuard-AI  
 Backend Setup  
-cd backend  
-python -m venv venv
+- cd backend  
+- python -m venv venv
 
 Activate the virtual environment and install dependencies:
 
-pip install -r requirements.txt  
+- pip install -r requirements.txt  
 Frontend Setup  
-cd frontend  
-npm install  
+- cd frontend  
+- npm install  
 Configure  
 Configure the database  
 Add required API keys  
@@ -176,11 +176,11 @@ Run the Project
 
 Start the backend:
 
-uvicorn app.main:app --reload
+- uvicorn app.main:app --reload
 
 Start the frontend:
 
-npm run dev
+- npm run dev
 
 ---
 
