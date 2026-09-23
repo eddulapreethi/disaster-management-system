@@ -40,7 +40,7 @@ DisasterGuard AI is an AI-powered disaster management and early warning platform
 ---
 
 ## 📂 Project Structure
-
+```text
 DisasterGuard-AI
 │
 ├── backend/
@@ -67,7 +67,7 @@ DisasterGuard-AI
 ├── .env.example
 ├── .gitignore
 └── README.md
-
+```
 ---
 
 ## 🏗 System Modules
