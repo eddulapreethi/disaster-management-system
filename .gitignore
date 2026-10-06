@@ -1,0 +1,25 @@
+# Environment secrets
+.env
+.env.*
+*.env
+!.env.example
+**/.env
+**/.env.*
+**/*.env
+!**/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Frontend build/dependencies
+frontend/node_modules/
+frontend/dist/
+
+# Local databases and trained artifacts
+*.sqlite
+*.sqlite3
+*.db
+ml/models/trained_models/*.joblib

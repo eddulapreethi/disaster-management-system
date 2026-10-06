@@ -1,0 +1,1 @@
+Store authorized lake and reservoir map layers here. Document provider, license, date and CRS. Operational reservoir observations belong in the runtime database or source service, not in this static map-data folder.

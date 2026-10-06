@@ -1,0 +1,6 @@
+-- No synthetic or fabricated records are inserted by default.
+-- Add only authorized, clearly sourced sample records for local development.
+-- Required order: create the PostGIS extension, then run the schema scripts.
+-- Example location insert (replace with a real, licensed project location):
+-- INSERT INTO locations (name, location_type, latitude, longitude, capacity)
+-- VALUES ('<location name>', '<shelter|hospital|station>', <latitude>, <longitude>, <capacity>);

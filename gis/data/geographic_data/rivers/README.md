@@ -1,0 +1,1 @@
+Store authorized river and waterway display layers here. Document provider, license, date and CRS. If extracted attributes are used as ML features, keep the processed training table under `ml/datasets/gis/` as well, with its lineage recorded. No sample waterway data is included.

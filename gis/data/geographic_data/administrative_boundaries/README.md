@@ -1,0 +1,1 @@
+Store authorized boundary GeoJSON, GeoPackage or shapefile datasets here. Document provider, license, publication date and CRS; reproject to WGS 84 for GeoJSON exchange. No sample boundary data is included.

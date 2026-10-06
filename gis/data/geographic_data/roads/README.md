@@ -1,0 +1,1 @@
+Store authorized road-network display layers here. Document provider, license, date and CRS. The current route optimizer uses straight-line distances and does not consume this road data yet; do not imply it provides road routing.

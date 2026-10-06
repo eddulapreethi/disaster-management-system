@@ -1,4 +1,5 @@
 import { apiPost } from './api'
+import { fetchLiveWeather } from './weatherService'
 
 // All 20 features the trained model expects, each 0-16.
 export const DEFAULT_FEATURES = {
@@ -28,30 +29,56 @@ function localFallback(features) {
     f.Encroachments * 1.8 + f.ClimateChange * 1.4 + f.InadequatePlanning * 1.5 -
     f.RiverManagement * 2.2 - f.DrainageSystems * 2.4
   const score = Math.max(2, Math.min(98, Math.round(raw + 25)))
-  const contribs = [
-    { feature: 'MonsoonIntensity', description: 'Intensity of monsoon rainfall', shap_contribution: f.MonsoonIntensity * 0.031 },
-    { feature: 'DrainageSystems', description: 'Urban drainage system capacity', shap_contribution: -f.DrainageSystems * 0.024 },
-    { feature: 'RiverManagement', description: 'Quality of river channel management', shap_contribution: -f.RiverManagement * 0.022 },
-    { feature: 'Deforestation', description: 'Level of deforestation in the catchment', shap_contribution: f.Deforestation * 0.020 },
-    { feature: 'Encroachments', description: 'Encroachment onto floodplains/waterways', shap_contribution: f.Encroachments * 0.018 },
-  ].sort((a, b) => Math.abs(b.shap_contribution) - Math.abs(a.shap_contribution))
-
   return {
     offline: true,
+    model_source: 'offline_demo',
+    disaster_type: 'flood',
     flood_probability: score / 100,
     risk_score: score,
     risk_band: score >= 65 ? 'high' : score >= 45 ? 'medium' : 'low',
-    explanation: `Offline estimate (backend not reachable): risk score ${score}/100, driven mainly by ${contribs[0].feature}.`,
-    top_contributions: contribs,
+    explanation: `Offline demonstration estimate (${score}/100). No trained model or SHAP explanation was available.`,
+    top_contributions: [],
   }
 }
 
-export async function predictRisk(partialFeatures) {
+export async function predictRisk(partialFeatures, station) {
   const features = { ...DEFAULT_FEATURES, ...partialFeatures }
   try {
-    const data = await apiPost('/predict', features)
-    return { ...data, offline: false }
-  } catch {
-    return localFallback(features)
+    let weather = null
+    if (station?.lat != null && station?.lng != null) {
+      try {
+        weather = await fetchLiveWeather(station.lat, station.lng)
+      } catch {
+        weather = null
+      }
+    }
+    const data = await apiPost('/predictions', {
+      disaster_type: 'flood',
+      latitude: station?.lat ?? 0,
+      longitude: station?.lng ?? 0,
+      rainfall_mm: weather?.todayRainfallMm ?? weather?.rainMm ?? 0,
+      temperature_c: weather?.temperatureC ?? 25,
+      wind_speed_kmh: weather?.windKmh ?? 0,
+      features,
+    })
+    const prediction = data.prediction
+    const result = {
+      offline: false,
+      model_source: data.model_source,
+      disaster_type: prediction.disaster_type,
+      flood_probability: prediction.risk_score / 100,
+      risk_score: prediction.risk_score,
+      risk_band: data.risk_band,
+      explanation: data.explanation,
+      top_contributions: data.top_contributions || [],
+      recommendations: data.recommendations || [],
+    }
+    sessionStorage.setItem('disasterguard_latest_prediction', JSON.stringify(result))
+    return result
+  } catch (error) {
+    if (error.status || error.code === 'WEATHER_NOT_READY') throw error
+    const result = localFallback(features)
+    sessionStorage.setItem('disasterguard_latest_prediction', JSON.stringify(result))
+    return result
   }
 }
