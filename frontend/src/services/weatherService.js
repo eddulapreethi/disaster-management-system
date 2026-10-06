@@ -1,24 +1,28 @@
-// Real integration with Open-Meteo (https://open-meteo.com) — free, no API key.
-// Used to pull live rainfall/temperature for a station's coordinates.
-const OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast'
+import { apiGet } from './api'
 
 export async function fetchLiveWeather(lat, lng) {
-  const params = new URLSearchParams({
-    latitude: lat,
-    longitude: lng,
-    current: 'temperature_2m,precipitation,rain,wind_speed_10m',
-    daily: 'precipitation_sum',
-    timezone: 'auto',
-  })
-  const res = await fetch(`${OPEN_METEO_URL}?${params.toString()}`, { signal: AbortSignal.timeout(5000) })
-  if (!res.ok) throw new Error(`Open-Meteo request failed: ${res.status}`)
-  const data = await res.json()
+  const snapshot = await apiGet('/weather/latest')
+  const station = snapshot.observations.reduce((nearest, observation) => {
+    const distance = (observation.latitude - lat) ** 2 + (observation.longitude - lng) ** 2
+    return !nearest || distance < nearest.distance ? { observation, distance } : nearest
+  }, null)
+  if (!station || station.distance > 0.0004) {
+    const error = new Error('Weather is not ready for this location yet. The backend collector is fetching its first Open-Meteo reading; retry shortly.')
+    error.code = 'WEATHER_NOT_READY'
+    throw error
+  }
+
+  const reading = station.observation
   return {
-    temperatureC: data.current?.temperature_2m ?? null,
-    precipitationMm: data.current?.precipitation ?? null,
-    rainMm: data.current?.rain ?? null,
-    windKmh: data.current?.wind_speed_10m ?? null,
-    todayRainfallMm: data.daily?.precipitation_sum?.[0] ?? null,
-    fetchedAt: data.current?.time ?? null,
+    temperatureC: reading.temperature_c,
+    humidityPercent: reading.humidity_percent,
+    precipitationMm: reading.precipitation_mm,
+    rainMm: reading.rain_mm,
+    windKmh: reading.wind_speed_kmh,
+    pressureHpa: reading.pressure_hpa,
+    observationTime: reading.observation_time,
+    fetchedAt: reading.fetched_at,
+    source: reading.source,
+    collector: snapshot.collector,
   }
 }

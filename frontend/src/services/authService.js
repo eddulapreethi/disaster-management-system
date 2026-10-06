@@ -1,27 +1,35 @@
-// NOTE: This is a UI-only placeholder. There is no real backend authentication
-// endpoint yet — it stores a fake session in localStorage so the Login/Register
-// screens and protected routes work end-to-end. Wire this up to
-// backend/app/api/auth.py once that exists.
-const KEY = 'disasterguard_user'
+import { apiPost } from './api'
 
-export function login(email, _password) {
-  const user = { email, name: email.split('@')[0] }
+const KEY = 'disasterguard_user'
+const TOKEN_KEY = 'disasterguard_access_token'
+
+export async function login(email, password) {
+  const result = await apiPost('/auth/login', { email: email.trim().toLowerCase(), password })
+  const user = result.user
   localStorage.setItem(KEY, JSON.stringify(user))
+  localStorage.setItem(TOKEN_KEY, result.access_token)
   return user
 }
 
-export function register(name, email, _password) {
-  const user = { email, name }
-  localStorage.setItem(KEY, JSON.stringify(user))
-  return user
+export async function register(name, email, password) {
+  await apiPost('/auth/register', {
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    password,
+  })
+  return login(email, password)
 }
 
 export function logout() {
   localStorage.removeItem(KEY)
+  localStorage.removeItem(TOKEN_KEY)
+  sessionStorage.removeItem('disasterguard_latest_prediction')
+  sessionStorage.removeItem('disasterguard_last_simulation')
 }
 
 export function getCurrentUser() {
   try {
+    if (!localStorage.getItem(TOKEN_KEY)) return null
     const raw = localStorage.getItem(KEY)
     return raw ? JSON.parse(raw) : null
   } catch {

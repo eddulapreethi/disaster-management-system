@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { predictRisk, ADJUSTABLE_FEATURES } from '../services/predictionService'
 import { stations } from '../services/stationData'
 import PredictionCard from '../components/PredictionCard'
@@ -11,20 +11,26 @@ export default function RiskPrediction() {
   const [values, setValues] = useState(initial)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function run() {
+    setError('')
     setLoading(true)
-    const r = await predictRisk(values)
-    setResult(r)
-    setLoading(false)
+    try {
+      const r = await predictRisk(values, selected)
+      setResult(r)
+    } catch (requestError) {
+      setError(requestError.message || 'Could not run prediction.')
+    } finally {
+      setLoading(false)
+    }
   }
-
-  useEffect(() => { run() }, []) // eslint-disable-line
 
   return (
     <div>
       <h2 className="title">Risk prediction</h2>
-      <p className="sub">Adjust conditions and call the trained model's <code>/predict</code> endpoint for a live, explainable risk score.</p>
+      <p className="sub">A prediction request fetches current Open-Meteo rainfall, temperature and wind for the selected location. The trained flood model uses the separate 20 feature controls below; weather is saved as context but is not converted into those model features.</p>
+      <p className="explain">A trained model artifact and a real labeled training dataset are not included. Until you provide and train that model, the backend labels its result as a weather heuristic; network-only fallback results are labeled as offline demos.</p>
       <div className="twocol">
         <div className="card">
           <div className="sectitle">Inputs</div>
@@ -41,6 +47,7 @@ export default function RiskPrediction() {
             ))}
           </div>
           <button className="btn" onClick={run} disabled={loading}>{loading ? 'Running…' : 'Run prediction'}</button>
+          {error && <p className="error" role="alert">{error}</p>}
         </div>
         {loading && !result ? <div className="card"><Loading label="Running model…" /></div> : <PredictionCard result={result} title={`Prediction — ${selected.name}`} />}
       </div>

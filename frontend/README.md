@@ -1,217 +1,65 @@
-# 🌍 DisasterGuard AI
+# DisasterGuard AI Frontend
 
-## AI-Powered Disaster Prediction & Decision Support System
+This directory contains the React web interface for DisasterGuard AI. It provides the screens and visual controls for dashboard review, risk prediction, maps, scenario simulation, recommendations, resource allocation and alerts.
 
-DisasterGuard AI is an AI-powered disaster management and early warning platform designed to predict potential disaster risks and support emergency decision-making. By integrating weather, hydrological, historical disaster, satellite, and GIS data with AI/ML, the platform provides risk prediction, explainable AI analysis, GIS-based visualization, Digital Twin simulation, emergency recommendations, resource optimization, and disaster alerts.
+## Frontend Stack
 
----
+- React 18
+- React Router 6
+- Vite 5
+- Leaflet and React Leaflet
 
-## ✨ Features
+## Main Screens
 
-- 🤖 AI-Based Disaster Risk Prediction
-- 🔍 Explainable AI using SHAP
-- 🗺 GIS-Based Risk Visualization
-- 🧪 Digital Twin Disaster Simulation
-- 🧠 AI-Based Emergency Recommendations
-- 🚑 Emergency Resource Optimization
-- 🚨 Emergency Alerts & Notifications
-- 🌦 Weather Data Integration
-- 💧 Hydrological Data Integration
-- 🛰 Satellite Data Integration
-- 📚 Historical Disaster Data Analysis
-- 📊 Disaster Risk Analysis
-- 👥 Role-Based Access
+- Home, login and registration
+- Dashboard
+- Risk prediction
+- Risk map
+- What-if simulation
+- Recommendations
+- Resource allocation
+- Alerts
 
----
+The application has no role-based user system. Login and registration use the backend's ordinary user account endpoints; the returned bearer token is stored in browser `localStorage` and sent with protected API requests.
 
-## 🛠 Tech Stack
+## Run Locally
 
-| **Category** | **Technologies** |
-|--------------|------------------|
-| Frontend | React.js, HTML, CSS, JavaScript |
-| Backend | Python, FastAPI |
-| Machine Learning | Scikit-learn |
-| Explainable AI | SHAP |
-| Database | PostgreSQL |
-| GIS | Leaflet.js, OpenStreetMap |
-| Data Processing | Pandas, NumPy |
-| Tools | Git, GitHub |
+Install Node.js and npm, then run these commands from this directory:
 
----
-
-## 📂 Project Structure
-```text
-DisasterGuard-AI
-│
-├── backend/
-│   └── FastAPI Application
-│
-├── frontend/
-│   └── React Application
-│
-├── ml/
-│   ├── datasets/
-│   ├── preprocessing/
-│   ├── models/
-│   └── prediction/
-│
-├── gis/
-│
-├── digital-twin/
-│
-├── docs/
-│   └── diagrams/
-│
-├── screenshots/
-│
-├── .env.example
-├── .gitignore
-└── README.md
+```powershell
+npm install
+npm run dev
 ```
----
 
-## 🏗 System Modules
+Vite serves the frontend at <http://localhost:5173>. To create and preview a production build:
 
-🤖 Disaster Risk Prediction
+```powershell
+npm run build
+npm run preview
+```
 
-Uses environmental and historical disaster data to predict potential disaster risks and classify them into different risk levels.
+## Backend URL
 
-🔍 Explainable AI
+The frontend reads `VITE_API_BASE` and defaults to `http://localhost:8000`. Create a local `.env` file in this directory to override it:
 
-Uses SHAP-based analysis to identify the important factors contributing to a disaster-risk prediction and provide understandable explanations.
+```dotenv
+VITE_API_BASE=http://localhost:8000
+```
 
-🗺 GIS Risk Visualization
+The shared API client checks the backend root and prefixes feature requests with `/api`. Predictions send coordinates, current Open-Meteo weather and the flood-model feature values to `/api/predictions`. A trained artifact configured with `DISASTERGUARD_MODEL_PATH` enables model+SHAP inference; otherwise the backend returns an explicitly labeled weather heuristic. Network failures can use an offline demonstration estimate, which is not persisted and has no SHAP factors. The risk map and alerts read the signed-in user's saved backend records; simulation results and resource plans also use backend APIs.
 
-Displays predicted disaster-risk areas and locations using an interactive GIS map.
+The backend polls Open-Meteo and public NWDP/CWC telemetry on configurable schedules and stores observations; the dashboard displays a data-readiness panel with observation/fetch times and stale/unavailable states. CWC water-level and rainfall sources are hourly, so polling every minute does not guarantee a new measurement every time. Satellite search is available in the backend but is not yet displayed in the React UI. Licensed training datasets, a trained production model, PostGIS runtime deployment, and external SMS/email/push delivery are not included yet. The assistant uses deterministic guidance rules, not a generative AI service.
 
-🧪 Digital Twin Simulation
-
-Provides what-if scenario analysis by simulating changes in environmental conditions and observing their possible impact on disaster risk.
-
-🧠 AI Emergency Recommendations
-
-Generates emergency guidance and recommendations based on predicted risks, explanations, and simulation results.
-
-🚑 Resource Optimization
-
-Supports emergency resource allocation based on predicted risk areas and available resources.
-
-🚨 Emergency Alerts
-
-Generates alerts for relevant users when the predicted risk reaches a configured level.
-
----
-
-## 📊 Data Sources
-
-The system works with multiple categories of disaster-related data:
-
-🌦 Weather Data  
-💧 Hydrological Data  
-📚 Historical Disaster Data  
-🛰 Satellite Data  
-🗺 GIS Data  
-
-These data sources are processed and integrated before being used for disaster-risk prediction.
-
----
-
-## 🚀 Project Workflow
+## Frontend Layout
 
 ```text
-
-Data Collection
-      │
-      ▼
-Data Preprocessing
-      │
-      ▼
-Feature Engineering
-      │
-      ▼
-AI/ML Disaster Prediction
-      │
-      ▼
-Risk Assessment
-      │
-      ├──► SHAP Explanation
-      │
-      ├──► GIS Risk Map
-      │
-      └──► Digital Twin Simulation
-                    │
-                    ▼
-            AI Recommendations
-                    │
-                    ▼
-            Resource Optimization
-                    │
-                    ▼
-             Emergency Alerts
+src/
+  components/  Shared navigation, cards and UI components
+  maps/        Leaflet map components
+  pages/       Route-level screens
+  services/    API client and frontend data/auth helpers
+  styles/      Global and dashboard styles
+  App.jsx      Routes and application layout
+  main.jsx     React entry point
 ```
----
 
-## ⚙ Installation
-
-Clone the Repository  
-- git clone https://github.com/eddulapreethi/disaster-management-system.git  
-Navigate to the Project  
-- cd DisasterGuard-AI  
-Backend Setup  
-- cd backend  
-- python -m venv venv
-
-Activate the virtual environment and install dependencies:
-
-- pip install -r requirements.txt  
-Frontend Setup  
-- cd frontend  
-- npm install  
-Configure  
-Configure the database  
-Add required API keys  
-Configure environment variables  
-Ensure all required dependencies are installed  
-Run the Project
-
-Start the backend:
-
-- uvicorn app.main:app --reload
-
-Start the frontend:
-
-- npm run dev
-
----
-
-## 🎯 Project Objectives
-
-- Predict potential disaster risks using AI/ML.
-- Integrate multiple disaster-related data sources.
-- Explain AI predictions using SHAP.
-- Visualize disaster risks using GIS.
-- Simulate disaster scenarios using Digital Twin technology.
-- Generate AI-based emergency recommendations.
-- Optimize emergency resource allocation.
-- Provide timely disaster alerts.
-- Support data-driven emergency decision-making.
-
----
-
-## 👨‍💻 Developed By
-
-DisasterGuard AI Team
-
-B.Tech – Information Technology
-
-Academic Project – 2026-27
-
-GitHub: https://github.com/eddulapreethi/disaster-management-system.git
-
----
-
-## 📄 License
-
-This project is developed for educational and academic purposes.
-
----

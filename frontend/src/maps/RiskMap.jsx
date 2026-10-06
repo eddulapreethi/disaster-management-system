@@ -3,10 +3,10 @@ import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
 import { stations, riskBand, riskColor } from '../services/stationData'
 import MapLayers from './MapLayers'
 
-export default function RiskMap({ selected, onSelect }) {
+export default function RiskMap({ points, selected, onSelect }) {
   const [active, setActive] = useState({ high: true, medium: true, low: true })
   const toggle = key => setActive(a => ({ ...a, [key]: !a[key] }))
-  const visible = stations.filter(s => active[riskBand(s.risk)])
+  const visible = points.filter(point => active[riskBand(point.risk)])
 
   return (
     <div className="card">
@@ -16,15 +16,15 @@ export default function RiskMap({ selected, onSelect }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {visible.map(s => (
+        {visible.map(point => (
           <CircleMarker
-            key={s.id}
-            center={[s.lat, s.lng]}
-            radius={s.id === selected?.id ? 12 : 9}
-            pathOptions={{ color: riskColor(s.risk), fillColor: riskColor(s.risk), fillOpacity: 0.75, weight: 2 }}
-            eventHandlers={{ click: () => onSelect(s) }}
+            key={point.id}
+            center={[point.lat, point.lng]}
+            radius={point.id === selected?.id ? 12 : 9}
+            pathOptions={{ color: riskColor(point.risk), fillColor: riskColor(point.risk), fillOpacity: 0.75, weight: 2 }}
+            eventHandlers={{ click: () => onSelect(point) }}
           >
-            <Tooltip direction="top">{s.name} — risk {s.risk}</Tooltip>
+            <Tooltip direction="top">{point.name} — risk {point.risk}</Tooltip>
           </CircleMarker>
         ))}
       </MapContainer>

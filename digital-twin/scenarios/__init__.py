@@ -1,0 +1,1 @@
+"""Hazard-specific scenario inputs."""

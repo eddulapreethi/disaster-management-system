@@ -9,9 +9,9 @@ export default function RiskCard({ station, selected, onClick }) {
       </div>
       <div className="risk-card-region">{station.region}</div>
       <div className="risk-card-meta">
-        <span>{station.rain}mm rain</span>
-        <span>{station.river}% river</span>
-        <span>{station.pop}M pop</span>
+        <span>{station.latitude.toFixed(3)}, {station.longitude.toFixed(3)}</span>
+        <span>{station.risk_level}</span>
+        <span>{new Date(station.created_at).toLocaleDateString()}</span>
       </div>
     </div>
   )

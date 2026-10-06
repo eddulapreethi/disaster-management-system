@@ -1,0 +1,1 @@
+Store authorized land-use map layers here. Document source, classification scheme, license, date and CRS. A derived model feature table belongs under `ml/datasets/gis/`; do not duplicate raw map layers into ML data folders.

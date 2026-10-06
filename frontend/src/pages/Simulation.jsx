@@ -1,32 +1,45 @@
-import { useEffect, useState } from 'react'
-import { predictRisk } from '../services/predictionService'
+import { useState } from 'react'
+import { apiPost } from '../services/api'
+import { fetchLiveWeather } from '../services/weatherService'
 import { stations, riskColor } from '../services/stationData'
 
 export default function Simulation() {
   const [selected, setSelected] = useState(stations[0])
-  const [rainBoost, setRainBoost] = useState(0)
-  const [drainageDrop, setDrainageDrop] = useState(0)
+  const [disasterType, setDisasterType] = useState('flood')
+  const [rainfallChange, setRainfallChange] = useState(0)
+  const [windChange, setWindChange] = useState(0)
+  const [temperatureChange, setTemperatureChange] = useState(0)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function run() {
     setLoading(true)
-    const monsoon = Math.min(16, 6 + Math.round(rainBoost / 25))
-    const drainage = Math.max(0, 10 - Math.round(drainageDrop / 2))
-    const r = await predictRisk({ MonsoonIntensity: monsoon, DrainageSystems: drainage })
-    setResult(r)
-    setLoading(false)
+    setError('')
+    try {
+      const weather = await fetchLiveWeather(selected.lat, selected.lng)
+      const simulation = await apiPost('/simulations', {
+        disaster_type: disasterType,
+        rainfall_mm: weather.todayRainfallMm ?? weather.rainMm ?? 0,
+        temperature_c: weather.temperatureC ?? 25,
+        wind_speed_kmh: weather.windKmh ?? 0,
+        rainfall_change_percent: rainfallChange,
+        wind_change_percent: windChange,
+        temperature_change_c: temperatureChange,
+      })
+      setResult(simulation)
+      sessionStorage.setItem('disasterguard_last_simulation', JSON.stringify(simulation))
+    } catch (requestError) {
+      setError(requestError.message || 'Could not run the scenario.')
+    } finally {
+      setLoading(false)
+    }
   }
-
-  useEffect(() => { run() }, [rainBoost, drainageDrop, selected]) // eslint-disable-line
-
-  const affected = result ? (selected.pop * (result.risk_score / 100) * 0.6).toFixed(2) : '—'
-  const evacHrs = result ? Math.max(2, Math.round(24 - (result.risk_score / 100) * 18)) : '—'
 
   return (
     <div>
       <h2 className="title">Digital twin simulation</h2>
-      <p className="sub">Simulate changing conditions and see the model's projected impact update live.</p>
+      <p className="sub">Run a weather what-if scenario with the Digital Twin simulation engine.</p>
       <div className="twocol">
         <div className="card">
           <div className="sectitle">Scenario controls</div>
@@ -34,31 +47,38 @@ export default function Simulation() {
           <select value={selected.id} onChange={e => setSelected(stations.find(s => s.id === e.target.value))}>
             {stations.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <label style={{ marginTop: '.8rem' }}>Rainfall increase (mm above baseline) <span className="rangeval">{rainBoost}</span></label>
-          <input type="range" min="0" max="250" value={rainBoost} onChange={e => setRainBoost(+e.target.value)} />
-          <label style={{ marginTop: '.8rem' }}>Drainage degradation (%) <span className="rangeval">{drainageDrop}</span></label>
-          <input type="range" min="0" max="20" value={drainageDrop} onChange={e => setDrainageDrop(+e.target.value)} />
+          <label style={{ marginTop: '.8rem' }}>Hazard type</label>
+          <select value={disasterType} onChange={event => setDisasterType(event.target.value)}>
+            <option value="flood">Flood</option>
+            <option value="storm">Storm</option>
+            <option value="wildfire">Wildfire</option>
+          </select>
+          <label style={{ marginTop: '.8rem' }}>Rainfall increase (%) <span className="rangeval">{rainfallChange}</span></label>
+          <input type="range" min="-100" max="500" value={rainfallChange} onChange={event => setRainfallChange(Number(event.target.value))} />
+          {(disasterType === 'storm' || disasterType === 'wildfire') && <>
+            <label style={{ marginTop: '.8rem' }}>Wind increase (%) <span className="rangeval">{windChange}</span></label>
+            <input type="range" min="-100" max="500" value={windChange} onChange={event => setWindChange(Number(event.target.value))} />
+          </>}
+          {disasterType === 'wildfire' && <>
+            <label style={{ marginTop: '.8rem' }}>Temperature change (C) <span className="rangeval">{temperatureChange}</span></label>
+            <input type="range" min="-20" max="40" value={temperatureChange} onChange={event => setTemperatureChange(Number(event.target.value))} />
+          </>}
+          <button className="btn" onClick={run} disabled={loading}>{loading ? 'Running scenario...' : 'Run scenario'}</button>
+          {error && <p className="error" role="alert">{error}</p>}
         </div>
         <div className="card">
           {result && (
             <>
-              <div className="sectitle">Projected impact {loading && '(updating…)'}</div>
+              <div className="sectitle">Scenario result</div>
               <div className="kv"><span>Baseline risk → simulated risk</span>
-                <span className="mono">{selected.risk} → <b style={{ color: riskColor(result.risk_score) }}>{Math.round(result.risk_score)}</b></span>
+                <span className="mono">{Math.round(result.baseline_risk_score)} → <b style={{ color: riskColor(result.scenario_risk_score) }}>{Math.round(result.scenario_risk_score)}</b></span>
               </div>
-              <div className="kv"><span>Rainfall scenario</span><span>+{rainBoost} mm above baseline</span></div>
-              <div className="kv"><span>Drainage scenario</span><span>-{drainageDrop}% capacity</span></div>
-              <div className="kv"><span>Estimated population affected</span><span>{affected}M</span></div>
-              <div className="kv"><span>Recommended evacuation window</span><span>{evacHrs} hours</span></div>
-              <div className="reco">
-                {result.risk_score >= 65
-                  ? 'Trigger evacuation protocol for low-lying zones and open designated shelters.'
-                  : result.risk_score >= 45
-                  ? 'Issue advisory, stage rescue equipment near the region.'
-                  : 'Continue routine monitoring.'}
-              </div>
+              <div className="kv"><span>Risk change</span><span>{result.score_change > 0 ? '+' : ''}{result.score_change}</span></div>
+              <div className="kv"><span>Projected risk level</span><span>{result.scenario_risk_level}</span></div>
+              <div className="kv"><span>Baseline weather</span><span>{result.baseline_conditions.rainfall_mm} mm rain, {result.baseline_conditions.temperature_c} C, {result.baseline_conditions.wind_speed_kmh} km/h wind</span></div>
+              <div className="reco">{result.note}</div>
             </>
-          )}
+          ) || <p>Choose scenario conditions and run a simulation.</p>}
         </div>
       </div>
     </div>

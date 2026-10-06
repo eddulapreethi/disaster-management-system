@@ -1,20 +1,12 @@
-import { stations } from './stationData'
+import { apiGet } from './api'
 
-// Client-side alert generation from current risk scores.
-// (A real backend alerts/ service would push these instead of computing on read.)
-export function getActiveAlerts() {
-  return stations
-    .filter(s => s.risk >= 45)
-    .map(s => ({
-      id: s.id,
-      region: s.name,
-      severity: s.risk >= 65 ? 'high' : 'medium',
-      message:
-        s.risk >= 65
-          ? `High flood risk detected in ${s.name}. Rescue teams and shelters should be prepared.`
-          : `Moderate flood risk in ${s.name}. Increase monitoring and brief response teams.`,
-      riskScore: s.risk,
-      issuedAt: new Date().toISOString(),
-    }))
-    .sort((a, b) => b.riskScore - a.riskScore)
+export async function getActiveAlerts() {
+  const alerts = await apiGet('/alerts')
+  return alerts.map(alert => ({
+    id: alert.id,
+    region: alert.title,
+    severity: alert.severity === 'moderate' ? 'medium' : alert.severity,
+    message: alert.message,
+    issuedAt: alert.created_at,
+  }))
 }
