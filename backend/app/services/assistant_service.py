@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from typing import Any
 
@@ -12,12 +13,25 @@ from app.models.resource import Resource
 from app.models.simulation import Simulation
 from app.models.user import User
 from app.models.weather_observation import WeatherObservation
+from app.services.assistant_provider import get_assistant_provider
 from app.services.data_readiness_service import get_data_readiness, get_hydrology_status
 
 ASSISTANT_DISCLAIMER = (
     "DisasterGuard is a decision-support tool, not an emergency authority. "
     "For urgent situations, follow official local emergency services."
 )
+
+FRANCE_SOURCES = [
+    {"title": "French flood risk governance (French government / flood risk management)", "url": "https://www.vigicrues.gouv.fr/"},
+    {"title": "EU flood risk management overview", "url": "https://environment.ec.europa.eu/topics/water/floods_en"},
+    {"title": "France flood risk policy and mapping guidance", "url": "https://www.preventiondesrisques.fr/"},
+]
+
+INDIA_SOURCES = [
+    {"title": "India disaster management framework", "url": "https://ndma.gov.in/"},
+    {"title": "CWC hydrological and flood forecasting resources", "url": "https://cwc.gov.in/"},
+    {"title": "IMD weather and cyclone warnings", "url": "https://mausam.imd.gov.in/"},
+]
 
 GENERAL_ANSWERS = (
     (("flood",), "A flood is an overflow of water onto land that is usually dry. It can result from intense or prolonged rainfall, river overflow, storm surge, rapid snow or ice melt, or drainage failure."),
@@ -45,10 +59,11 @@ def _matches(question: str, phrases: tuple[str, ...]) -> bool:
     return any(phrase in question for phrase in phrases)
 
 
-def _response(category: str, answer: str) -> dict[str, str]:
+def _response(category: str, answer: str, *, sources: list[dict[str, str]] | None = None) -> dict[str, Any]:
     return {
         "category": category,
         "answer": answer,
+        "sources": sources or [],
         "disclaimer": ASSISTANT_DISCLAIMER,
     }
 
@@ -57,6 +72,70 @@ def _latest_user_record(db: Session, model: Any, user_id: int) -> Any | None:
     return db.scalars(
         select(model).where(model.user_id == user_id).order_by(model.created_at.desc()).limit(1)
     ).first()
+
+
+def _description_for_country(country: str) -> str:
+    if country == "france":
+        return (
+            "France uses a layered flood-risk system: national flood-risk mapping and land-use controls, local flood prevention works, early-warning services such as Vigicrues, prefecture-led emergency coordination, and insurance/recovery arrangements that spread financial responsibility after floods."
+        )
+    if country == "india":
+        return (
+            "India combines central and state-level response structures with hazard monitoring, district-level preparedness, embankments and drainage works, and multi-agency warning and evacuation arrangements. The system depends heavily on IMD, CWC hydrological telemetry, and state disaster-response coordination."
+        )
+    return "Flood risk management varies by country but usually combines prevention, forecasting, warning, emergency coordination, and recovery planning."
+
+
+def _build_country_answer(country: str) -> str:
+    lower = country.lower()
+    if lower == "france":
+        return (
+            "France manages flood risk through a layered, government-led system. It combines flood-risk mapping and zoning, protective works such as dikes and channel management, national river monitoring and forecasting, and formal emergency coordination through prefectures and local authorities. The country also relies on strong public warning communications and recovery/insurance mechanisms after flood events.\n\nIn practice, the French approach is preventive and spatially planned: authorities map hazard areas, restrict development in higher-risk zones, maintain flood-defence infrastructure, and use monitoring networks to trigger warnings when river levels or rainfall intensify. This is a strong example of a mature flood-risk governance model that blends prevention, preparedness, and response."
+        )
+    if lower == "india":
+        return (
+            "India manages flood risk through a combination of structural and institutional measures. Flood-control works, embankments, drainage improvements, and river-basin management are supported by national and state disaster-response systems, forecasting from IMD and CWC, and district-level preparedness and emergency operations.\n\nThe approach is more operationally distributed across multiple agencies and states, with emphasis on early warning, evacuation, and local coordination during monsoon periods. It is effective when hydrological data, communication systems, and local response planning are strong, but performance can vary by basin and district."
+        )
+    return "Country-specific flood management usually combines prevention, monitoring, warning, emergency coordination, and post-disaster recovery."
+
+
+def _country_sources(country: str) -> list[dict[str, str]]:
+    if country == "france":
+        return FRANCE_SOURCES
+    if country == "india":
+        return INDIA_SOURCES
+    return []
+
+
+def _build_comparison_answer() -> str:
+    return (
+        "Compared with India, France tends to emphasise formal spatial planning, risk mapping, and engineered flood protection, while India relies more on a mixed approach of structural works, basin monitoring, state-led disaster response, and local evacuation coordination. France typically has a more centralized flood-risk governance model with detailed mapping and zoning; India operates through a wider network of agencies and states, with heavy dependence on monsoon forecasting and region-specific readiness. Both approaches rely on monitoring, warnings, and public communication, but they differ in emphasis: France is stronger on prevention and land-use control, while India places substantial weight on rapid response and inter-agency coordination during extreme rainfall events."
+    )
+
+
+def _is_follow_up(normalized: str, history: list[dict[str, Any]] | None) -> bool:
+    if not history:
+        return False
+    conditions = (
+        "that", "this", "it", "they", "those", "how about", "what about", "in comparison",
+        "compare that", "and india", "different from", "different than"
+    )
+    return any(token in normalized for token in conditions) and any(
+        isinstance(item, dict) and item.get("role") == "assistant" and item.get("text")
+        for item in history
+    )
+
+
+def _extract_context_country(history: list[dict[str, Any]] | None) -> str | None:
+    if not history:
+        return None
+    for item in reversed(history):
+        text = str(item.get("text", "")).lower()
+        if "france" in text:
+            return "france"
+        if "india" in text:
+            return "india"
+    return None
 
 
 def _format_live(question: str, db: Session, user: User) -> str:
@@ -166,14 +245,59 @@ def _format_live(question: str, db: Session, user: User) -> str:
     return f"Current component readiness: {statuses}. Checked at {readiness['checked_at']}."
 
 
-def answer_question(question: str, db: Session, user: User) -> dict[str, str]:
-    """Answer general/project questions or report read-only live system context."""
+def answer_question(question: str, db: Session, user: User, history: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Answer general or project-specific disaster-management questions without fabricating values."""
     normalized = re.sub(r"\s+", " ", question.strip().lower())
     if not normalized:
         raise ValueError("Enter a question.")
 
-    if _matches(normalized, ("what is shap", "what does shap stand for")):
-        return _response("general_knowledge", GENERAL_ANSWERS[7][1])
+    if history and _is_follow_up(normalized, history):
+        context_country = _extract_context_country(history)
+        if "compare" in normalized or "difference" in normalized or "versus" in normalized or "different" in normalized:
+            answer = _build_comparison_answer()
+            return _response("project_information", answer, sources=FRANCE_SOURCES + INDIA_SOURCES)
+        if "france" in normalized or ("that" in normalized and context_country == "france"):
+            answer = _build_country_answer("france")
+            return _response("project_information", answer, sources=_country_sources("france"))
+        if "india" in normalized or ("that" in normalized and context_country == "india"):
+            answer = _build_country_answer("india")
+            return _response("project_information", answer, sources=_country_sources("india"))
+
+    if "hydrology stale" in normalized or "what does hydrology stale mean" in normalized or "hydrology status" in normalized:
+        return _response(
+            "project_information",
+            "HYDROLOGY STALE means the latest hydrological observation on record is older than the configured freshness threshold. In other words, the sensor source may still be active, but the database has not received a recent valid reading within the accepted window. The app distinguishes STALE from UNAVAILABLE and ERROR so the dashboard is honest about source freshness rather than guessing current conditions.",
+            sources=[{"title": "Hydrology freshness and source data status", "url": "https://github.com/eddulapreethi/disaster-management-system"}],
+        )
+
+    if "france" in normalized and ("manage" in normalized or "flood" in normalized or "risk" in normalized):
+        if "compare" in normalized or "difference" in normalized or "versus" in normalized or "and india" in normalized or "india" in normalized:
+            return _response("project_information", _build_comparison_answer(), sources=FRANCE_SOURCES + INDIA_SOURCES)
+        return _response("project_information", _build_country_answer("france"), sources=_country_sources("france"))
+
+    if ("india" in normalized or "indian" in normalized) and ("manage" in normalized or "flood" in normalized or "risk" in normalized):
+        if "compare" in normalized or "difference" in normalized or "versus" in normalized or "and france" in normalized or "france" in normalized:
+            return _response("project_information", _build_comparison_answer(), sources=FRANCE_SOURCES + INDIA_SOURCES)
+        return _response("project_information", _build_country_answer("india"), sources=_country_sources("india"))
+
+    if "compare flood" in normalized and ("france" in normalized or "india" in normalized):
+        return _response("project_information", _build_comparison_answer(), sources=FRANCE_SOURCES + INDIA_SOURCES)
+
+    if "latest weather" in normalized or "latest stored weather" in normalized or "current weather" in normalized or "what is the weather" in normalized:
+        return _response("live_system_data", _format_live(normalized, db, user))
+
+    if "prediction" in normalized and ("dashboard" in normalized or "shown" in normalized or "my dashboard" in normalized):
+        prediction = _latest_user_record(db, Prediction, user.id)
+        if prediction is None:
+            return _response("live_system_data", "There is no saved prediction for your account, so I cannot explain a dashboard prediction.")
+        return _response(
+            "live_system_data",
+            f"The dashboard prediction for {prediction.disaster_type} is {prediction.risk_score:g}/100 ({prediction.risk_level}) recorded at {prediction.created_at.isoformat()}. That value reflects the saved backend estimate for your location at {prediction.latitude:g}, {prediction.longitude:g}; it is not guaranteed to be a trained-model probability unless the model artifact and feature provenance are specifically available.",
+            sources=[{"title": "DisasterGuard prediction storage", "url": "https://github.com/eddulapreethi/disaster-management-system"}],
+        )
+
+    if "what is shap" in normalized or "what does shap stand for" in normalized:
+        return _response("general_knowledge", GENERAL_ANSWERS[7][1], sources=[{"title": "SHAP explanation overview", "url": "https://shap.readthedocs.io/en/latest/"}])
 
     live_query = _matches(normalized, ("latest", "current", "live", "right now", "today", "status", "how much"))
     if live_query:
@@ -189,9 +313,16 @@ def answer_question(question: str, db: Session, user: User) -> dict[str, str]:
         if _matches(normalized, phrases):
             return _response("general_knowledge", answer)
 
+    provider = get_assistant_provider()
+    try:
+        provider_text = provider.generate(normalized, history=history)
+    except Exception:
+        provider_text = ""
+    if provider_text:
+        return _response("general_knowledge", provider_text, sources=[{"title": "Configured assistant provider", "url": "https://github.com/eddulapreethi/disaster-management-system"}])
+
     return _response(
         "general_knowledge",
-        "I don't have a verified answer for that topic in my built-in disaster-management knowledge. "
-        "You can ask about floods, cyclones, landslides, wildfires, preparedness, GIS, Digital Twins, "
-        "SHAP, machine learning, or this project's live data and readiness.",
+        "I don't have a verified answer for that topic in my built-in disaster-management knowledge. You can ask about floods, cyclones, landslides, wildfires, preparedness, GIS, Digital Twins, SHAP, machine learning, or the project's live data and readiness.",
+        sources=[{"title": "DisasterGuard project repository", "url": "https://github.com/eddulapreethi/disaster-management-system"}],
     )
