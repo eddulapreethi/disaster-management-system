@@ -24,23 +24,37 @@ export default function Assistant() {
   const [question, setQuestion] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [failedQuestion, setFailedQuestion] = useState('')
 
-  async function ask(value = question) {
+  async function ask(value = question, retry = false) {
     const submitted = value.trim()
     if (!submitted || loading) return
 
     const nextUserMessage = { role: 'user', text: submitted }
-    const recentHistory = messages
-      .filter(message => message.role === 'assistant' || message.role === 'user')
-      .slice(-8)
+    const historyMessages = messages
+      .filter((message, index) => index > 0 && (message.role === 'assistant' || message.role === 'user'))
       .map(message => ({ role: message.role, text: message.text }))
+    const lastHistoryMessage = historyMessages[historyMessages.length - 1]
+    if (retry && lastHistoryMessage?.role === 'user' && lastHistoryMessage.text === submitted) {
+      historyMessages.pop()
+    }
+    const recentHistory = historyMessages.slice(-8)
 
-    setMessages(current => [...current, nextUserMessage])
+    if (!retry) setMessages(current => [...current, nextUserMessage])
     setQuestion('')
     setError('')
     setLoading(true)
     try {
-      const response = await apiPost('/assistant/chat', { question: submitted, history: recentHistory })
+      const response = await apiPost(
+        '/assistant/chat',
+        { question: submitted, history: recentHistory },
+        { timeoutMs: 125000 },
+      )
+      if (response.category === 'assistant_unavailable') {
+        setError(response.answer || 'The assistant could not answer. Please retry.')
+        setFailedQuestion(submitted)
+        return
+      }
       setMessages(current => [
         ...current,
         {
@@ -51,8 +65,14 @@ export default function Assistant() {
           sources: response.sources || [],
         },
       ])
+      setFailedQuestion('')
     } catch (requestError) {
-      setError(requestError.message || 'Could not get an assistant response.')
+      setError(
+        requestError.name === 'TimeoutError'
+          ? 'The assistant request timed out. Please retry.'
+          : requestError.message || 'Could not get an assistant response.',
+      )
+      setFailedQuestion(submitted)
     } finally {
       setLoading(false)
     }
@@ -61,7 +81,7 @@ export default function Assistant() {
   return (
     <div>
       <h2 className="title">DisasterGuard assistant</h2>
-      <p className="sub">Deterministic answers about hazards and the project, with read-only live context from stored system data. It is not an emergency authority.</p>
+      <p className="sub">Ask general questions or about DisasterGuard. Open-ended answers use the local Ollama model; project data is answered from stored records. It is not an emergency authority.</p>
       <section className="chatwrap" aria-label="DisasterGuard assistant chat">
         <div className="chatlog" aria-live="polite">
           {messages.map((message, index) => (
@@ -83,7 +103,7 @@ export default function Assistant() {
               {message.disclaimer && <small className="chat-disclaimer">{message.disclaimer}</small>}
             </div>
           ))}
-          {loading && <div className="msg bot" role="status">Checking the project data…</div>}
+          {loading && <div className="msg bot" role="status">Generating a response…</div>}
         </div>
         <div className="quickrow">
           {QUICK_QUESTIONS.map(item => (
@@ -96,13 +116,22 @@ export default function Assistant() {
             value={question}
             onChange={event => setQuestion(event.target.value)}
             maxLength={1000}
-            placeholder="Ask about hazards, readiness, or latest stored data…"
+            placeholder="Ask anything, or ask about project and stored data…"
             disabled={loading}
           />
           <button className="btn" type="submit" disabled={loading || !question.trim()}>{loading ? 'Checking…' : 'Ask'}</button>
         </form>
       </section>
-      {error && <p role="alert" className="error">{error}</p>}
+      {error && (
+        <p role="alert" className="error">
+          {error}
+          {failedQuestion && (
+            <button className="qbtn" type="button" disabled={loading} onClick={() => ask(failedQuestion, true)}>
+              Retry
+            </button>
+          )}
+        </p>
+      )}
     </div>
   )
 }

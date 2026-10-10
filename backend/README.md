@@ -14,6 +14,35 @@ pip install -r requirements.txt
 
 Create `.env` with a long random `JWT_SECRET_KEY`. To use trained flood-model inference, train or provide an artifact and set `DISASTERGUARD_MODEL_PATH` to its path. Without an artifact the prediction API records a clearly labeled weather heuristic and returns no SHAP values.
 
+### General-purpose assistant
+
+The assistant sends ordinary open-ended questions to Ollama's OpenAI-compatible chat-completions API using `qwen2.5:3b`. It does not train a model or fall back to a cloud provider. The model must be installed and running on the same machine as the backend when using `localhost`; for Docker or a backend on another machine, set `DISASTERGUARD_ASSISTANT_BASE_URL` to a reachable Ollama address instead.
+
+```dotenv
+DISASTERGUARD_ASSISTANT_PROVIDER=ollama
+DISASTERGUARD_ASSISTANT_BASE_URL=http://localhost:11434/v1
+DISASTERGUARD_ASSISTANT_MODEL=qwen2.5:3b
+DISASTERGUARD_ASSISTANT_TIMEOUT_SECONDS=120
+```
+
+Install Ollama for Windows from <https://ollama.com/download/windows>, then open PowerShell and run the local checks and model:
+
+```powershell
+ollama --version
+ollama list
+ollama run qwen2.5:3b
+```
+
+Ollama must remain running while the backend uses it; the Windows Ollama application normally provides the local service. `ollama run` downloads the model if needed. The backend checks the configured Ollama `/api/tags` endpoint before generation and reports when Ollama is unreachable or the model is not installed. No API key or billing is needed. The configured Ollama URL is the only target: failures return an error and never trigger cloud failover. Never put provider credentials in frontend code or commit a populated `.env`. Restart the backend after changing `.env`.
+
+The backend supplies at most the eight latest validated user/assistant history messages. For project capability questions, it retrieves a small set of relevant passages from an allowlist of local repository Markdown files and supplies those as evidence to the model. Weather, hydrology, readiness, saved predictions, and historical comparisons continue to use backend services and stored records rather than model guesses. A request for a location-specific current flood risk reports matching stored observations, if any, and explicitly distinguishes those observations from a prediction. No web-search integration is configured, so provider output is not live research and is returned without fabricated citations. If Ollama is unavailable or generation fails, the API returns a safe, actionable error rather than treating failed generation as a successful answer. `DISASTERGUARD_ASSISTANT_TIMEOUT_SECONDS` configures the model response timeout (default 120 seconds); the frontend allows 125 seconds for the full request. The authenticated `GET /api/assistant/status` endpoint reports Ollama reachability and whether the configured model is installed.
+
+The frontend calls `http://localhost:8000/api/assistant/chat` by default. For Docker on Windows, the backend can often reach Ollama at `http://host.docker.internal:11434/v1`; otherwise configure the reachable Ollama address for your deployment. Set `VITE_API_BASE` if the backend is not at its default URL.
+
+Provider failures are reported separately for unavailable Ollama, a model not installed locally, unsupported requests, timeouts, and invalid responses. Backend diagnostics log only the failure class.
+
+Assistant unit tests mock Ollama responses and do not make network or paid API calls. To opt into the local-model smoke test after installing the model and starting Ollama, set `$env:DISASTERGUARD_RUN_ASSISTANT_INTEGRATION='1'` in the backend PowerShell session and run `python -m pytest tests/test_assistant_provider.py -q`; leave it unset for routine offline tests.
+
 ### Copernicus Sentinel access
 
 Create a server-side OAuth client in the Copernicus Data Space dashboard under **User Settings → OAuth clients**. Add its values to local `backend/.env` as `COPERNICUS_CLIENT_ID` and `COPERNICUS_CLIENT_SECRET`; never put them in React or commit the `.env` file. `backend/.env.example` contains empty placeholders only. The backend caches the OAuth token and uses the official Sentinel Hub Catalog and Process APIs. No satellite data is available until a valid client is configured and authorized.
