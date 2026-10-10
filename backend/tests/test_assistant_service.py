@@ -60,3 +60,32 @@ class AssistantServiceTests(unittest.TestCase):
         self.assertIn("Kochi", response["answer"])
         self.assertIn("temperature 29.5 °C", response["answer"])
         self.assertIn("not a forecast", response["answer"])
+
+    def test_country_specific_flood_question_has_structured_relevant_answer(self) -> None:
+        response = answer_question("How does France manage flood risk?", self.db, self.user)
+
+        self.assertEqual(response["category"], "project_information")
+        self.assertIn("France", response["answer"])
+        self.assertIn("mapping", response["answer"].lower())
+        self.assertGreater(len(response["sources"]), 0)
+
+    def test_compare_question_answers_both_countries(self) -> None:
+        response = answer_question("Compare flood-management approaches in France and India.", self.db, self.user)
+
+        self.assertIn("France", response["answer"])
+        self.assertIn("India", response["answer"])
+        self.assertIn("differ", response["answer"].lower())
+
+    def test_hydrology_stale_question_explains_status_meaning(self) -> None:
+        response = answer_question("What does HYDROLOGY STALE mean?", self.db, self.user)
+
+        self.assertEqual(response["category"], "project_information")
+        self.assertIn("older than", response["answer"].lower())
+        self.assertIn("freshness", response["answer"].lower())
+
+    def test_follow_up_question_uses_recent_conversation_context(self) -> None:
+        history = [{"role": "assistant", "text": "France manages flood risk through mapping, prevention, and warning systems."}]
+        response = answer_question("How is that different from India?", self.db, self.user, history=history)
+
+        self.assertIn("India", response["answer"])
+        self.assertTrue("France" in response["answer"] or "India" in response["answer"])

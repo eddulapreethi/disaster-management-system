@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
@@ -12,6 +14,7 @@ router = APIRouter(prefix="/assistant", tags=["assistant"])
 
 class AssistantChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=1000)
+    history: list[dict[str, Any]] | None = None
 
     @field_validator("question")
     @classmethod
@@ -29,6 +32,7 @@ def chat(
     user: User = Depends(get_current_user),
 ):
     try:
-        return answer_question(data.question, db, user)
+        history = data.history or []
+        return answer_question(data.question, db, user, history=history)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
