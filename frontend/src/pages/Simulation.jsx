@@ -1,10 +1,22 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { apiPost } from '../services/api'
 import { fetchLiveWeather } from '../services/weatherService'
-import { stations, riskColor } from '../services/stationData'
+import { riskColor } from '../services/stationData'
+import LocationSearchField from '../components/LocationSearchField'
+
+const DEFAULT_LOCATION = {
+  id: 'kochi-default',
+  name: 'Kochi',
+  admin1: 'Kerala',
+  admin2: 'Ernakulam',
+  country: 'India',
+  display_name: 'Kochi, Kerala, India',
+  latitude: 9.9312,
+  longitude: 76.2673,
+}
 
 export default function Simulation() {
-  const [selected, setSelected] = useState(stations[0])
+  const [selected, setSelected] = useState(DEFAULT_LOCATION)
   const [disasterType, setDisasterType] = useState('flood')
   const [rainfallChange, setRainfallChange] = useState(0)
   const [windChange, setWindChange] = useState(0)
@@ -17,7 +29,7 @@ export default function Simulation() {
     setLoading(true)
     setError('')
     try {
-      const weather = await fetchLiveWeather(selected.lat, selected.lng)
+      const weather = await fetchLiveWeather(selected.latitude, selected.longitude)
       const simulation = await apiPost('/simulations', {
         disaster_type: disasterType,
         rainfall_mm: weather.todayRainfallMm ?? weather.rainMm ?? 0,
@@ -39,14 +51,19 @@ export default function Simulation() {
   return (
     <div>
       <h2 className="title">Digital twin simulation</h2>
-      <p className="sub">Run a weather what-if scenario with the Digital Twin simulation engine.</p>
+      <p className="sub">Run a weather what-if scenario with the Digital Twin simulation engine for any supported location.</p>
       <div className="twocol">
         <div className="card">
           <div className="sectitle">Scenario controls</div>
-          <label>Location</label>
-          <select value={selected.id} onChange={e => setSelected(stations.find(s => s.id === e.target.value))}>
-            {stations.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+          <LocationSearchField value={selected} onChange={setSelected} label="Location search" />
+
+          <div style={{ marginTop: '.9rem' }} className="formgrid">
+            <div className="kv"><span>Selected</span><span>{selected.display_name || selected.name}</span></div>
+            <div className="kv"><span>Latitude</span><span>{Number(selected.latitude).toFixed(4)}</span></div>
+            <div className="kv"><span>Longitude</span><span>{Number(selected.longitude).toFixed(4)}</span></div>
+            <div className="kv"><span>Country</span><span>{selected.country || 'Unknown'}</span></div>
+          </div>
+
           <label style={{ marginTop: '.8rem' }}>Hazard type</label>
           <select value={disasterType} onChange={event => setDisasterType(event.target.value)}>
             <option value="flood">Flood</option>
