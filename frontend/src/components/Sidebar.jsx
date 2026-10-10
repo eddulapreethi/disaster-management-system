@@ -8,6 +8,7 @@ const LINKS = [
   ['/recommendations', 'Recommendations', '🧠'],
   ['/resource-allocation', 'Resources', '🚑'],
   ['/alerts', 'Alerts', '🚨'],
+  ['/assistant', 'Assistant', '💬'],
 ]
 
 export default function Sidebar() {

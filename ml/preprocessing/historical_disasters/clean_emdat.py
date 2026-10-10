@@ -29,11 +29,10 @@ def _build_date_from_parts(row: pd.Series, year_column: str, month_column: str, 
 
     month = pd.to_numeric(row[month_column], errors="coerce")
     day = pd.to_numeric(row[day_column], errors="coerce")
+    if pd.isna(month) or pd.isna(day):
+        return pd.NaT
 
-    month_value = 1 if pd.isna(month) else int(month)
-    day_value = 1 if pd.isna(day) else int(day)
-
-    date_string = f"{int(year):d}-{month_value:02d}-{day_value:02d}"
+    date_string = f"{int(year):d}-{int(month):02d}-{int(day):02d}"
     return pd.to_datetime(date_string, errors="coerce")
 
 
@@ -76,7 +75,7 @@ def build_cleaned_frame(frame: pd.DataFrame) -> pd.DataFrame:
         lambda row: _build_date_from_parts(row, "end_year", "end_month", "end_day"),
         axis=1,
     )
-    cleaned["event_date"] = cleaned["start_date"].combine_first(cleaned["end_date"])
+    cleaned["event_date"] = cleaned["start_date"]
     cleaned["country"] = cleaned["country"].replace({"": pd.NA})
     cleaned["disaster_type"] = cleaned["disaster_type"].replace({"": pd.NA})
     cleaned["disaster_subtype"] = cleaned["disaster_subtype"].replace({"": pd.NA})

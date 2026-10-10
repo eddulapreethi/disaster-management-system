@@ -2,6 +2,14 @@
 export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 const TOKEN_KEY = 'disasterguard_access_token'
+const USER_KEY = 'disasterguard_user'
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(USER_KEY)
+  sessionStorage.removeItem('disasterguard_latest_prediction')
+  sessionStorage.removeItem('disasterguard_last_simulation')
+}
 
 function endpointUrl(path) {
   const normalized = path.startsWith('/') ? path : `/${path}`
@@ -22,6 +30,14 @@ async function request(path, options = {}) {
     headers,
   })
   if (!response.ok) {
+    const normalizedPath = path.replace(/^\/+/, '')
+    if (response.status === 401 && !normalizedPath.startsWith('auth/')) {
+      clearSession()
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login')
+      }
+    }
+
     let detail = `${response.status} ${response.statusText}`
     try {
       const payload = await response.json()

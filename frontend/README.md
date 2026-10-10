@@ -19,8 +19,11 @@ This directory contains the React web interface for DisasterGuard AI. It provide
 - Recommendations
 - Resource allocation
 - Alerts
+- DisasterGuard assistant
 
 The application has no role-based user system. Login and registration use the backend's ordinary user account endpoints; the returned bearer token is stored in browser `localStorage` and sent with protected API requests.
+
+The authenticated assistant at `/assistant` answers a small, documented set of general disaster-management questions and reports controlled, read-only project context from `/api/assistant/chat`. It is deterministic and does not call a generative AI service. Live answers use stored database records only, identify when data is unavailable, and state that the application is not an emergency authority.
 
 ## Run Locally
 
@@ -48,7 +51,7 @@ VITE_API_BASE=http://localhost:8000
 
 The shared API client checks the backend root and prefixes feature requests with `/api`. Predictions send coordinates, current Open-Meteo weather and the flood-model feature values to `/api/predictions`. A trained artifact configured with `DISASTERGUARD_MODEL_PATH` enables model+SHAP inference; otherwise the backend returns an explicitly labeled weather heuristic. Network failures can use an offline demonstration estimate, which is not persisted and has no SHAP factors. The risk map and alerts read the signed-in user's saved backend records; simulation results and resource plans also use backend APIs.
 
-The backend polls Open-Meteo and public NWDP/CWC telemetry on configurable schedules and stores observations; the dashboard displays a data-readiness panel with observation/fetch times and stale/unavailable states. CWC water-level and rainfall sources are hourly, so polling every minute does not guarantee a new measurement every time. Satellite search is available in the backend but is not yet displayed in the React UI. Licensed training datasets, a trained production model, PostGIS runtime deployment, and external SMS/email/push delivery are not included yet. The assistant uses deterministic guidance rules, not a generative AI service.
+The backend polls Open-Meteo and public NWDP/CWC telemetry on configurable schedules and stores observations; the dashboard displays a data-readiness panel with observation/fetch times and stale/unavailable states. CWC water-level and rainfall sources are hourly, so polling every minute does not guarantee a new measurement every time. Satellite search is available in the backend but is not yet displayed in the React UI. Licensed, aligned flood training data, a trained model artifact, PostGIS runtime deployment, and external SMS/email/push delivery are not included yet.
 
 ## Frontend Layout
 
@@ -62,4 +65,3 @@ src/
   App.jsx      Routes and application layout
   main.jsx     React entry point
 ```
-

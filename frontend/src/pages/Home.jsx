@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import { getCurrentUser } from '../services/authService'
 
 const FEATURES = [
-  ['🤖', 'AI Risk Prediction', 'Trained ML model estimates flood probability from environmental and infrastructure factors.'],
-  ['🔍', 'Explainable AI', 'SHAP shows exactly which factors drove each prediction.'],
+  ['🤖', 'AI Risk Prediction', 'Flood estimates use a trained model only when a compatible artifact is available; otherwise results are labeled demonstrator heuristics.'],
+  ['🔍', 'Explainable AI', 'SHAP explanations are available only when a compatible trained model is ready.'],
   ['🗺', 'GIS Risk Map', 'Live map of monitored regions with real coordinates.'],
   ['🧪', 'Digital Twin', 'Simulate what-if scenarios and see projected impact.'],
   ['🧠', 'AI Recommendations', 'Actionable guidance based on predicted risk levels.'],

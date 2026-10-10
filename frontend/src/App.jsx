@@ -12,6 +12,7 @@ import Simulation from './pages/Simulation'
 import Recommendations from './pages/Recommendations'
 import ResourceAllocation from './pages/ResourceAllocation'
 import Alerts from './pages/Alerts'
+import Assistant from './pages/Assistant'
 import { isAuthenticated } from './services/authService'
 import { checkBackend } from './services/api'
 
@@ -41,7 +42,8 @@ export default function App() {
           {isAuthenticated() && <Sidebar />}
           <main>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
@@ -51,6 +53,7 @@ export default function App() {
               <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
               <Route path="/resource-allocation" element={<ProtectedRoute><ResourceAllocation /></ProtectedRoute>} />
               <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+              <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
