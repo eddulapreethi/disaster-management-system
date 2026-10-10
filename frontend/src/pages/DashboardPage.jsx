@@ -76,9 +76,12 @@ export default function DashboardPage() {
         {readiness && <>
           <div className="formgrid">
             {readinessItems.map(([label, item]) => (
-              <div className="kv" key={label}>
-                <span>{label}</span>
-                <span className={`pill ${item.status === 'READY' ? 'low' : item.status === 'STALE' ? 'med' : 'high'}`}>{item.status}</span>
+              <div key={label}>
+                <div className="kv">
+                  <span>{label}</span>
+                  <span className={`pill ${item.status === 'READY' ? 'low' : item.status === 'STALE' ? 'med' : 'high'}`}>{item.status}</span>
+                </div>
+                {['ML model', 'Features', 'Prediction'].includes(label) && item.message && <p className="explain">{item.message}</p>}
               </div>
             ))}
           </div>

@@ -1,13 +1,14 @@
-import os
-import sys
-from pathlib import Path
+from datetime import datetime, timezone
+from types import SimpleNamespace
 from typing import Any, Protocol
 
 from sqlalchemy.orm import Session
 
 from app.models.prediction import Prediction
 from app.models.user import User
+from app.models.weather_observation import WeatherObservation
 from app.schemas.prediction import PredictionCreate
+from app.services.weather_service import get_max_age_seconds
 
 
 class RiskInputs(Protocol):
@@ -35,50 +36,81 @@ def assess_risk(data: RiskInputs) -> tuple[float, str]:
 
 
 def create_prediction(db: Session, user: User, data: PredictionCreate) -> tuple[Prediction, dict[str, Any]]:
-    model_output: dict[str, Any] | None = None
     if data.disaster_type == "flood" and data.features:
+        raise ValueError(
+            "Flood ML inference is disabled until a validated feature-source mapping is installed; "
+            "manually supplied 0-16 indices are not accepted."
+        )
+    prediction_inputs: RiskInputs = data
+    stored_weather: WeatherObservation | None = None
+    input_provenance: dict[str, str] = {"source": "client_supplied_environmental_inputs"}
+    if data.disaster_type == "flood":
+        if data.weather_observation_id is None:
+            raise ValueError(
+                "A stored location-matched weather_observation_id is required; client-entered or default weather is not accepted."
+            )
+        stored_weather = db.get(WeatherObservation, data.weather_observation_id)
+        if stored_weather is None:
+            raise ValueError("The selected weather observation is not present in the backend database.")
+        distance_squared = (
+            (stored_weather.latitude - data.latitude) ** 2
+            + (stored_weather.longitude - data.longitude) ** 2
+        )
+        if distance_squared > 0.0004:
+            raise ValueError("The selected weather observation does not match the prediction location.")
+        observation_time = stored_weather.observation_time
+        if observation_time.tzinfo is None:
+            observation_time = observation_time.replace(tzinfo=timezone.utc)
+        age_seconds = (datetime.now(timezone.utc) - observation_time.astimezone(timezone.utc)).total_seconds()
         try:
-            project_root = str(Path(__file__).resolve().parents[3])
-            if project_root not in sys.path:
-                sys.path.insert(0, project_root)
-            from ml.prediction.predict import predict_risk
-
-            model_path = os.getenv("DISASTERGUARD_MODEL_PATH")
-            model_output = predict_risk(data.features, model_path=model_path) if model_path else predict_risk(data.features)
-        except FileNotFoundError:
-            model_output = None
-        except ModuleNotFoundError:
-            model_output = None
-
-    if model_output is not None:
-        score = round(float(model_output["risk_score"]), 2)
-        level = classify_persisted_risk(score)
-        details = {
-            "model_source": "trained_model",
-            "risk_band": model_output["risk_band"],
-            "explanation": model_output["explanation"],
-            "top_contributions": model_output["top_contributions"],
+            max_age_seconds = get_max_age_seconds()
+        except RuntimeError as error:
+            raise ValueError("The configured weather freshness window is invalid.") from error
+        if age_seconds < -300 or age_seconds > max_age_seconds:
+            raise ValueError("The selected weather observation is not within the configured freshness window.")
+        rainfall = stored_weather.rain_mm
+        if rainfall is None:
+            rainfall = stored_weather.precipitation_mm
+        if rainfall is None or stored_weather.temperature_c is None or stored_weather.wind_speed_kmh is None:
+            raise ValueError(
+                "The stored weather observation is missing rainfall, temperature, or wind; no prediction was saved."
+            )
+        prediction_inputs = SimpleNamespace(
+            disaster_type=data.disaster_type,
+            rainfall_mm=rainfall,
+            temperature_c=stored_weather.temperature_c,
+            wind_speed_kmh=stored_weather.wind_speed_kmh,
+        )
+        input_provenance = {
+            "source": stored_weather.source,
+            "station_name": stored_weather.station_name,
+            "observation_time": stored_weather.observation_time.isoformat(),
+            "fetched_at": stored_weather.fetched_at.isoformat(),
         }
-    else:
-        score, level = assess_risk(data)
-        details = {
-            "model_source": "weather_heuristic",
-            "risk_band": "low" if score < 45 else "medium" if score < 65 else "high",
-            "explanation": (
-                "No trained flood model artifact is available; this result uses the "
-                "backend's demonstrator weather heuristic and has no SHAP explanation."
-            ),
-            "top_contributions": [],
-        }
+
+    score, level = assess_risk(prediction_inputs)
+    details = {
+        "model_source": "weather_heuristic",
+        "risk_band": "low" if score < 45 else "medium" if score < 65 else "high",
+        "explanation": (
+            "No compatible trained flood model and validated input pipeline are available; this result uses an "
+            "unvalidated demonstrator weather heuristic, not a forecast or probability, and has no SHAP explanation."
+        ),
+        "top_contributions": [],
+        "model_version": None,
+        "target_value": None,
+        "target_interpretation": None,
+        "input_provenance": input_provenance,
+    }
 
     prediction = Prediction(
         user_id=user.id,
         disaster_type=data.disaster_type,
         latitude=data.latitude,
         longitude=data.longitude,
-        rainfall_mm=data.rainfall_mm,
-        temperature_c=data.temperature_c,
-        wind_speed_kmh=data.wind_speed_kmh,
+        rainfall_mm=prediction_inputs.rainfall_mm,
+        temperature_c=prediction_inputs.temperature_c,
+        wind_speed_kmh=prediction_inputs.wind_speed_kmh,
         risk_score=score,
         risk_level=level,
     )
@@ -86,10 +118,6 @@ def create_prediction(db: Session, user: User, data: PredictionCreate) -> tuple[
     db.commit()
     db.refresh(prediction)
     return prediction, details
-
-
-def classify_persisted_risk(score: float) -> str:
-    return "low" if score < 30 else "moderate" if score < 60 else "high" if score < 80 else "critical"
 
 
 def get_recommendations(disaster_type: str, risk_level: str) -> list[str]:

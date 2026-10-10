@@ -24,7 +24,8 @@ export default function PredictionCard({ result, title }) {
           <span className="bar-val">{c.shap_contribution >= 0 ? '+' : ''}{c.shap_contribution.toFixed(3)}</span>
         </div>
       ))}
-      {!contribs.length && <p className="explain">SHAP contributions are only available when the trained model artifact is installed.</p>}
+      {!contribs.length && <p className="explain">This estimate has no validated feature-attribution explanation.</p>}
+      {result.model_source === 'weather_heuristic' && <p className="explain">Demonstrator-only weather calculation; this score is not a calibrated event probability or flood forecast.</p>}
       <div className="explain">{result.explanation}</div>
     </div>
   )

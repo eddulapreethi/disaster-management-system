@@ -1,17 +1,25 @@
 import argparse
 from datetime import datetime, timezone
 import hashlib
+import json
 from pathlib import Path
 
 import joblib
 import numpy as np
 import pandas as pd
+import sklearn
+from sklearn.dummy import DummyRegressor
 
 from ml.evaluation.model_evaluation import evaluate_model
 from ml.models.disaster_prediction import build_disaster_prediction_model
 from ml.preprocessing.data_cleaning import clean_dataframe
 from ml.preprocessing.data_validation import validate_training_data
-from ml.preprocessing.feature_engineering import FLOOD_FEATURES, select_features
+from ml.preprocessing.dataset_manifest import default_manifest_path, load_dataset_manifest
+from ml.preprocessing.feature_engineering import (
+    FLOOD_FEATURES,
+    FLOOD_FEATURE_SCHEMA_VERSION,
+    select_features,
+)
 from ml.training.hyperparameter_tuning import tune_model
 
 DEFAULT_MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "trained_models" / "flood_risk_model.joblib"
@@ -60,14 +68,22 @@ def train_from_csv(
     *,
     target: str = "FloodProbability",
     output_path: str | Path = DEFAULT_MODEL_PATH,
+    manifest_path: str | Path | None = None,
     tune: bool = False,
 ) -> dict:
-    """Train and evaluate using a chronological holdout, then save a versioned artifact."""
+    """Train using a provenance-checked dataset and chronological holdout."""
+    dataset = Path(dataset_path)
+    manifest_file = Path(manifest_path) if manifest_path else default_manifest_path(dataset)
+    manifest = load_dataset_manifest(manifest_file)
     frame = clean_dataframe(pd.read_csv(dataset_path))
     if target not in frame.columns:
         raise ValueError(f"Training CSV must contain target column {target!r}.")
-    frame[target] = pd.to_numeric(frame[target], errors="coerce")
-    frame = frame.dropna(subset=[target]).reset_index(drop=True)
+    try:
+        frame[target] = pd.to_numeric(frame[target], errors="raise")
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"Target column {target!r} must contain numeric values.") from error
+    if frame[target].isna().any():
+        raise ValueError(f"Target column {target!r} contains missing labels; resolve them explicitly.")
     validate_training_data(frame, target=target)
     if len(frame) < 5:
         raise ValueError("At least five labeled rows are required to train and evaluate the model.")
@@ -75,7 +91,7 @@ def train_from_csv(
     features = select_features(frame, FLOOD_FEATURES)
     labels = frame[target].astype(float)
     if not labels.between(0, 1).all():
-        raise ValueError(f"Target {target!r} must contain probabilities between 0 and 1.")
+        raise ValueError(f"Target {target!r} must be a continuous index between 0 and 1.")
     train_indices, test_indices, time_column = _chronological_holdout(frame)
     train_features = features.iloc[train_indices]
     test_features = features.iloc[test_indices]
@@ -92,13 +108,19 @@ def train_from_csv(
         parameters = evaluated_model.get_params(deep=True)
 
     metrics = evaluate_model(evaluated_model, test_features, test_labels)
+    baseline_model = DummyRegressor(strategy="mean")
+    baseline_model.fit(train_features, train_labels)
+    baseline_metrics = evaluate_model(baseline_model, test_features, test_labels)
     final_model = build_disaster_prediction_model()
     if tune:
         final_model.set_params(**parameters)
     final_model.fit(features, labels)
 
     trained_at = datetime.now(timezone.utc)
-    dataset_hash = hashlib.sha256(Path(dataset_path).read_bytes()).hexdigest()
+    dataset_hash = hashlib.sha256(dataset.read_bytes()).hexdigest()
+    manifest_hash = hashlib.sha256(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
     model_version = f"flood-risk-{trained_at.strftime('%Y%m%dT%H%M%SZ')}"
     artifact_path = Path(output_path)
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -108,16 +130,32 @@ def train_from_csv(
             "feature_names": list(FLOOD_FEATURES),
             "target": target,
             "metrics": metrics,
+            "baseline_metrics": baseline_metrics,
             "training_rows": len(frame),
             "metadata": {
                 "model_version": model_version,
                 "training_data_version": dataset_hash,
+                "dataset_manifest_version": manifest["dataset_version"],
+                "dataset_manifest_sha256": manifest_hash,
+                "dataset_manifest": manifest,
                 "training_timestamp": trained_at.isoformat(),
+                "feature_schema_version": FLOOD_FEATURE_SCHEMA_VERSION,
+                "package_versions": {
+                    "numpy": np.__version__,
+                    "pandas": pd.__version__,
+                    "scikit-learn": sklearn.__version__,
+                    "joblib": joblib.__version__,
+                },
                 "feature_names": list(FLOOD_FEATURES),
+                "model_type": type(final_model.named_steps["model"]).__name__,
+                "training_rows": len(frame),
                 "evaluation_method": "chronological_holdout",
                 "time_column": time_column,
                 "test_rows": len(test_indices),
                 "metrics": metrics,
+                "baseline_metrics": baseline_metrics,
+                "target_definition": manifest["target_definition"],
+                "target_interpretation": manifest["target_interpretation"],
             },
         },
         artifact_path,
@@ -126,10 +164,20 @@ def train_from_csv(
         "model_path": str(artifact_path),
         "training_rows": len(frame),
         "metrics": metrics,
+        "baseline_metrics": baseline_metrics,
         "metadata": {
             "model_version": model_version,
             "training_data_version": dataset_hash,
+            "dataset_manifest_version": manifest["dataset_version"],
+            "dataset_manifest_sha256": manifest_hash,
             "training_timestamp": trained_at.isoformat(),
+            "feature_schema_version": FLOOD_FEATURE_SCHEMA_VERSION,
+            "training_rows": len(frame),
+            "test_rows": len(test_indices),
+            "metrics": metrics,
+            "baseline_metrics": baseline_metrics,
+            "target_definition": manifest["target_definition"],
+            "target_interpretation": manifest["target_interpretation"],
             "evaluation_method": "chronological_holdout",
             "time_column": time_column,
             "test_rows": len(test_indices),
@@ -138,16 +186,22 @@ def train_from_csv(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train the DisasterGuard flood probability model.")
+    parser = argparse.ArgumentParser(description="Train the DisasterGuard flood continuous-index regression model.")
     parser.add_argument("dataset", type=Path, help="CSV containing the 20 flood features and target")
     parser.add_argument("--target", default="FloodProbability", help="Numeric target column in [0, 1]")
     parser.add_argument("--output", type=Path, default=DEFAULT_MODEL_PATH, help="Output joblib model path")
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        help="Dataset provenance JSON (defaults to <dataset-stem>.manifest.json)",
+    )
     parser.add_argument("--tune", action="store_true", help="Run cross-validated hyperparameter search")
     arguments = parser.parse_args()
     result = train_from_csv(
         arguments.dataset,
         target=arguments.target,
         output_path=arguments.output,
+        manifest_path=arguments.manifest,
         tune=arguments.tune,
     )
     print(f"Saved model: {result['model_path']}")
