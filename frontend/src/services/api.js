@@ -17,6 +17,7 @@ function endpointUrl(path) {
 }
 
 async function request(path, options = {}) {
+  const { timeoutMs = 8000, ...fetchOptions } = options
   const headers = new Headers(options.headers || {})
   const token = localStorage.getItem(TOKEN_KEY)
   if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -25,8 +26,8 @@ async function request(path, options = {}) {
   }
 
   const response = await fetch(endpointUrl(path), {
-    signal: AbortSignal.timeout(8000),
-    ...options,
+    ...fetchOptions,
+    signal: AbortSignal.timeout(timeoutMs),
     headers,
   })
   if (!response.ok) {

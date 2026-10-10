@@ -21,9 +21,11 @@ This directory contains the React web interface for DisasterGuard AI. It provide
 - Alerts
 - DisasterGuard assistant
 
+Supported product features include saved risk estimates, risk-map visualization, what-if simulations, preparedness recommendations, alerts, and resource planning/allocation. Exact readiness and enabled capabilities depend on the backend configuration and available model/data sources.
+
 The application has no role-based user system. Login and registration use the backend's ordinary user account endpoints; the returned bearer token is stored in browser `localStorage` and sent with protected API requests.
 
-The authenticated assistant at `/assistant` answers a small, documented set of general disaster-management questions and reports controlled, read-only project context from `/api/assistant/chat`. It is deterministic and does not call a generative AI service. Live answers use stored database records only, identify when data is unavailable, and state that the application is not an emergency authority.
+The authenticated assistant at `/assistant` sends ordinary questions to the configured Ollama `qwen2.5:3b` model through its OpenAI-compatible API; failures never fall back to a cloud provider. Follow-up context is limited to the latest eight user/assistant messages. Questions about documented project capabilities can include relevant passages retrieved from repository documentation; saved predictions, readiness, weather and hydrology questions use backend services and stored records instead of model guesses. The assistant has no general web-search integration, so it does not claim live external research. Its chat request allows up to 125 seconds for local inference; other API calls keep the standard 8-second timeout. Backend health and configured model availability are available through authenticated `GET /api/assistant/status`.
 
 ## Run Locally
 
@@ -43,7 +45,7 @@ npm run preview
 
 ## Backend URL
 
-The frontend reads `VITE_API_BASE` and defaults to `http://localhost:8000`. Create a local `.env` file in this directory to override it:
+The assistant sends chat requests to `http://localhost:8000/api/assistant/chat` by default. The frontend reads `VITE_API_BASE` and defaults to `http://localhost:8000`. Create a local `.env` file in this directory to override it:
 
 ```dotenv
 VITE_API_BASE=http://localhost:8000
