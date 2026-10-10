@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import alerts, auth, gis, hydrology, predictions, readiness, recommendations, resources, satellite, simulations, users, weather
+from app.api import alerts, assistant, auth, gis, hydrology, predictions, readiness, recommendations, resources, satellite, simulations, users, weather
 from app.database.database import create_tables
 from app.services.hydrology_service import run_hydrology_collector
 from app.services.weather_service import run_weather_collector
@@ -54,6 +54,7 @@ app.include_router(users.router, prefix="/api")
 app.include_router(predictions.router, prefix="/api")
 app.include_router(recommendations.router, prefix="/api")
 app.include_router(alerts.router, prefix="/api")
+app.include_router(assistant.router, prefix="/api")
 app.include_router(simulations.router, prefix="/api")
 app.include_router(resources.router, prefix="/api")
 app.include_router(gis.router, prefix="/api")

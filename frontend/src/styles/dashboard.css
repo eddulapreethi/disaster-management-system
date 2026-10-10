@@ -37,6 +37,8 @@ tr:last-child td{border-bottom:none;}
 .msg{max-width:78%;padding:.6rem .8rem;border-radius:12px;font-size:.87rem;line-height:1.4;}
 .msg.bot{background:var(--panel2);align-self:flex-start;border-bottom-left-radius:3px;}
 .msg.user{background:var(--brand);color:#fff;align-self:flex-end;border-bottom-right-radius:3px;}
+.chat-category{display:block;text-transform:capitalize;font-size:.68rem;color:var(--brand);margin-bottom:.25rem;}
+.chat-disclaimer{display:block;color:var(--ink2);margin-top:.5rem;}
 .quickrow{display:flex;gap:.4rem;flex-wrap:wrap;padding:.5rem .9rem;border-top:1px solid var(--border);}
 .qbtn{border:1px solid var(--border);background:var(--panel2);color:var(--ink2);font-size:.75rem;padding:.35rem .6rem;border-radius:99px;cursor:pointer;}
 .chatinput{display:flex;gap:.5rem;padding:.7rem;border-top:1px solid var(--border);}

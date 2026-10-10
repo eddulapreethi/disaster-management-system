@@ -1,10 +1,10 @@
 # DisasterGuard AI Machine Learning
 
-This is a flood-first ML prototype. It trains a scikit-learn regression model using the 20 model features declared in `preprocessing/feature_engineering.py` and a numeric `FloodProbability` target in the range 0–1. The frontend currently submits those same named feature values on a 0–16 scale. It does not ship a fabricated or pre-trained model.
+This is a flood-first ML prototype. Its candidate schema contains the 20 features declared in `preprocessing/feature_engineering.py` and a numeric `FloodProbability` target in the range 0–1. The frontend currently submits those same named feature values on a 0–16 scale. No trained model is included.
 
-The current trainer reads one prepared CSV; it does not fetch Open-Meteo, CWC/NWIC, EM-DAT, satellite imagery or GIS sources. Raw provider fields must be licensed, cleaned, aligned by time/location and transformed into the model's declared feature schema before training. Raw weather/hydrological columns are not automatically equivalent to the existing 20 model features. No live data collector is implemented.
+The trainer reads one prepared CSV; it does not fetch Open-Meteo, CWC/NWIC, EM-DAT, satellite imagery or GIS sources. The processed EM-DAT tables contain event history and impacts, not the required environmental predictors or calibrated flood-probability labels. EM-DAT must not be converted into invented feature values or a proxy target. The previously generated `flood_feature_matrix.csv` used impact-derived proxies and has been removed; the integration command now fails closed until an independently labeled, time/location-aligned dataset already contains the required real features.
 
-The frontend fetches current Open-Meteo rainfall, temperature and wind when a user runs a prediction. Those values are stored with the prediction and are used by the labeled heuristic fallback, but the trained flood model currently predicts from the 20 feature-slider values only. Do not interpret its result as weather-driven until a real labeled dataset and feature-engineering mapping are available and the model is retrained with matching inputs.
+The backend collects current Open-Meteo weather and NWDP/CWC hydrology observations. Those live records are not automatically aligned to historic flood events or converted into the 20 model features. The weather values displayed when a user runs a prediction are context for the explicitly labeled heuristic fallback; they are not the trained model inputs.
 
 ## Setup
 
@@ -22,7 +22,7 @@ Place an authorized historical flood CSV under `ml/datasets/historical_disasters
 python -m ml.training.train_model ml/datasets/historical_disasters/flood_data.csv
 ```
 
-The script evaluates on a holdout split and saves `ml/models/trained_models/flood_risk_model.joblib`. Add `--tune` to run cross-validated hyperparameter search. The reported MAE and RMSE are in probability units (0–1). The backend uses this default artifact path; set `DISASTERGUARD_MODEL_PATH` in `backend/.env` to point it elsewhere.
+The script requires at least five labeled rows and an observation/event time column. It holds out the latest time periods for evaluation, then saves a versioned artifact with the feature order, training-data SHA-256, timestamp, and measured test metrics at `ml/models/trained_models/flood_risk_model.joblib`. Add `--tune` to run cross-validated hyperparameter search on the training period. The reported MAE and RMSE are in probability units (0–1). No results should be reported until the input dataset has been independently verified. The backend uses this default artifact path; set `DISASTERGUARD_MODEL_PATH` in `backend/.env` to point it elsewhere.
 
 ## Predict
 
@@ -32,7 +32,7 @@ Create a JSON file containing all 20 feature keys (each from 0 to 16), then run:
 python -m ml.prediction.predict input.json
 ```
 
-Inference returns a probability, a dashboard-compatible 0–100 score and low/medium/high band, plus TreeSHAP feature contributions. The authenticated backend prediction endpoint calls this pipeline for flood requests when the artifact is available. Without it, the backend clearly labels and stores its weather-based demonstrator heuristic instead; no SHAP contributions are returned for that fallback.
+Inference returns a probability, a dashboard-compatible 0–100 score and low/medium/high band, plus TreeSHAP feature contributions, when a real compatible artifact is supplied. The authenticated backend prediction endpoint uses that pipeline for flood requests when the artifact is available. Without it, the backend labels and stores its weather-based demonstrator heuristic instead; no SHAP contributions are returned for that fallback.
 
 ## Data folders
 

@@ -8,7 +8,7 @@ This package processes the raw EM-DAT workbook located under the repository at `
 - `validate_emdat.py`: validates raw-data issues without mutating the source workbook
 - `clean_emdat.py`: creates the cleaned master dataset at `ml/datasets/historical_data/processed/emdat_cleaned.csv`
 - `filter_disasters.py`: derives disaster-specific datasets in the same processed folder
-- `ml/preprocessing/flood_feature_integration.py`: converts the flood subset into the model schema and writes `ml/datasets/historical_data/processed/flood_feature_matrix.csv`
+- `ml/preprocessing/flood_feature_integration.py`: validates a real, pre-joined flood training dataset before copying it into the model schema. It does not derive features or labels from EM-DAT impacts.
 
 ## Example commands
 
@@ -22,14 +22,15 @@ python -m ml.preprocessing.historical_disasters.filter_disasters
 ```
 
 The modules read the Excel workbook in-place and write processed CSV files only under `ml/datasets/historical_data/processed/`.
+Date components that are missing remain missing; a complete end date is not substituted for an unknown event start date.
 
-To bridge from historical floods into the project’s flood-risk schema, run:
+To validate a real, independently labeled, time/location-aligned dataset with all model features, run:
 
 ```powershell
-python -m ml.preprocessing.flood_feature_integration
+python -m ml.preprocessing.flood_feature_integration --input path\to\verified_flood_training_data.csv
 ```
 
-This produces a 20-feature matrix aligned with `ml/preprocessing/feature_engineering.py` for the flood model, while keeping the raw EM-DAT file unchanged. The mapping combines historical flood impact variables with hydrology, weather, and GIS-relevant context indicators such as rainfall proxy signals, river-basin presence, coastal risk, watershed, and infrastructure severity.
+The current EM-DAT-derived `floods.csv` does not contain this schema or verified probability labels, so the default command reports `NOT READY` and writes no training matrix. Historical event impact variables must not be repurposed as environmental predictors or flood-probability labels. Use separately sourced observations, documented units and CRS, spatial/temporal matching rules, and a defensible label definition before training. The raw EM-DAT workbook remains unchanged.
 
 ## Mapping used for disaster-specific outputs
 
