@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from typing import Any
 import os
+from pathlib import Path
+import sys
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -16,7 +17,6 @@ from app.services.hydrology_service import (
     get_stale_after_hours,
 )
 from app.services.weather_service import get_weather_status
-
 
 def _as_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
@@ -126,6 +126,35 @@ def _weather_status() -> dict[str, Any]:
     }
 
 
+def _get_ml_readiness(
+    model_path: Path,
+) -> tuple[
+    dict[str, Any],
+    tuple[str, ...],
+    tuple[dict[str, str | float], ...],
+    str,
+    bool,
+]:
+    project_root = str(Path(__file__).resolve().parents[3])
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    from ml.prediction.predict import get_model_readiness
+    from ml.preprocessing.feature_engineering import (
+        FLOOD_FEATURES,
+        FLOOD_FEATURE_SCHEMA,
+        FLOOD_FEATURE_SCHEMA_VERSION,
+    )
+    from ml.preprocessing import feature_engineering
+
+    return (
+        get_model_readiness(model_path),
+        FLOOD_FEATURES,
+        FLOOD_FEATURE_SCHEMA,
+        FLOOD_FEATURE_SCHEMA_VERSION,
+        callable(getattr(feature_engineering, "build_inference_features", None)),
+    )
+
+
 def get_data_readiness(db: Session, user: User) -> dict[str, Any]:
     """Report evidence-based readiness without initiating automatic predictions."""
     weather = _weather_status()
@@ -140,25 +169,55 @@ def get_data_readiness(db: Session, user: User) -> dict[str, Any]:
         else "No saved prediction coordinates are available to map.",
     }
 
-    default_model = Path(__file__).resolve().parents[3] / "ml" / "models" / "trained_models" / "flood_risk_model.joblib"
-    model_path = Path(os.getenv("DISASTERGUARD_MODEL_PATH", str(default_model)))
-    model = {
-        "status": "READY" if model_path.is_file() else "NOT_READY",
-        "message": "Configured flood model artifact is available."
-        if model_path.is_file()
-        else "No trained flood model artifact is configured; prediction uses a labeled demonstrator heuristic.",
-    }
-    features = {
-        "status": "NOT_READY",
-        "message": "No verified pipeline maps NWDP water-level/rainfall fields to the current 20-feature flood model schema.",
-    }
-    prediction_ready = (
-        model["status"] == "READY"
-        and features["status"] == "READY"
-        and weather["status"] == "READY"
-        and hydrology["status"] == "READY"
-        and gis["status"] == "READY"
+    default_model = (
+        Path(__file__).resolve().parents[3]
+        / "ml"
+        / "models"
+        / "trained_models"
+        / "flood_risk_model.joblib"
     )
+    model_path = Path(os.getenv("DISASTERGUARD_MODEL_PATH", str(default_model)))
+    (
+        model,
+        flood_features,
+        feature_schema,
+        feature_schema_version,
+        runtime_feature_builder_ready,
+    ) = _get_ml_readiness(model_path)
+    canonical_schema_valid = (
+        feature_schema_version == "flood-risk-factors-v1"
+        and len(flood_features) == 20
+        and len(set(flood_features)) == len(flood_features)
+        and [item["name"] for item in feature_schema] == list(flood_features)
+    )
+    feature_schema_verified = (
+        canonical_schema_valid
+        and model.get("feature_schema_verified") is True
+    )
+    features = {
+        "status": "READY" if feature_schema_verified else "NOT_READY",
+        "message": (
+            "The ordered schema and value ranges passed validation, and a training manifest declares feature meanings, units, sources, and transformations."
+            if feature_schema_verified
+            else (
+                "The current 20 named inputs are undocumented 0-16 indices with no authoritative units, "
+                "source mapping, or validated dataset manifest. EM-DAT event/impact records cannot supply "
+                "these environmental features."
+            )
+        ),
+        "schema_version": feature_schema_version,
+        "feature_count": len(flood_features),
+    }
+    prediction_reasons = []
+    if model["status"] != "READY":
+        prediction_reasons.append("a compatible trained model is not ready")
+    if features["status"] != "READY":
+        prediction_reasons.append("the feature definitions/data pipeline are not verified")
+    if not runtime_feature_builder_ready:
+        prediction_reasons.append(
+            "the backend has no verified runtime feature builder for the current weather/hydrology sources"
+        )
+    prediction_ready = not prediction_reasons
     return {
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "sources": {"weather": weather, "hydrology": hydrology, "gis": gis},
@@ -167,8 +226,10 @@ def get_data_readiness(db: Session, user: User) -> dict[str, Any]:
         "prediction": {
             "status": "READY" if prediction_ready else "NOT_READY",
             "automatic_prediction_enabled": False,
-            "message": "Data collection does not trigger predictions. Predictions remain user-initiated."
-            if not prediction_ready
-            else "Required data, features, and model are ready; predictions remain user-initiated.",
+            "message": (
+                "User-initiated inference is available with the validated model and feature pipeline."
+                if prediction_ready
+                else "User-triggered ML inference is not ready: " + "; ".join(prediction_reasons) + "."
+            ),
         },
     }

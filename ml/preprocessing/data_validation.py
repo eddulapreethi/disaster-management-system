@@ -26,6 +26,10 @@ def validate_training_data(
         present = values.dropna()
         if present.empty:
             raise ValueError(f"Feature column {name!r} contains no usable values.")
+        if len(present) != len(values):
+            raise ValueError(
+                f"Feature column {name!r} contains missing values; clean or exclude those rows explicitly."
+            )
         if not np.isfinite(present).all():
             raise ValueError(f"Feature column {name!r} contains non-finite values.")
         if not present.between(0, 16).all():

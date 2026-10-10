@@ -9,9 +9,10 @@ class PredictionCreate(BaseModel):
     disaster_type: Literal["flood", "wildfire", "storm"]
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
-    rainfall_mm: float = Field(default=0, ge=0, le=2000)
-    temperature_c: float = Field(default=25, ge=-100, le=100)
-    wind_speed_kmh: float = Field(default=0, ge=0, le=500)
+    weather_observation_id: int | None = Field(default=None, gt=0)
+    rainfall_mm: float = Field(ge=0, le=2000)
+    temperature_c: float = Field(ge=-100, le=100)
+    wind_speed_kmh: float = Field(ge=0, le=500)
     features: dict[str, float] | None = None
 
     @field_validator("features")
@@ -47,6 +48,10 @@ class PredictionResult(BaseModel):
     prediction: PredictionRead
     recommendations: list[str]
     model_source: Literal["trained_model", "weather_heuristic"]
+    model_version: str | None = None
+    target_value: float | None = None
+    target_interpretation: Literal["continuous_index"] | None = None
+    input_provenance: dict[str, str] = Field(default_factory=dict)
     risk_band: Literal["low", "medium", "high"]
     explanation: str
     top_contributions: list[dict[str, float | str]] = Field(default_factory=list)

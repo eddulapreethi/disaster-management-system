@@ -1,7 +1,10 @@
 import { apiGet } from './api'
 
 export async function fetchLiveWeather(lat, lng) {
-  const snapshot = await apiGet('/weather/latest')
+  const [snapshot, status] = await Promise.all([
+    apiGet('/weather/latest'),
+    apiGet('/weather/status'),
+  ])
   const station = snapshot.observations.reduce((nearest, observation) => {
     const distance = (observation.latitude - lat) ** 2 + (observation.longitude - lng) ** 2
     return !nearest || distance < nearest.distance ? { observation, distance } : nearest
@@ -13,7 +16,21 @@ export async function fetchLiveWeather(lat, lng) {
   }
 
   const reading = station.observation
+  const observationTime = new Date(reading.observation_time)
+  const ageSeconds = (Date.now() - observationTime.getTime()) / 1000
+  if (
+    !Number.isFinite(ageSeconds)
+    || !Number.isFinite(status.max_age_seconds)
+    || status.max_age_seconds <= 0
+    || ageSeconds < -300
+    || ageSeconds > status.max_age_seconds
+  ) {
+    const error = new Error('The nearest stored weather observation is stale or has an invalid timestamp. No estimate was created.')
+    error.code = 'WEATHER_NOT_READY'
+    throw error
+  }
   return {
+    observationId: reading.id,
     temperatureC: reading.temperature_c,
     humidityPercent: reading.humidity_percent,
     precipitationMm: reading.precipitation_mm,

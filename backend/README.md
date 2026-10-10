@@ -12,7 +12,7 @@ py -m venv .venv
 pip install -r requirements.txt
 ```
 
-Create `.env` with a long random `JWT_SECRET_KEY`. To use trained flood-model inference, train or provide an artifact and set `DISASTERGUARD_MODEL_PATH` to its path. Without an artifact the prediction API records a clearly labeled weather heuristic and returns no SHAP values.
+Create `.env` with a long random `JWT_SECRET_KEY`. A trained flood-model artifact is not currently included. `GET /api/data-readiness` validates the configured model artifact, feature manifest, and runtime feature path rather than relying on file presence. The current 20-feature schema has no verified units/source mapping, and runtime weather/hydrology does not produce those features; see `../ml/README.md` for the measured data gaps and training requirements. Do not interpret the current demonstrator heuristic as a calibrated probability or forecast.
 
 ### General-purpose assistant
 
@@ -110,7 +110,7 @@ GET http://127.0.0.1:8000/api/satellite/search/sentinel-1?latitude=16.5062&longi
 
 The search routes return Catalog metadata, including product ID, collection, sensing time, bounding box and cloud coverage when supplied by the catalog; they do not expose OAuth tokens or raw asset download URLs. The image route uses Process API for a small area and returns TIFF bytes. Satellite-derived features are not yet generated or connected to the ML model.
 
-Flood prediction uses the trained ML/SHAP pipeline only when a model artifact is available; other cases use a demonstrator weather heuristic. Digital Twin results are heuristic scenario estimates, not physical impact forecasts. No API result is an official emergency warning.
+Flood ML inference rejects arbitrary client-supplied feature vectors until a validated feature-source mapping is implemented. The current UI can request only an explicitly labeled demonstrator heuristic from a location-matched, fresh stored weather observation. The backend validates the observation ID, coordinates and freshness, then persists its actual measurements rather than trusting client-entered weather values. The heuristic is not a calibrated probability or forecast. Digital Twin results are heuristic scenario estimates, not physical impact forecasts. No API result is an official emergency warning.
 
 ## Hydrology verification
 

@@ -14,6 +14,7 @@ router = APIRouter(prefix="/weather", tags=["weather"])
 class WeatherObservationRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
     station_id: str
     station_name: str
     source: str
