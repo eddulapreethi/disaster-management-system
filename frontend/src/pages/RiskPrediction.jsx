@@ -46,7 +46,7 @@ export default function RiskPrediction() {
   return (
     <div>
       <h2 className="title">Risk prediction</h2>
-      <p className="sub">Choose a location with a stored weather observation. Until a verified trained model and environmental feature pipeline are available, the backend returns only a clearly labeled demonstrator weather heuristic.</p>
+      <p className="sub">Flood predictions are currently unavailable because this installation has no validated trained model or runtime feature pipeline. The page will show the backend's readiness error and will not save a heuristic score as a flood prediction.</p>
       <div className="twocol">
         <div className="card">
           <div className="sectitle">Inputs</div>
@@ -60,7 +60,7 @@ export default function RiskPrediction() {
           </div>
 
           <p className="explain">The 20 model inputs are not shown as sliders: their units and data sources are not validated, so manually selected values would not be meaningful model features.</p>
-          <button className="btn" onClick={run} disabled={loading || !canPredict}>{loading ? 'Checking stored weather…' : 'Run weather estimate'}</button>
+          <button className="btn" onClick={run} disabled={loading || !canPredict}>{loading ? 'Checking prediction readiness…' : 'Request flood prediction'}</button>
           {error && <p className="error" role="alert">{error}</p>}
         </div>
 

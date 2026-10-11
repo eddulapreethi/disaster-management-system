@@ -17,6 +17,7 @@ from app.services.hydrology_service import (
     get_stale_after_hours,
 )
 from app.services.weather_service import get_weather_status
+from app.utils.utc_timestamps import utc_isoformat
 
 def _as_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
@@ -39,7 +40,10 @@ def _source_readiness(
     elif state and state.status == "ERROR":
         status = "ERROR"
         message = state.message or "The last collection attempt failed."
-    elif now - _as_utc(latest.observation_time) > stale_after:
+    elif (age_seconds := (now - _as_utc(latest.observation_time)).total_seconds()) < -300:
+        status = "ERROR"
+        message = "The latest observation timestamp is more than five minutes in the future."
+    elif age_seconds > stale_after.total_seconds():
         status = "STALE"
         message = f"Latest source observation is older than {stale_after.total_seconds() / 3600:g} hours."
     else:
@@ -50,12 +54,14 @@ def _source_readiness(
         "resource_id": resource_id,
         "status": status,
         "message": message,
-        "last_observation": latest.observation_time.isoformat() if latest else None,
-        "last_fetch": last_fetch.isoformat() if last_fetch else None,
+        "last_observation": utc_isoformat(latest.observation_time) if latest else None,
+        "last_fetch": utc_isoformat(last_fetch),
         "latest_station": latest.station_name if latest else None,
         "water_level": latest.water_level if latest else None,
+        "water_level_unit": "m" if latest and latest.water_level is not None else None,
         "discharge": latest.discharge if latest else None,
         "rainfall": latest.rainfall if latest else None,
+        "rainfall_unit": "mm" if latest and latest.rainfall is not None else None,
         "records_received": state.records_received if state else 0,
         "inserted_count": state.inserted_count if state else 0,
         "duplicates_skipped": state.duplicates_skipped if state else 0,

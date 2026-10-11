@@ -11,7 +11,11 @@ from app.models.user import User
 from app.schemas.alert import AlertCreate
 from app.schemas.prediction import PredictionCreate, PredictionRead, PredictionResult
 from app.services.alert_service import create_alert
-from app.services.prediction_service import create_prediction, get_recommendations
+from app.services.prediction_service import (
+    PredictionNotReadyError,
+    create_prediction,
+    get_recommendations,
+)
 from app.utils.authentication import get_current_user
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
@@ -25,6 +29,8 @@ def predict(
 ):
     try:
         prediction, details = create_prediction(db, user, data)
+    except PredictionNotReadyError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     project_root = str(Path(__file__).resolve().parents[3])

@@ -2,11 +2,19 @@
 
 ## Current verified state
 
-There is currently **no trained model artifact** under `ml/models/trained_models/`. The readiness service loads and checks an artifact instead of treating file existence as proof of readiness.
+There is currently **no trained model artifact** under `ml/models/trained_models/`. The readiness service loads and checks an artifact instead of treating file existence as proof of readiness. Until a compatible artifact and backend runtime feature builder are implemented, the flood prediction API returns HTTP 503 and does not save heuristic scores as flood predictions. Historical prediction rows may contain legacy demonstrator scores and are not verified forecasts.
 
 The workbook present in this checkout is `ml/datasets/historical_disasters/EM-DAT/public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx` (not the `historical_data/EM-DAT/public_emdat_custom_request_2026.xlsx` path mentioned in earlier task notes). It contains an EM-DAT event sheet with 10,902 rows, 47 source columns, and start years 2000–2026. The processed flood-event table has 4,299 rows. Those tables contain event categories, event-level impacts, country/location descriptions and incompletely populated coordinates; they do not contain the 20 model predictors or validated continuous flood labels. EM-DAT is not used as a source of per-location rainfall, river observations, or probabilities.
 
 The runtime weather collector stores Open-Meteo observations in the application database; it is not a historical weather archive joined to EM-DAT. No compatible training dataset or hydrology training table is present. Therefore the repository does not have evidence to train a scientifically valid model, and all three ML readiness statuses correctly remain `NOT_READY`. Unit-test-only synthetic fixtures are not operational model data and are never installed as an artifact.
+
+### Current data-pipeline diagnosis
+
+The backend inspection and live checks confirmed that weather freshness is based on provider `observation_time`, while `fetched_at` is tracked separately. SQLite strips timezone metadata from `DateTime(timezone=True)` columns; its naive values are stored in UTC, but JSON previously omitted the UTC offset. Browser parsing therefore treated them as local time and could make a recent reading appear hours older. Observation API serialization now emits UTC `Z` timestamps, and readiness rejects observations more than five minutes in the future.
+
+The latest database check showed an Open-Meteo observation for Kochi at `2026-10-10T17:45:00Z`, within the configured 7,200-second freshness limit. CWC collection successfully checked both configured resources on `2026-10-10T17:55:58Z` but received and inserted zero new records with no parse errors. The latest stored Krishna water-level observation was `2026-09-27T21:30:00Z` at Mantralayam (307.981 m); the latest Andhra rainfall observation was `2026-09-27T01:30:00Z` at Koida (0.5 mm). A live read of the official resource pages agreed that the latest telemetry in the returned newest-ID pages was old. Therefore hydrology is stale source telemetry, not evidence of a current collector failure; frequent polling cannot make the source measurements newer.
+
+The immediate saved-prediction weather-panel failure was the missing UTC suffix on naive SQLite timestamps, not a newly fetched value being mistaken for the observation time. The backend and browser now compare observation time and report stale/future/invalid cases distinctly. A real flood prediction still cannot be produced: the old 20 features remain undocumented indices, no compatible labeled training data or model artifact exists, and no runtime mapping from weather/hydrology to those features is justified. The flood API now responds with service-unavailable and saves no score in that state.
 
 ## Existing feature contract and its limits
 
@@ -104,4 +112,4 @@ The current split is chronological. If related observations are grouped by locat
 - `features=READY` only when the canonical schema and a complete declared training manifest are available; and
 - `prediction=READY` only when a verified runtime feature builder can supply the model schema.
 
-The last requirement is not implemented: stored Open-Meteo weather and NWDP hydrology fields do not map to the undocumented ordinal indices. Consequently prediction remains `NOT_READY` even after model training until those feature definitions and the runtime builder are validated. The current frontend therefore does not expose arbitrary 0–16 feature sliders. It can request only the backend's explicitly labeled, unvalidated weather heuristic when a stored weather observation exists. Missing weather/provider data produces an error rather than a locally fabricated fallback.
+The last requirement is not implemented: stored Open-Meteo weather and NWDP hydrology fields do not map to the undocumented ordinal indices. Consequently prediction remains `NOT_READY` even after model training until those feature definitions and the runtime builder are validated. The frontend does not expose arbitrary 0–16 feature sliders. A request for a flood prediction returns HTTP 503 until a valid model and feature builder are available. Missing or stale weather remains a data-quality error and is not replaced by a local fallback.

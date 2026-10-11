@@ -16,6 +16,7 @@ from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 
 from app.database.database import SessionLocal
 from app.models.weather_observation import WeatherObservation
+from app.utils.utc_timestamps import utc_isoformat
 
 DEFAULT_POLL_INTERVAL_SECONDS = 60
 DEFAULT_MAX_AGE_SECONDS = 7200
@@ -363,7 +364,10 @@ def get_weather_status() -> dict[str, Any]:
     elif collector.get("failed_locations"):
         status = "ERROR"
         message = "The latest weather collection attempt failed; the last stored observation is shown."
-    elif now - _as_utc(latest.observation_time) > timedelta(seconds=max_age_seconds):
+    elif (age_seconds := (now - _as_utc(latest.observation_time)).total_seconds()) < -300:
+        status = "ERROR"
+        message = "The latest stored observation has a timestamp more than five minutes in the future."
+    elif age_seconds > max_age_seconds:
         status = "STALE"
         message = f"The latest stored observation is older than the {max_age_seconds}-second freshness window."
     else:
@@ -374,9 +378,9 @@ def get_weather_status() -> dict[str, Any]:
         "source": latest.source if latest else "open-meteo",
         "status": status,
         "message": message,
-        "last_observation": latest.observation_time.isoformat() if latest else None,
-        "last_checked": collector.get("last_cycle_finished_at"),
-        "last_successful_fetch": collector.get("last_successful_fetch_at"),
+        "last_observation": utc_isoformat(latest.observation_time) if latest else None,
+        "last_checked": _mark_utc_offset(collector.get("last_cycle_finished_at")),
+        "last_successful_fetch": _mark_utc_offset(collector.get("last_successful_fetch_at")),
         "max_age_seconds": max_age_seconds,
         "poll_interval_seconds": collector.get("interval_seconds", DEFAULT_POLL_INTERVAL_SECONDS),
         "collector": collector,
@@ -387,6 +391,16 @@ def _as_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
         return value.replace(tzinfo=timezone.utc)
     return value.astimezone(timezone.utc)
+
+
+def _mark_utc_offset(value: str | None) -> str | None:
+    if value is None:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return utc_isoformat(parsed)
 
 
 def get_latest_observations() -> list[WeatherObservation]:

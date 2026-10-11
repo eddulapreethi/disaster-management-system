@@ -98,8 +98,8 @@ export default function DashboardPage() {
               <div className="kv"><span>{source.source}</span><span className={`pill ${source.status === 'READY' ? 'low' : source.status === 'STALE' ? 'med' : 'high'}`}>{source.status}</span></div>
               <div className="kv"><span>Latest observation</span><span>{source.last_observation ? new Date(source.last_observation).toLocaleString() : 'Unavailable'}</span></div>
               {source.latest_station && <div className="kv"><span>Latest station</span><span>{source.latest_station}</span></div>}
-              {source.water_level != null && <div className="kv"><span>Water level</span><span>{source.water_level} m</span></div>}
-              {source.rainfall != null && <div className="kv"><span>Rainfall</span><span>{source.rainfall} mm</span></div>}
+              {source.water_level != null && <div className="kv"><span>Water level</span><span>{source.water_level} {source.water_level_unit || 'm'}</span></div>}
+              {source.rainfall != null && <div className="kv"><span>Rainfall</span><span>{source.rainfall} {source.rainfall_unit || 'mm'}</span></div>}
               <div className="kv"><span>Last successful fetch</span><span>{source.last_fetch ? new Date(source.last_fetch).toLocaleString() : 'Not fetched yet'}</span></div>
               {source.message && <p className="explain">{source.message}</p>}
             </div>
