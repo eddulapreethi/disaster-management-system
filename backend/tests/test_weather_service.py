@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from app.database.connection import Base
 from app.database.database import _upgrade_sqlite_weather_schema
 from app.models.weather_observation import WeatherObservation
+from app.api.weather import WeatherObservationRead
 from app.services import weather_service as service
 
 
@@ -136,7 +137,7 @@ class WeatherServiceTests(unittest.TestCase):
             status = service.get_weather_status()
 
         self.assertEqual(status["status"], "STALE")
-        self.assertEqual(status["last_checked"], "checked")
+        self.assertIsNone(status["last_checked"])
         self.assertIsNotNone(status["last_observation"])
 
     def test_weather_status_ready_requires_recent_stored_observation(self) -> None:
@@ -152,7 +153,49 @@ class WeatherServiceTests(unittest.TestCase):
         with patch.object(service, "get_latest_observations", return_value=[observation]), patch.object(
             service, "get_collector_status", return_value={"failed_locations": []}
         ):
-            self.assertEqual(service.get_weather_status()["status"], "READY")
+            status = service.get_weather_status()
+        self.assertEqual(status["status"], "READY")
+        self.assertTrue(status["last_observation"].endswith("Z"))
+
+    def test_weather_status_rejects_observation_too_far_in_future(self) -> None:
+        observation = WeatherObservation(
+            station_id="kochi",
+            station_name="Kochi",
+            source="open-meteo",
+            latitude=9.9312,
+            longitude=76.2673,
+            observation_time=datetime.now(timezone.utc) + timedelta(minutes=10),
+            fetched_at=datetime.now(timezone.utc),
+        )
+        with patch.object(service, "get_latest_observations", return_value=[observation]), patch.object(
+            service, "get_collector_status", return_value={"failed_locations": []}
+        ):
+            status = service.get_weather_status()
+        self.assertEqual(status["status"], "ERROR")
+        self.assertIn("future", status["message"])
+
+    def test_weather_api_marks_sqlite_naive_utc_timestamps_as_utc(self) -> None:
+        timestamp = datetime(2026, 10, 10, 17, 45)
+        response = WeatherObservationRead(
+            id=1,
+            station_id="kochi",
+            station_name="Kochi",
+            source="open-meteo",
+            latitude=9.9312,
+            longitude=76.2673,
+            temperature_c=29,
+            humidity_percent=70,
+            precipitation_mm=0,
+            rain_mm=0,
+            wind_speed_kmh=10,
+            pressure_hpa=1008,
+            observation_time=timestamp,
+            fetched_at=timestamp,
+            created_at=timestamp,
+        )
+        serialized = response.model_dump(mode="json")
+        self.assertEqual(serialized["observation_time"], "2026-10-10T17:45:00Z")
+        self.assertEqual(serialized["fetched_at"], "2026-10-10T17:45:00Z")
 
     def test_weather_status_distinguishes_unavailable_from_error(self) -> None:
         with patch.object(service, "get_latest_observations", return_value=[]), patch.object(

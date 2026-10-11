@@ -2,7 +2,9 @@ from datetime import datetime
 import math
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+
+from app.utils.utc_timestamps import utc_isoformat
 
 
 class PredictionCreate(BaseModel):
@@ -42,6 +44,10 @@ class PredictionRead(BaseModel):
     risk_score: float
     risk_level: str
     created_at: datetime
+
+    @field_serializer("created_at", when_used="json")
+    def serialize_created_at(self, value: datetime) -> str:
+        return utc_isoformat(value) or ""
 
 
 class PredictionResult(BaseModel):

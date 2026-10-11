@@ -18,14 +18,23 @@ export async function fetchLiveWeather(lat, lng) {
   const reading = station.observation
   const observationTime = new Date(reading.observation_time)
   const ageSeconds = (Date.now() - observationTime.getTime()) / 1000
+  if (!Number.isFinite(ageSeconds)) {
+    const error = new Error('The stored weather observation has an invalid timestamp. No estimate was created.')
+    error.code = 'WEATHER_NOT_READY'
+    throw error
+  }
+  if (ageSeconds < -300) {
+    const error = new Error('The stored weather observation timestamp is more than five minutes in the future. No estimate was created.')
+    error.code = 'WEATHER_NOT_READY'
+    throw error
+  }
   if (
-    !Number.isFinite(ageSeconds)
-    || !Number.isFinite(status.max_age_seconds)
+    !Number.isFinite(status.max_age_seconds)
     || status.max_age_seconds <= 0
-    || ageSeconds < -300
     || ageSeconds > status.max_age_seconds
   ) {
-    const error = new Error('The nearest stored weather observation is stale or has an invalid timestamp. No estimate was created.')
+    const observedAt = observationTime.toLocaleString()
+    const error = new Error(`The nearest stored weather observation is stale (observed ${observedAt}); no estimate was created.`)
     error.code = 'WEATHER_NOT_READY'
     throw error
   }

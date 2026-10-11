@@ -4,16 +4,18 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
+from fastapi import HTTPException
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from app.database.connection import Base
+from app.api.predictions import predict as prediction_endpoint
 from app.models.prediction import Prediction
 from app.models.user import User
 from app.models.weather_observation import WeatherObservation
 from app.schemas.prediction import PredictionCreate
 from app.services.data_readiness_service import get_data_readiness
-from app.services.prediction_service import create_prediction
+from app.services.prediction_service import PredictionNotReadyError, create_prediction
 
 
 class PredictionReadinessTests(unittest.TestCase):
@@ -56,7 +58,7 @@ class PredictionReadinessTests(unittest.TestCase):
         self.assertEqual(readiness["prediction"]["status"], "NOT_READY")
         self.assertIn("not verified", readiness["prediction"]["message"])
 
-    def test_weather_estimate_uses_stored_observation_not_client_supplied_values(self) -> None:
+    def test_flood_prediction_is_unavailable_even_when_weather_is_fresh(self) -> None:
         now = datetime.now(timezone.utc)
         observation = WeatherObservation(
             station_id="test-station",
@@ -86,17 +88,11 @@ class PredictionReadinessTests(unittest.TestCase):
             wind_speed_kmh=0,
         )
 
-        prediction, details = create_prediction(self.db, self.user, request)
+        with self.assertRaisesRegex(PredictionNotReadyError, "No score was calculated or saved"):
+            create_prediction(self.db, self.user, request)
+        self.assertEqual(self.db.scalars(select(Prediction)).all(), [])
 
-        self.assertEqual(prediction.rainfall_mm, 10)
-        self.assertEqual(prediction.temperature_c, 30)
-        self.assertEqual(prediction.wind_speed_kmh, 8)
-        self.assertEqual(details["model_source"], "weather_heuristic")
-        self.assertEqual(details["input_provenance"]["source"], "open-meteo")
-        self.assertEqual(details["input_provenance"]["station_name"], "Test station")
-        self.assertIsNone(details["target_value"])
-
-    def test_flood_estimate_rejects_missing_weather_observation_reference(self) -> None:
+    def test_flood_prediction_without_weather_still_reports_model_unavailable(self) -> None:
         request = PredictionCreate(
             disaster_type="flood",
             latitude=9.9312,
@@ -106,9 +102,26 @@ class PredictionReadinessTests(unittest.TestCase):
             wind_speed_kmh=8,
         )
 
-        with self.assertRaisesRegex(ValueError, "weather_observation_id is required"):
+        with self.assertRaisesRegex(PredictionNotReadyError, "no validated trained model"):
             create_prediction(self.db, self.user, request)
 
+        self.assertEqual(self.db.scalars(select(Prediction)).all(), [])
+
+    def test_prediction_endpoint_returns_service_unavailable_without_saving(self) -> None:
+        request = PredictionCreate(
+            disaster_type="flood",
+            latitude=9.9312,
+            longitude=76.2673,
+            rainfall_mm=10,
+            temperature_c=30,
+            wind_speed_kmh=8,
+        )
+
+        with self.assertRaises(HTTPException) as raised:
+            prediction_endpoint(request, self.db, self.user)
+
+        self.assertEqual(raised.exception.status_code, 503)
+        self.assertIn("No score was calculated or saved", raised.exception.detail)
         self.assertEqual(self.db.scalars(select(Prediction)).all(), [])
 
     def test_unverified_feature_vectors_are_rejected_instead_of_scored_or_persisted(self) -> None:

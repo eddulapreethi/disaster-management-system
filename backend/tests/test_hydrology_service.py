@@ -2,7 +2,7 @@
 
 import os
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from sqlalchemy import create_engine, func, select
@@ -12,6 +12,7 @@ from app.database.connection import Base
 from app.models.hydrological_observation import HydrologicalObservation
 from app.models.hydrology_collection_state import HydrologyCollectionState
 from app.schemas.hydrology import HydrologyStatusResponse
+from app.api.hydrology import HydrologicalObservationRead as HydrologyApiObservationRead
 from app.services import hydrology_service as service
 from app.services.data_readiness_service import get_hydrology_status
 
@@ -86,6 +87,17 @@ class HydrologyServiceTests(unittest.TestCase):
         self.assertEqual(normalized["rainfall"], 0.5)
         self.assertIsNone(normalized["water_level"])
         self.assertIsNone(normalized["discharge"])
+
+    def test_hydrology_api_exposes_utc_timestamps_and_measurement_units(self) -> None:
+        normalized = service.normalize_record(
+            water_fixture(5, "Yadgir", "28-09-2026 02:00"),
+            WATER_RESOURCE,
+            datetime(2026, 10, 6, 6, 0, tzinfo=timezone.utc),
+        )
+        response = HydrologyApiObservationRead.model_validate(normalized)
+        serialized = response.model_dump(mode="json")
+        self.assertEqual(serialized["observation_time"], "2026-09-27T20:30:00Z")
+        self.assertEqual(serialized["measurement_units"], {"water_level": "m", "rainfall": "mm"})
 
     def test_rejects_malformed_timestamp_and_coordinates(self) -> None:
         with self.assertRaisesRegex(ValueError, "timestamp"):
@@ -183,6 +195,29 @@ class HydrologyServiceTests(unittest.TestCase):
         self.assertEqual(status["status"], "STALE")
         self.assertTrue(all(source["status"] == "STALE" for source in status["sources"]))
         self.assertEqual(status["sources"][0]["latest_station"], "Yadgir")
+
+    def test_future_source_observation_is_an_error_not_ready(self) -> None:
+        future = datetime.now(timezone.utc) + timedelta(hours=1)
+        with self.session_factory() as db:
+            for resource, fixture in (
+                (WATER_RESOURCE, water_fixture(1, "Yadgir", "01-01-2026 05:00")),
+                (RAIN_RESOURCE, rain_fixture(1, "01-01-2026 05:00")),
+            ):
+                normalized = service.normalize_record(fixture, resource, datetime.now(timezone.utc))
+                normalized["observation_time"] = future.replace(tzinfo=None)
+                db.add(HydrologicalObservation(**normalized))
+                db.add(HydrologyCollectionState(
+                    source=service._source_name(resource),
+                    source_resource_id=resource["resource_id"],
+                    status="READY",
+                    last_successful_fetch_at=datetime.now(timezone.utc).replace(tzinfo=None),
+                    last_observation_at=future.replace(tzinfo=None),
+                ))
+            db.commit()
+            status = get_hydrology_status(db)
+        self.assertEqual(status["status"], "ERROR")
+        self.assertTrue(all(source["status"] == "ERROR" for source in status["sources"]))
+        self.assertTrue(all("future" in source["message"] for source in status["sources"]))
 
 
 if __name__ == "__main__":

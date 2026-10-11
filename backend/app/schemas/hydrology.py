@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, computed_field, field_serializer
+
+from app.utils.utc_timestamps import utc_isoformat
 
 ReadinessStatus = Literal["READY", "STALE", "UNAVAILABLE", "ERROR", "NOT_READY"]
 
@@ -25,6 +27,15 @@ class HydrologicalObservationRead(BaseModel):
     observation_time: datetime
     fetched_at: datetime
 
+    @field_serializer("observation_time", "fetched_at", when_used="json")
+    def serialize_utc_timestamp(self, value: datetime) -> str:
+        return utc_isoformat(value) or ""
+
+    @computed_field
+    @property
+    def measurement_units(self) -> dict[str, str]:
+        return {"water_level": "m", "rainfall": "mm"}
+
 
 class HydrologySourceStatus(BaseModel):
     source: str
@@ -35,12 +46,18 @@ class HydrologySourceStatus(BaseModel):
     last_fetch: datetime | None
     latest_station: str | None
     water_level: float | None
+    water_level_unit: str | None = None
     discharge: float | None
     rainfall: float | None
+    rainfall_unit: str | None = None
     records_received: int
     inserted_count: int
     duplicates_skipped: int
     parse_errors: int
+
+    @field_serializer("last_observation", "last_fetch", when_used="json")
+    def serialize_utc_timestamp(self, value: datetime | None) -> str | None:
+        return utc_isoformat(value)
 
 
 class HydrologyStatusResponse(BaseModel):
@@ -58,3 +75,7 @@ class DataReadinessResponse(BaseModel):
     features: dict[str, Any]
     ml_model: dict[str, Any]
     prediction: dict[str, Any]
+
+    @field_serializer("checked_at", when_used="json")
+    def serialize_checked_at(self, value: datetime) -> str:
+        return utc_isoformat(value) or ""
