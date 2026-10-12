@@ -15,7 +15,6 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-from ml.models.risk_classification import classify_risk
 from ml.preprocessing.dataset_manifest import validate_dataset_manifest
 from ml.preprocessing.feature_engineering import (
     FLOOD_FEATURES,
@@ -50,6 +49,11 @@ def _validate_artifact(artifact: Any) -> dict[str, Any]:
     metadata = artifact.get("metadata")
     if not isinstance(metadata, dict):
         raise ValueError("Model artifact is missing training metadata.")
+    if metadata.get("feature_schema_version") == FLOOD_FEATURE_SCHEMA_VERSION:
+        raise ValueError(
+            "The legacy 20-index flood feature schema is retired from active inference; "
+            "a validated environmental feature schema and compatible model are not available."
+        )
     if metadata.get("feature_schema_version") != FLOOD_FEATURE_SCHEMA_VERSION:
         raise ValueError("Model artifact feature schema version is missing or unsupported.")
     package_versions = metadata.get("package_versions")
@@ -189,48 +193,12 @@ def predict_risk(
     inputs: dict[str, Any],
     model_path: str | Path = DEFAULT_MODEL_PATH,
 ) -> dict[str, Any]:
-    """Run the validated continuous-index model; never impute or clip bad inference data."""
-    if set(inputs) != set(FLOOD_FEATURES):
-        missing = [name for name in FLOOD_FEATURES if name not in inputs]
-        extra = sorted(set(inputs) - set(FLOOD_FEATURES))
-        details = []
-        if missing:
-            details.append(f"missing features: {', '.join(missing)}")
-        if extra:
-            details.append(f"unexpected features: {', '.join(extra)}")
-        raise ValueError("Prediction input does not match the canonical schema (" + "; ".join(details) + ").")
-    artifact = load_model_artifact(model_path)
-    features = select_features(pd.DataFrame([inputs]))
-    output = np.asarray(artifact["model"].predict(features), dtype=float)
-    if output.shape != (1,) or not np.isfinite(output).all() or not 0 <= output[0] <= 1:
-        raise ValueError("Model returned a non-finite or out-of-range continuous target.")
-    target_value = float(output[0])
-    score, band = classify_risk(target_value)
-    contributions = _contributions(artifact, features)
-    metadata = artifact["metadata"]
-    interpretation = metadata["target_interpretation"]
-    explanation = (
-        f"The model's continuous FloodProbability target estimate is {target_value:.4f}. "
-        "It is not a calibrated event probability or an official forecast."
+    """Reject inference until the retired index schema has a verified replacement."""
+    _ = inputs, model_path
+    raise ValueError(
+        "Flood inference is disabled because the legacy 20-index features are retired and no "
+        "trained model compatible with the validated environmental feature contract is available."
     )
-    if contributions:
-        explanation += (
-            f" The largest SHAP contribution is {contributions[0]['feature']}; "
-            "SHAP describes model contribution, not causation."
-        )
-    else:
-        explanation += " A validated SHAP explanation is unavailable for this model/environment."
-
-    return {
-        "offline": False,
-        "target_value": target_value,
-        "target_interpretation": interpretation,
-        "risk_score": score,
-        "risk_band": band,
-        "model_version": metadata["model_version"],
-        "explanation": explanation,
-        "top_contributions": contributions,
-    }
 
 
 def main() -> None:

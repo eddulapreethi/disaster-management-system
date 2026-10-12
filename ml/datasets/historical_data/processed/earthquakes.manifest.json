@@ -1,0 +1,449 @@
+{
+  "manifest_version": "1.0",
+  "dataset_name": "earthquakes",
+  "dataset_version": "1",
+  "source_name": "EM-DAT International Disaster Database",
+  "source_reference": "https://public.emdat.be/",
+  "source_file": "public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx",
+  "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
+  "processed_input_file": "emdat_cleaned.csv",
+  "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
+  "retrieval_date": null,
+  "retrieval_date_note": "The supplied source file does not record its actual retrieval date. A date in the filename is recorded separately and is not treated as retrieval evidence.",
+  "source_filename_date": "2026-09-30",
+  "manifest_generated_at_utc": "2026-10-11T09:44:12.342980Z",
+  "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
+  "row_definition": "One EM-DAT event record whose source Disaster Type matches the selected category.",
+  "event_categories": [
+    "Earthquake"
+  ],
+  "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
+  "geographic_coverage": {
+    "countries": [
+      "Afghanistan",
+      "Albania",
+      "Algeria",
+      "American Samoa",
+      "Argentina",
+      "Azerbaijan",
+      "Bangladesh",
+      "Barbados",
+      "Bhutan",
+      "Bosnia and Herzegovina",
+      "Brazil",
+      "Bulgaria",
+      "Burundi",
+      "Chile",
+      "China",
+      "Colombia",
+      "Comoros",
+      "Costa Rica",
+      "Croatia",
+      "Cuba",
+      "Democratic Republic of the Congo",
+      "Dominica",
+      "Dominican Republic",
+      "Ecuador",
+      "Egypt",
+      "El Salvador",
+      "Ethiopia",
+      "France",
+      "Georgia",
+      "Germany",
+      "Greece",
+      "Guadeloupe",
+      "Guatemala",
+      "Haiti",
+      "Honduras",
+      "Hungary",
+      "Iceland",
+      "India",
+      "Indonesia",
+      "Iran (Islamic Republic of)",
+      "Iraq",
+      "Italy",
+      "Japan",
+      "Kazakhstan",
+      "Kenya",
+      "Kyrgyzstan",
+      "Lao People's Democratic Republic",
+      "Malawi",
+      "Malaysia",
+      "Maldives",
+      "Martinique",
+      "Mexico",
+      "Morocco",
+      "Mozambique",
+      "Myanmar",
+      "Nepal",
+      "New Zealand",
+      "Nicaragua",
+      "North Macedonia",
+      "Pakistan",
+      "Panama",
+      "Papua New Guinea",
+      "Peru",
+      "Philippines",
+      "Puerto Rico",
+      "Republic of Korea",
+      "Russian Federation",
+      "Rwanda",
+      "Saint Lucia",
+      "Samoa",
+      "Serbia",
+      "Serbia Montenegro",
+      "Seychelles",
+      "Slovenia",
+      "Solomon Islands",
+      "Somalia",
+      "South Africa",
+      "Spain",
+      "Sri Lanka",
+      "Syrian Arab Republic",
+      "Taiwan (Province of China)",
+      "Tajikistan",
+      "Thailand",
+      "Timor-Leste",
+      "Tonga",
+      "Turkmenistan",
+      "Türkiye",
+      "Uganda",
+      "United Kingdom of Great Britain and Northern Ireland",
+      "United Republic of Tanzania",
+      "United States of America",
+      "Uzbekistan",
+      "Vanuatu",
+      "Venezuela (Bolivarian Republic of)"
+    ],
+    "event_coordinate_bounds": {
+      "west": -172.095,
+      "south": -45.243,
+      "east": 174.337,
+      "north": 63.98
+    },
+    "rows_with_both_coordinates": 680
+  },
+  "temporal_coverage": {
+    "start": "2000-01-02",
+    "end": "2026-08-14"
+  },
+  "row_count": 707,
+  "column_count": 50,
+  "dataset_sha256": "890fa425f8b750bc4413db6fd43a8f4902f3078920ae32d00d679c7dbc6cf475",
+  "columns": [
+    {
+      "name": "disno.",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "historic",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "classification_key",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "disaster_group",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "disaster_subgroup",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "disaster_type",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "disaster_subtype",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "external_ids",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "event_name",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "iso",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "country",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "subregion",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "region",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "location",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "origin",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "associated_types",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "ofda_bha_response",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "appeal",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "declaration",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "aid_contribution_'000_us$",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "magnitude",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "magnitude_scale",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "latitude",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "longitude",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "river_basin",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "start_year",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "start_month",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "start_day",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "end_year",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "end_month",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "end_day",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "total_deaths",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "no._injured",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "no._affected",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "no._homeless",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "total_affected",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "reconstruction_costs_'000_us$",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "reconstruction_costs,_adjusted_'000_us$",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "insured_damage_'000_us$",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "insured_damage,_adjusted_'000_us$",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "total_damage_'000_us$",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "total_damage,_adjusted_'000_us$",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "cpi",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "admin_units",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "gadm_admin_units",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "entry_date",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "last_update",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "start_date",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "end_date",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    },
+    {
+      "name": "event_date",
+      "definition": "Preserved from cleaned EM-DAT source fields; see the source data dictionary.",
+      "unit": "Source-defined; consult the source workbook and data dictionary."
+    }
+  ],
+  "missing_values": {
+    "disno.": 0,
+    "historic": 0,
+    "classification_key": 0,
+    "disaster_group": 0,
+    "disaster_subgroup": 0,
+    "disaster_type": 0,
+    "disaster_subtype": 0,
+    "external_ids": 82,
+    "event_name": 707,
+    "iso": 0,
+    "country": 0,
+    "subregion": 0,
+    "region": 0,
+    "location": 5,
+    "origin": 702,
+    "associated_types": 539,
+    "ofda_bha_response": 0,
+    "appeal": 0,
+    "declaration": 0,
+    "aid_contribution_'000_us$": 643,
+    "magnitude": 2,
+    "magnitude_scale": 0,
+    "latitude": 27,
+    "longitude": 27,
+    "river_basin": 702,
+    "start_year": 0,
+    "start_month": 0,
+    "start_day": 0,
+    "end_year": 0,
+    "end_month": 0,
+    "end_day": 0,
+    "total_deaths": 241,
+    "no._injured": 124,
+    "no._affected": 178,
+    "no._homeless": 495,
+    "total_affected": 21,
+    "reconstruction_costs_'000_us$": 696,
+    "reconstruction_costs,_adjusted_'000_us$": 696,
+    "insured_damage_'000_us$": 630,
+    "insured_damage,_adjusted_'000_us$": 630,
+    "total_damage_'000_us$": 396,
+    "total_damage,_adjusted_'000_us$": 399,
+    "cpi": 14,
+    "admin_units": 87,
+    "gadm_admin_units": 189,
+    "entry_date": 0,
+    "last_update": 0,
+    "start_date": 0,
+    "end_date": 0,
+    "event_date": 0
+  },
+  "excluded_rows": {
+    "count": 10195,
+    "reason": "Rows with other disaster_type values are excluded from this category-specific output."
+  },
+  "validation": {
+    "non_empty": true,
+    "unique_disaster_ids": true,
+    "sha256": "890fa425f8b750bc4413db6fd43a8f4902f3078920ae32d00d679c7dbc6cf475",
+    "training_suitable": false,
+    "training_blocker": "No matched environmental observation table, verified site-level target, or documented model feature mapping."
+  },
+  "processing_version": "emdat-category-filter-v2"
+}

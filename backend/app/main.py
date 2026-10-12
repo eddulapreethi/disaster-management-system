@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import alerts, assistant, auth, geocoding, gis, hydrology, predictions, readiness, recommendations, resources, satellite, simulations, users, weather
+from app.api import alerts, assistant, auth, geocoding, gis, historical_data, hydrology, predictions, readiness, recommendations, resources, satellite, simulations, users, weather
 from app.database.database import create_tables
 from app.services.hydrology_service import run_hydrology_collector
 from app.services.weather_service import run_weather_collector
@@ -18,7 +18,7 @@ load_dotenv()
 async def lifespan(_: FastAPI):
     create_tables()
     collector_tasks = [
-        asyncio.create_task(run_weather_collector(), name="open-meteo-minute-collector"),
+        asyncio.create_task(run_weather_collector(), name="open-meteo-collector"),
         asyncio.create_task(run_hydrology_collector(), name="nwdp-hydrology-collector"),
     ]
     try:
@@ -59,6 +59,7 @@ app.include_router(simulations.router, prefix="/api")
 app.include_router(resources.router, prefix="/api")
 app.include_router(gis.router, prefix="/api")
 app.include_router(weather.router, prefix="/api")
+app.include_router(historical_data.router, prefix="/api")
 app.include_router(geocoding.router, prefix="/api")
 app.include_router(satellite.router, prefix="/api")
 app.include_router(hydrology.router, prefix="/api")

@@ -73,6 +73,12 @@ def train_from_csv(
 ) -> dict:
     """Train using a provenance-checked dataset and chronological holdout."""
     dataset = Path(dataset_path)
+    artifact_path = Path(output_path).expanduser().resolve()
+    if artifact_path == DEFAULT_MODEL_PATH.expanduser().resolve():
+        raise ValueError(
+            "The legacy 20-index flood feature schema is retired from active model registration. "
+            "A compatible, validated environmental feature and target pipeline is not available."
+        )
     manifest_file = Path(manifest_path) if manifest_path else default_manifest_path(dataset)
     manifest = load_dataset_manifest(manifest_file)
     frame = clean_dataframe(pd.read_csv(dataset_path))
@@ -122,7 +128,6 @@ def train_from_csv(
         json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     model_version = f"flood-risk-{trained_at.strftime('%Y%m%dT%H%M%SZ')}"
-    artifact_path = Path(output_path)
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(
         {

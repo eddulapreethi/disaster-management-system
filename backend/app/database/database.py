@@ -58,6 +58,28 @@ def _upgrade_sqlite_weather_schema(bind=engine) -> None:
             )
 
 
+def _upgrade_sqlite_hydrology_schema(bind=engine) -> None:
+    if bind.dialect.name != "sqlite" or not inspect(bind).has_table("hydrology_collection_state"):
+        return
+
+    additions = {
+        "records_returned": "INTEGER NOT NULL DEFAULT 0",
+        "valid_records": "INTEGER NOT NULL DEFAULT 0",
+        "newer_observation_found": "BOOLEAN NOT NULL DEFAULT 0",
+        "last_error": "TEXT",
+    }
+    with bind.begin() as connection:
+        columns = {
+            column["name"]
+            for column in inspect(connection).get_columns("hydrology_collection_state")
+        }
+        for name, sql_type in additions.items():
+            if name not in columns:
+                connection.execute(
+                    text(f"ALTER TABLE hydrology_collection_state ADD COLUMN {name} {sql_type}")
+                )
+
+
 def create_tables() -> None:
     # Import models so SQLAlchemy registers their tables before create_all.
     from app.models import (  # noqa: F401
@@ -74,6 +96,7 @@ def create_tables() -> None:
 
     Base.metadata.create_all(bind=engine)
     _upgrade_sqlite_weather_schema()
+    _upgrade_sqlite_hydrology_schema()
 
 
 def get_db() -> Generator[Session, None, None]:

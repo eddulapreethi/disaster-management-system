@@ -1,0 +1,119 @@
+{
+  "column_count": 13,
+  "columns": [
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "station_id",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "station_name",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "source",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Configured point latitude.",
+      "name": "latitude",
+      "unit": "decimal degrees, WGS 84"
+    },
+    {
+      "definition": "Configured point longitude.",
+      "name": "longitude",
+      "unit": "decimal degrees, WGS 84"
+    },
+    {
+      "definition": "Provider observation timestamp; stored as UTC.",
+      "name": "observation_time",
+      "unit": "UTC"
+    },
+    {
+      "definition": "Backend retrieval timestamp; stored as UTC.",
+      "name": "fetched_at",
+      "unit": "UTC"
+    },
+    {
+      "definition": "Provider-reported current air temperature.",
+      "name": "temperature_c",
+      "unit": "degC"
+    },
+    {
+      "definition": "Provider-reported relative humidity.",
+      "name": "humidity_percent",
+      "unit": "%"
+    },
+    {
+      "definition": "Open-Meteo current precipitation field.",
+      "name": "precipitation_mm",
+      "unit": "mm"
+    },
+    {
+      "definition": "Open-Meteo current rain field.",
+      "name": "rain_mm",
+      "unit": "mm"
+    },
+    {
+      "definition": "Provider-reported 10 m wind speed.",
+      "name": "wind_speed_kmh",
+      "unit": "km/h"
+    },
+    {
+      "definition": "Provider-reported surface pressure.",
+      "name": "pressure_hpa",
+      "unit": "hPa"
+    }
+  ],
+  "dataset_name": "DisasterGuard weather observations",
+  "dataset_sha256": "f2d2213bd6e8365f91a223812aca345f71dbf772dec84390e2063c2ddee1e336",
+  "dataset_version": "1",
+  "geographic_coverage": {
+    "east": 91.7362,
+    "north": 34.0837,
+    "south": 9.9312,
+    "west": 72.8777
+  },
+  "license": "Provider redistribution/license terms were not verified; do not redistribute this export without confirming them.",
+  "manifest_version": "1.0",
+  "missing_values": {
+    "fetched_at": 0,
+    "humidity_percent": 0,
+    "latitude": 0,
+    "longitude": 0,
+    "observation_time": 0,
+    "precipitation_mm": 0,
+    "pressure_hpa": 0,
+    "rain_mm": 0,
+    "source": 0,
+    "station_id": 0,
+    "station_name": 0,
+    "temperature_c": 0,
+    "wind_speed_kmh": 0
+  },
+  "observation_date_range": {
+    "end": "2026-10-11T09:15:00Z",
+    "start": "2026-10-06T15:30:00Z"
+  },
+  "processing_version": "environmental-snapshot-export-v1",
+  "retrieval_date": "2026-10-11",
+  "row_count": 76,
+  "source_name": "Open-Meteo",
+  "source_row_count": 325,
+  "source_url": "https://api.open-meteo.com/v1/forecast",
+  "spatial_resolution": "Station or configured point coordinates; not a continuous gridded surface.",
+  "temporal_resolution": "Provider current observation timestamps; update cadence varies by variable/location.",
+  "training_limitation": "Observations have no verified event labels or validated mapping to the legacy 20-index flood feature schema.",
+  "training_suitable": false,
+  "validation": {
+    "duplicate_station_observation_source_rows": 249,
+    "excluded_rows": 249,
+    "invalid_coordinate_rows": 0,
+    "invalid_timestamp_rows": 0,
+    "non_empty": true,
+    "valid_coordinate_rows": 76,
+    "validation_passed": true
+  }
+}

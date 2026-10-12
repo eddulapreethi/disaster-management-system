@@ -62,7 +62,7 @@ def test_training_requires_time_column_for_leakage_safe_evaluation(tmp_path) -> 
         train_from_csv(dataset, output_path=tmp_path / "model.joblib")
 
 
-def test_training_saves_feature_schema_and_chronological_evaluation_metadata(tmp_path) -> None:
+def test_training_keeps_legacy_candidate_artifact_out_of_active_inference(tmp_path) -> None:
     dataset = tmp_path / "training.csv"
     artifact_path = tmp_path / "model.joblib"
     _training_frame().to_csv(dataset, index=False)
@@ -78,11 +78,19 @@ def test_training_saves_feature_schema_and_chronological_evaluation_metadata(tmp
     assert artifact["metadata"]["feature_schema_version"] == "flood-risk-factors-v1"
     assert artifact["metadata"]["target_interpretation"] == "continuous_index"
     readiness = get_model_readiness(artifact_path)
-    assert readiness["status"] == "READY"
-    prediction = predict_risk({name: 2.0 for name in FLOOD_FEATURES}, artifact_path)
-    assert 0 <= prediction["target_value"] <= 1
-    assert prediction["target_interpretation"] == "continuous_index"
-    assert prediction["model_version"] == result["metadata"]["model_version"]
+    assert readiness["status"] == "NOT_READY"
+    assert "legacy 20-index flood feature schema is retired" in readiness["message"]
+    with pytest.raises(ValueError, match="legacy 20-index features are retired"):
+        predict_risk({name: 2.0 for name in FLOOD_FEATURES}, artifact_path)
+
+
+def test_training_cannot_register_retired_schema_at_active_model_path(tmp_path) -> None:
+    dataset = tmp_path / "training.csv"
+    _training_frame().to_csv(dataset, index=False)
+    _write_manifest(dataset)
+
+    with pytest.raises(ValueError, match="retired from active model registration"):
+        train_from_csv(dataset)
 
 
 def test_training_requires_a_complete_dataset_provenance_manifest(tmp_path) -> None:

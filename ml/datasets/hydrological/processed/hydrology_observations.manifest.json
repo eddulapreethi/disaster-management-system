@@ -1,0 +1,131 @@
+{
+  "column_count": 15,
+  "columns": [
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "source",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "source_resource_id",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "source_record_id",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "station_id",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "station_name",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "river_name",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "state_name",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Stored source metadata; no transformation applied.",
+      "name": "district_name",
+      "unit": "source-defined"
+    },
+    {
+      "definition": "Provider station latitude.",
+      "name": "latitude",
+      "unit": "decimal degrees, WGS 84"
+    },
+    {
+      "definition": "Provider station longitude.",
+      "name": "longitude",
+      "unit": "decimal degrees, WGS 84"
+    },
+    {
+      "definition": "Data Acquisition Time interpreted in configured source timezone, converted to UTC.",
+      "name": "observation_time",
+      "unit": "UTC"
+    },
+    {
+      "definition": "Backend retrieval timestamp; stored as UTC.",
+      "name": "fetched_at",
+      "unit": "UTC"
+    },
+    {
+      "definition": "CWC river water level telemetry measurement.",
+      "name": "water_level",
+      "unit": "m"
+    },
+    {
+      "definition": "No measured discharge value is supplied by the configured resource.",
+      "name": "discharge",
+      "unit": "not available"
+    },
+    {
+      "definition": "CWC telemetry rainfall measurement.",
+      "name": "rainfall",
+      "unit": "mm"
+    }
+  ],
+  "dataset_name": "DisasterGuard CWC/NWDP hydrology observations",
+  "dataset_sha256": "1e703f6d8825f2607ebdab60ea1d1cf1685fe426148a3f18a1e3e85a7693045c",
+  "dataset_version": "1",
+  "geographic_coverage": {
+    "east": 85.61944444,
+    "north": 23.11722222,
+    "south": 13.33638889,
+    "west": 73.75
+  },
+  "license": "Provider redistribution/license terms were not verified; do not redistribute this export without confirming them.",
+  "manifest_version": "1.0",
+  "missing_values": {
+    "discharge": 17957,
+    "district_name": 0,
+    "fetched_at": 0,
+    "latitude": 0,
+    "longitude": 0,
+    "observation_time": 0,
+    "rainfall": 17234,
+    "river_name": 40,
+    "source": 0,
+    "source_record_id": 0,
+    "source_resource_id": 0,
+    "state_name": 0,
+    "station_id": 0,
+    "station_name": 0,
+    "water_level": 723
+  },
+  "observation_date_range": {
+    "end": "2026-09-27T21:30:00Z",
+    "start": "2025-12-31T20:30:00Z"
+  },
+  "processing_version": "environmental-snapshot-export-v1",
+  "retrieval_date": "2026-10-06",
+  "row_count": 17957,
+  "source_name": "NWDP CKAN datastore; configured public CWC resources",
+  "source_row_count": 17957,
+  "source_url": "https://nwdp.nwic.gov.in/api/3/action/datastore_search",
+  "spatial_resolution": "Station or configured point coordinates; not a continuous gridded surface.",
+  "temporal_resolution": "Hourly telemetry resource labels; actual observed publication can be delayed.",
+  "training_limitation": "Observations have no verified event labels or validated mapping to the legacy 20-index flood feature schema.",
+  "training_suitable": false,
+  "validation": {
+    "duplicate_station_observation_source_rows": 0,
+    "excluded_rows": 0,
+    "invalid_coordinate_rows": 0,
+    "invalid_timestamp_rows": 0,
+    "non_empty": true,
+    "valid_coordinate_rows": 17957,
+    "validation_passed": true
+  }
+}

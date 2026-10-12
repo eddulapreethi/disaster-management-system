@@ -7,12 +7,12 @@ from pydantic import BaseModel, Field
 
 class SimulationInput(BaseModel):
     disaster_type: str = Field(pattern="^(flood|wildfire|storm)$")
-    rainfall_mm: float = Field(default=0, ge=0, le=2000)
-    temperature_c: float = Field(default=25, ge=-100, le=100)
-    wind_speed_kmh: float = Field(default=0, ge=0, le=500)
-    rainfall_change_percent: float = Field(default=0, ge=-100, le=500)
-    wind_change_percent: float = Field(default=0, ge=-100, le=500)
-    temperature_change_c: float = Field(default=0, ge=-100, le=100)
+    rainfall_mm: float = Field(default=0, ge=0, le=2000, allow_inf_nan=False)
+    temperature_c: float = Field(default=25, ge=-100, le=100, allow_inf_nan=False)
+    wind_speed_kmh: float = Field(default=0, ge=0, le=500, allow_inf_nan=False)
+    rainfall_change_percent: float = Field(default=0, ge=-100, le=500, allow_inf_nan=False)
+    wind_change_percent: float = Field(default=0, ge=-100, le=500, allow_inf_nan=False)
+    temperature_change_c: float = Field(default=0, ge=-100, le=100, allow_inf_nan=False)
 
 
 def run_simulation(data: SimulationInput) -> dict:

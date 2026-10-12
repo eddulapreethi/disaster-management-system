@@ -5,6 +5,7 @@ import hashlib
 import logging
 import math
 import os
+import threading
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -28,6 +29,7 @@ DEFAULT_RESOURCES = (
         "key": "cwc_krishna_water_level",
         "resource_id": "d80798b9-4b11-4626-8b63-964202ba7216",
         "label": "CWC Krishna Basin River Water Level Telemetry Hourly",
+        "update_frequency": "Hourly telemetry; publication delays are source-controlled.",
         "measurement": "water_level",
         "value_column": "River Water Level Telemetry Hourly (meter)",
     },
@@ -35,10 +37,13 @@ DEFAULT_RESOURCES = (
         "key": "cwc_andhra_rainfall",
         "resource_id": "349a10bc-bbe3-40e5-b415-92aa9a797065",
         "label": "CWC Andhra Pradesh Rainfall Telemetry Hourly",
+        "update_frequency": "Hourly telemetry; publication delays are source-controlled.",
         "measurement": "rainfall",
         "value_column": "Telemetry Hourly Rainfall (mm)",
     },
 )
+_collection_lock = threading.Lock()
+_request_retries = 2
 
 
 def observation_timezone() -> ZoneInfo:
@@ -68,10 +73,14 @@ def _positive_int_env(name: str, default: int, *, maximum: int | None = None) ->
 
 
 def get_poll_interval_seconds() -> int:
-    return _positive_int_env("HYDROLOGY_POLL_INTERVAL_SECONDS", 60, maximum=86400)
+    return _positive_int_env("HYDROLOGY_POLL_INTERVAL_SECONDS", 300, maximum=86400)
 
 
-def get_stale_after_hours() -> int:
+def get_stale_after_hours(resource: dict[str, Any] | None = None) -> int:
+    if resource is not None:
+        source_env = f"HYDROLOGY_{resource['key'].upper()}_STALE_AFTER_HOURS"
+        if os.getenv(source_env, "").strip():
+            return _positive_int_env(source_env, 6, maximum=24 * 365)
     return _positive_int_env("HYDROLOGY_STALE_AFTER_HOURS", 6, maximum=24 * 365)
 
 
@@ -81,7 +90,13 @@ def configured_resources() -> list[dict[str, str]]:
     for default in DEFAULT_RESOURCES:
         env_name = "NWDP_" + default["key"].upper() + "_RESOURCE_ID"
         resource_id = os.getenv(env_name, "").strip() or default["resource_id"]
-        values.append({**default, "resource_id": resource_id})
+        values.append(
+            {
+                **default,
+                "resource_id": resource_id,
+                "stale_after_hours": get_stale_after_hours(default),
+            }
+        )
     return values
 
 
@@ -195,26 +210,38 @@ def normalize_record(record: dict[str, Any], resource: dict[str, str], fetched_a
 def _request_page(resource_id: str, *, offset: int, limit: int) -> dict[str, Any]:
     url = _api_url("datastore_search")
     timeout = _positive_int_env("NWDP_TIMEOUT_SECONDS", 20, maximum=180)
-    try:
-        response = requests.get(
-            url,
-            params={
-                "resource_id": resource_id,
-                "limit": limit,
-                "offset": offset,
-                "sort": "_id desc",
-                "include_total": "true",
-            },
-            timeout=timeout,
-            headers={"Accept": "application/json", "User-Agent": "DisasterGuard-AI/1.0"},
-        )
-    except requests.Timeout as error:
-        logger.warning("NWDP datastore request timed out (resource=%s, offset=%s).", resource_id, offset)
-        raise RuntimeError("NWDP request timed out.") from error
-    except requests.RequestException as error:
-        logger.warning("NWDP datastore request failed (%s).", type(error).__name__)
-        raise RuntimeError("NWDP connection failed.") from None
+    response = None
+    for attempt in range(_request_retries + 1):
+        try:
+            response = requests.get(
+                url,
+                params={
+                    "resource_id": resource_id,
+                    "limit": limit,
+                    "offset": offset,
+                    "sort": "_id desc",
+                    "include_total": "true",
+                },
+                timeout=timeout,
+                headers={"Accept": "application/json", "User-Agent": "DisasterGuard-AI/1.0"},
+            )
+            if response.status_code < 500 and response.status_code != 429:
+                break
+            if attempt < _request_retries:
+                time.sleep(0.25 * (2 ** attempt))
+        except requests.Timeout as error:
+            if attempt == _request_retries:
+                logger.warning("NWDP datastore request timed out (resource=%s, offset=%s).", resource_id, offset)
+                raise RuntimeError("NWDP request timed out.") from error
+            time.sleep(0.25 * (2 ** attempt))
+        except requests.RequestException as error:
+            if attempt == _request_retries:
+                logger.warning("NWDP datastore request failed (%s).", type(error).__name__)
+                raise RuntimeError("NWDP connection failed.") from None
+            time.sleep(0.25 * (2 ** attempt))
 
+    if response is None:
+        raise RuntimeError("NWDP request failed without a response.")
     if response.status_code >= 400:
         logger.warning("NWDP datastore returned HTTP %s for resource %s.", response.status_code, resource_id)
         raise RuntimeError(f"NWDP returned HTTP {response.status_code}.")
@@ -230,17 +257,25 @@ def _request_page(resource_id: str, *, offset: int, limit: int) -> dict[str, Any
     return result
 
 
-def _fetch_new_rows(resource: dict[str, str], high_water_id: int | None, page_size: int) -> tuple[list[dict[str, Any]], int, int]:
+def _fetch_new_rows(
+    resource: dict[str, Any],
+    high_water_id: int | None,
+    page_size: int,
+) -> tuple[list[dict[str, Any]], int, int, int, datetime | None]:
     """Fetch initial history or only appended records using official CKAN _id ordering."""
     records: list[dict[str, Any]] = []
+    seen_ids: set[int] = set()
     offset = 0
     pages = 0
+    records_returned = 0
     maximum_pages = _positive_int_env("HYDROLOGY_MAX_PAGES_PER_CYCLE", 64, maximum=1000)
     highest_seen = high_water_id or 0
+    latest_observation_scanned: datetime | None = None
     finished = False
     while pages < maximum_pages:
         result = _request_page(resource["resource_id"], offset=offset, limit=page_size)
         page_records = result["records"]
+        records_returned += len(page_records)
         if not page_records:
             finished = True
             break
@@ -254,8 +289,17 @@ def _fetch_new_rows(resource: dict[str, str], high_water_id: int | None, page_si
             except (TypeError, ValueError):
                 continue
             ids.append(row_id)
-            if high_water_id is None or row_id > high_water_id:
+            try:
+                observation_time = _parse_timestamp(row.get("Data Acquisition Time"))
+            except (TypeError, ValueError):
+                observation_time = None
+            if observation_time is not None and (
+                latest_observation_scanned is None or observation_time > latest_observation_scanned
+            ):
+                latest_observation_scanned = observation_time
+            if (high_water_id is None or row_id > high_water_id) and row_id not in seen_ids:
                 records.append(row)
+                seen_ids.add(row_id)
                 highest_seen = max(highest_seen, row_id)
         if high_water_id is not None and ids and min(ids) <= high_water_id:
             finished = True
@@ -267,7 +311,7 @@ def _fetch_new_rows(resource: dict[str, str], high_water_id: int | None, page_si
             break
     if not finished:
         raise RuntimeError(f"NWDP page limit reached for resource {resource['resource_id']}; cursor was not advanced.")
-    return records, highest_seen, pages
+    return records, highest_seen, pages, records_returned, latest_observation_scanned
 
 
 def _utc_naive(value: datetime) -> datetime:
@@ -293,6 +337,15 @@ def _state_row(db: Session, source: str) -> HydrologyCollectionState:
 
 def collect_hydrology_cycle() -> dict[str, Any]:
     """Fetch and persist new records from configured public CWC/NWDP resources."""
+    if not _collection_lock.acquire(blocking=False):
+        raise RuntimeError("A hydrology collection cycle is already running.")
+    try:
+        return _collect_hydrology_cycle()
+    finally:
+        _collection_lock.release()
+
+
+def _collect_hydrology_cycle() -> dict[str, Any]:
     resources = configured_resources()
     page_size = _positive_int_env("NWDP_PAGE_SIZE", 1000, maximum=32000)
     cycle_started = datetime.now(timezone.utc)
@@ -306,9 +359,17 @@ def collect_hydrology_cycle() -> dict[str, Any]:
             "source": source,
             "resource_id": resource["resource_id"],
             "received": 0,
+            "records_returned": 0,
+            "valid_records": 0,
             "inserted": 0,
             "duplicates_skipped": 0,
             "parse_errors": 0,
+            "newer_observation_found": False,
+            "cursor_before": None,
+            "cursor_after": None,
+            "pages_read": 0,
+            "latest_source_observation_scanned": None,
+            "latest_stored_observation": None,
             "error": None,
         }
         db = SessionLocal()
@@ -323,11 +384,20 @@ def collect_hydrology_cycle() -> dict[str, Any]:
             )
             cursors = [value for value in (max_inserted_id, state.source_record_high_watermark) if value is not None]
             high_water_id = max(cursors) if cursors else None
+            result["cursor_before"] = high_water_id
             try:
                 logger.info("Requesting NWDP datastore resource %s.", resource["resource_id"])
-                raw_records, newest_id, pages = _fetch_new_rows(resource, high_water_id, page_size)
+                raw_records, newest_id, pages, records_returned, latest_source_observation = _fetch_new_rows(
+                    resource,
+                    high_water_id,
+                    page_size,
+                )
                 result["received"] = len(raw_records)
+                result["records_returned"] = records_returned
                 result["pages_read"] = pages
+                result["latest_source_observation_scanned"] = (
+                    latest_source_observation.isoformat() if latest_source_observation else None
+                )
                 existing_pairs = set(
                     db.execute(
                         select(
@@ -340,14 +410,24 @@ def collect_hydrology_cycle() -> dict[str, Any]:
                     (station_id, _utc_naive(observation_time))
                     for station_id, observation_time in existing_pairs
                 }
-                max_observation = _aware_utc(state.last_observation_at) if state.last_observation_at else None
+                stored_latest = db.scalar(
+                    select(func.max(HydrologicalObservation.observation_time)).where(
+                        HydrologicalObservation.source_resource_id == resource["resource_id"]
+                    )
+                )
+                max_observation = _aware_utc(stored_latest) if stored_latest else None
                 for raw_record in raw_records:
                     try:
                         normalized = normalize_record(raw_record, resource, fetched_at)
                     except (TypeError, ValueError, OverflowError) as error:
                         result["parse_errors"] += 1
+                        result["last_error"] = str(error)
                         logger.warning("Skipped malformed NWDP row for %s (%s).", source, str(error))
                         continue
+                    result["valid_records"] += 1
+                    if max_observation is None or normalized["observation_time"] > max_observation:
+                        result["newer_observation_found"] = True
+                        max_observation = normalized["observation_time"]
                     pair = (normalized["station_id"], _utc_naive(normalized["observation_time"]))
                     if pair in seen_pairs:
                         result["duplicates_skipped"] += 1
@@ -356,34 +436,63 @@ def collect_hydrology_cycle() -> dict[str, Any]:
                     stored = {**normalized, "observation_time": _utc_naive(normalized["observation_time"]), "fetched_at": _utc_naive(fetched_at)}
                     db.add(HydrologicalObservation(**stored))
                     result["inserted"] += 1
-                    if max_observation is None or normalized["observation_time"] > max_observation:
-                        max_observation = normalized["observation_time"]
-
+                result["latest_stored_observation"] = max_observation.isoformat() if max_observation else None
                 state.last_successful_fetch_at = fetched_at.replace(tzinfo=None)
                 state.last_observation_at = _utc_naive(max_observation) if max_observation else None
                 state.source_record_high_watermark = newest_id
+                result["cursor_after"] = newest_id
                 state.records_received = result["received"]
+                state.records_returned = result["records_returned"]
+                state.valid_records = result["valid_records"]
+                state.newer_observation_found = result["newer_observation_found"]
                 state.inserted_count = result["inserted"]
                 state.duplicates_skipped = result["duplicates_skipped"]
                 state.parse_errors = result["parse_errors"]
+                state.last_error = result.get("last_error")
                 if result["parse_errors"]:
                     state.status = "ERROR"
                     state.message = f"Skipped {result['parse_errors']} malformed source rows; cursor advanced to avoid blocking newer records."
                 else:
                     state.status = "READY" if state.last_observation_at else "UNAVAILABLE"
-                    state.message = "Public NWDP CWC telemetry collected." if state.last_observation_at else "No valid observations were returned."
+                    state.message = (
+                        "Provider response was retrieved and checked; no newer records were published."
+                        if result["received"] == 0 and state.last_observation_at
+                        else "Public NWDP CWC telemetry retrieved and validated."
+                        if state.last_observation_at
+                        else "No valid observations were returned."
+                    )
                 db.commit()
                 logger.info(
-                    "NWDP collection source=%s received=%d inserted=%d duplicates=%d parse_errors=%d.",
-                    source, result["received"], result["inserted"], result["duplicates_skipped"], result["parse_errors"],
+                    "NWDP collection source=%s pages=%d returned=%d discovered=%d valid=%d "
+                    "duplicates=%d rejected=%d inserted=%d cursor_before=%s cursor_after=%s "
+                    "latest_source_observation_scanned=%s latest_stored_observation=%s "
+                    "newer_observation_found=%s.",
+                    source,
+                    result["pages_read"],
+                    result["records_returned"],
+                    result["received"],
+                    result["valid_records"],
+                    result["duplicates_skipped"],
+                    result["parse_errors"],
+                    result["inserted"],
+                    result["cursor_before"],
+                    result["cursor_after"],
+                    result["latest_source_observation_scanned"],
+                    result["latest_stored_observation"],
+                    result["newer_observation_found"],
                 )
             except Exception as error:
                 db.rollback()
                 state = _state_row(db, source)
                 state.last_checked_at = cycle_started
+                result["cursor_after"] = state.source_record_high_watermark
                 state.status = "ERROR"
                 state.message = str(error)[:500]
+                state.last_error = str(error)[:500]
                 state.records_received = result["received"]
+                state.records_returned = result["records_returned"]
+                state.valid_records = result["valid_records"]
+                state.newer_observation_found = result["newer_observation_found"]
                 state.inserted_count = 0
                 state.duplicates_skipped = result["duplicates_skipped"]
                 state.parse_errors = result["parse_errors"]

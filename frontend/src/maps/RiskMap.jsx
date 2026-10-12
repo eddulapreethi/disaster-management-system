@@ -24,7 +24,7 @@ export default function RiskMap({ points, selected, onSelect }) {
             pathOptions={{ color: riskColor(point.risk), fillColor: riskColor(point.risk), fillOpacity: 0.75, weight: 2 }}
             eventHandlers={{ click: () => onSelect(point) }}
           >
-            <Tooltip direction="top">{point.name} — risk {point.risk}</Tooltip>
+            <Tooltip direction="top">{point.name} — unverified legacy score {point.risk}</Tooltip>
           </CircleMarker>
         ))}
       </MapContainer>

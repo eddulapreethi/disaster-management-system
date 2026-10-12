@@ -1,6 +1,7 @@
 ﻿import { useState } from 'react'
 import { apiPost } from '../services/api'
 import { fetchLiveWeather } from '../services/weatherService'
+import { simulationMeasurements } from '../services/simulationService'
 import { riskColor } from '../services/stationData'
 import LocationSearchField from '../components/LocationSearchField'
 
@@ -32,9 +33,7 @@ export default function Simulation() {
       const weather = await fetchLiveWeather(selected.latitude, selected.longitude)
       const simulation = await apiPost('/simulations', {
         disaster_type: disasterType,
-        rainfall_mm: weather.todayRainfallMm ?? weather.rainMm ?? 0,
-        temperature_c: weather.temperatureC ?? 25,
-        wind_speed_kmh: weather.windKmh ?? 0,
+        ...simulationMeasurements(weather),
         rainfall_change_percent: rainfallChange,
         wind_change_percent: windChange,
         temperature_change_c: temperatureChange,
@@ -51,7 +50,7 @@ export default function Simulation() {
   return (
     <div>
       <h2 className="title">Digital twin simulation</h2>
-      <p className="sub">Run a weather what-if scenario with the Digital Twin simulation engine for any supported location.</p>
+      <p className="sub">Run an illustrative weather what-if scenario. Digital Twin scores are scenario estimates, not validated forecasts, alerts, or emergency guidance.</p>
       <div className="twocol">
         <div className="card">
           <div className="sectitle">Scenario controls</div>

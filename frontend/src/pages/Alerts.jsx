@@ -19,10 +19,10 @@ export default function Alerts() {
   return (
     <div>
       <h2 className="title">Emergency alerts</h2>
-      <p className="sub">Saved alerts generated from predictions on your account.</p>
+      <p className="sub">Saved automated estimates generated from eligible account predictions. They are not official warnings.</p>
       {loading && <div className="card">Loading alerts...</div>}
       {error && <div className="card" role="alert">{error}</div>}
-      {!loading && !error && alerts.length === 0 && <div className="card">No saved alerts yet. New alerts are created for predictions above the configured threshold.</div>}
+      {!loading && !error && alerts.length === 0 && <div className="card">No saved alerts yet. Eligible demonstrator estimates may create an in-app alert; flood predictions remain disabled until the model and runtime feature pipeline are verified.</div>}
       <div className="alerts-grid">
         {alerts.map(a => <AlertCard key={a.id} alert={a} />)}
       </div>

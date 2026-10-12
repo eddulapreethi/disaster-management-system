@@ -62,6 +62,14 @@ export function apiPost(path, body, opts = {}) {
   return request(path, { ...opts, method: 'POST', body: JSON.stringify(body) })
 }
 
+export function apiPatch(path, body, opts = {}) {
+  return request(path, { ...opts, method: 'PATCH', body: JSON.stringify(body) })
+}
+
+export function apiDelete(path, opts = {}) {
+  return request(path, { ...opts, method: 'DELETE' })
+}
+
 export async function checkBackend() {
   try {
     await apiGet('/')

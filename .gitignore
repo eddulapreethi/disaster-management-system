@@ -23,3 +23,5 @@ frontend/dist/
 *.sqlite3
 *.db
 ml/models/trained_models/*.joblib
+gis/data/geographic_data/southern-zone-latest-free/southern-zone.gpkg
+gis/data/geographic_data/southern-zone-latest-free.gpkg.zip

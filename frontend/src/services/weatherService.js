@@ -16,6 +16,19 @@ export async function fetchLiveWeather(lat, lng) {
   }
 
   const reading = station.observation
+  const requiredMeasurements = {
+    temperature_c: reading.temperature_c,
+    precipitation_mm: reading.precipitation_mm,
+    wind_speed_kmh: reading.wind_speed_kmh,
+  }
+  const missingMeasurements = Object.entries(requiredMeasurements)
+    .filter(([, value]) => value == null || !Number.isFinite(Number(value)))
+    .map(([name]) => name)
+  if (missingMeasurements.length) {
+    const error = new Error(`The stored weather observation is missing ${missingMeasurements.join(', ')}. No estimate was created.`)
+    error.code = 'WEATHER_NOT_READY'
+    throw error
+  }
   const observationTime = new Date(reading.observation_time)
   const ageSeconds = (Date.now() - observationTime.getTime()) / 1000
   if (!Number.isFinite(ageSeconds)) {
