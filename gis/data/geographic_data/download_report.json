@@ -1,0 +1,105 @@
+{
+  "study_area": "Kochi, Kerala, India",
+  "bbox": {
+    "south": 9.8,
+    "west": 76.0,
+    "north": 10.1,
+    "east": 76.5
+  },
+  "retrieval_date": "2026-10-11T08:30:25Z",
+  "datasets": [
+    {
+      "category": "administrative_boundaries",
+      "layer": "gis_osm_adminareas_a_free",
+      "path": "D:\\MajorProject\\disaster-management-system\\gis\\data\\geographic_data\\administrative_boundaries\\kochi_administrative_boundaries.geojson",
+      "rows": 12,
+      "crs": "GEOGCS[\"WGS 84 (CRS84)\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Longitude\",EAST],AXIS[\"Latitude\",NORTH],AUTHORITY[\"OGC\",\"CRS84\"]]",
+      "geometry_types": {
+        "MultiPolygon": 12
+      },
+      "source": "https://download.geofabrik.de/asia/india.html",
+      "license": "OpenStreetMap © OpenStreetMap contributors, ODbL 1.0",
+      "fetched_at": "2026-10-11T08:30:27Z"
+    },
+    {
+      "category": "lakes",
+      "layer": "gis_osm_water_a_free",
+      "path": "D:\\MajorProject\\disaster-management-system\\gis\\data\\geographic_data\\lakes\\kochi_lakes.geojson",
+      "rows": 4040,
+      "crs": "GEOGCS[\"WGS 84 (CRS84)\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Longitude\",EAST],AXIS[\"Latitude\",NORTH],AUTHORITY[\"OGC\",\"CRS84\"]]",
+      "geometry_types": {
+        "MultiPolygon": 4040
+      },
+      "source": "https://download.geofabrik.de/asia/india.html",
+      "license": "OpenStreetMap © OpenStreetMap contributors, ODbL 1.0",
+      "fetched_at": "2026-10-11T08:30:34Z"
+    },
+    {
+      "category": "land_use",
+      "layer": "gis_osm_landuse_a_free",
+      "path": "D:\\MajorProject\\disaster-management-system\\gis\\data\\geographic_data\\land_use\\kochi_land_use.geojson",
+      "rows": 3003,
+      "crs": "GEOGCS[\"WGS 84 (CRS84)\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Longitude\",EAST],AXIS[\"Latitude\",NORTH],AUTHORITY[\"OGC\",\"CRS84\"]]",
+      "geometry_types": {
+        "MultiPolygon": 3003
+      },
+      "source": "https://download.geofabrik.de/asia/india.html",
+      "license": "OpenStreetMap © OpenStreetMap contributors, ODbL 1.0",
+      "fetched_at": "2026-10-11T08:30:41Z"
+    },
+    {
+      "category": "rivers",
+      "layer": "gis_osm_waterways_free",
+      "path": "D:\\MajorProject\\disaster-management-system\\gis\\data\\geographic_data\\rivers\\kochi_rivers.geojson",
+      "rows": 1809,
+      "crs": "GEOGCS[\"WGS 84 (CRS84)\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Longitude\",EAST],AXIS[\"Latitude\",NORTH],AUTHORITY[\"OGC\",\"CRS84\"]]",
+      "geometry_types": {
+        "LineString": 1809
+      },
+      "source": "https://download.geofabrik.de/asia/india.html",
+      "license": "OpenStreetMap © OpenStreetMap contributors, ODbL 1.0",
+      "fetched_at": "2026-10-11T08:30:49Z"
+    },
+    {
+      "category": "roads",
+      "layer": "gis_osm_roads_free",
+      "path": "D:\\MajorProject\\disaster-management-system\\gis\\data\\geographic_data\\roads\\kochi_roads.geojson",
+      "rows": 36521,
+      "crs": "GEOGCS[\"WGS 84 (CRS84)\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Longitude\",EAST],AXIS[\"Latitude\",NORTH],AUTHORITY[\"OGC\",\"CRS84\"]]",
+      "geometry_types": {
+        "LineString": 36521
+      },
+      "source": "https://download.geofabrik.de/asia/india.html",
+      "license": "OpenStreetMap © OpenStreetMap contributors, ODbL 1.0",
+      "fetched_at": "2026-10-11T08:31:09Z"
+    },
+    {
+      "category": "elevation",
+      "path": "D:\\MajorProject\\disaster-management-system\\gis\\data\\geographic_data\\elevation\\kochi_dem.tif",
+      "source": "https://portal.opentopography.org/API/globaldem?demtype=SRTMGL1&south=9.8&north=10.1&west=76.0&east=76.5&outputFormat=GTiff",
+      "license": "Confirm the applicable OpenTopography and SRTMGL1 source-data terms before redistribution; no USGS 3DEP license is asserted.",
+      "fetched_at": "2026-10-11T08:31:25Z",
+      "crs": "EPSG:4326",
+      "bounds": [
+        75.999861,
+        9.800139,
+        76.499861,
+        10.100139
+      ]
+    },
+    {
+      "category": "watersheds",
+      "layer": "hydrobasins",
+      "path": "D:\\MajorProject\\disaster-management-system\\gis\\data\\geographic_data\\watersheds\\kochi_watersheds.geojson",
+      "rows": 2,
+      "crs": "EPSG:4326",
+      "geometry_types": {
+        "MultiPolygon": 1,
+        "Polygon": 1
+      },
+      "source": "https://data.hydrosheds.org/file/hydrobasins/standard/hybas_as_lev06_v1c.zip",
+      "license": "HydroSHEDS public basin boundary dataset",
+      "fetched_at": "2026-10-11T08:31:35Z"
+    }
+  ]
+}

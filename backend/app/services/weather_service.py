@@ -18,7 +18,7 @@ from app.database.database import SessionLocal
 from app.models.weather_observation import WeatherObservation
 from app.utils.utc_timestamps import utc_isoformat
 
-DEFAULT_POLL_INTERVAL_SECONDS = 60
+DEFAULT_POLL_INTERVAL_SECONDS = 300
 DEFAULT_MAX_AGE_SECONDS = 7200
 RETENTION_DAYS = 30
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
@@ -26,6 +26,7 @@ DEFAULT_LOCATION = {"name": "Kochi", "latitude": 9.9312, "longitude": 76.2673}
 logger = logging.getLogger(__name__)
 
 _status_lock = threading.Lock()
+_collection_lock = threading.Lock()
 _status: dict[str, Any] = {
     "enabled": False,
     "running": False,
@@ -200,6 +201,15 @@ def _fetch_batch(locations: list[dict[str, float | str]]) -> list[dict[str, Any]
 
 
 def collect_weather_cycle() -> dict[str, Any]:
+    if not _collection_lock.acquire(blocking=False):
+        raise RuntimeError("A weather collection cycle is already running.")
+    try:
+        return _collect_weather_cycle()
+    finally:
+        _collection_lock.release()
+
+
+def _collect_weather_cycle() -> dict[str, Any]:
     """Poll Open-Meteo and persist only observations not already stored."""
     locations = configured_locations()
     interval = get_poll_interval_seconds()

@@ -1,0 +1,1984 @@
+{
+  "analytics_version": "emdat-historical-analytics-v1",
+  "capabilities": {
+    "environmental_flood_prediction": "NOT_SUPPORTED_NO_JOINED_VERIFIED_LABELS_AND_INFERENCE_FEATURES",
+    "flood_event_classification": "NOT_SUPPORTED_NO_VALIDATED_NEGATIVE_EXAMPLES_OR_PREDICTION_UNIT",
+    "historical_descriptive_analytics": "SUPPORTED",
+    "historical_flood_event_counts": "SUPPORTED_WITH_EMDAT_CLASSIFICATION_AND_COVERAGE_LIMITATIONS"
+  },
+  "dataset_inventory": [
+    {
+      "columns": [
+        "disno.",
+        "historic",
+        "classification_key",
+        "disaster_group",
+        "disaster_subgroup",
+        "disaster_type",
+        "disaster_subtype",
+        "external_ids",
+        "event_name",
+        "iso",
+        "country",
+        "subregion",
+        "region",
+        "location",
+        "origin",
+        "associated_types",
+        "ofda_bha_response",
+        "appeal",
+        "declaration",
+        "aid_contribution_'000_us$",
+        "magnitude",
+        "magnitude_scale",
+        "latitude",
+        "longitude",
+        "river_basin",
+        "start_year",
+        "start_month",
+        "start_day",
+        "end_year",
+        "end_month",
+        "end_day",
+        "total_deaths",
+        "no._injured",
+        "no._affected",
+        "no._homeless",
+        "total_affected",
+        "reconstruction_costs_'000_us$",
+        "reconstruction_costs,_adjusted_'000_us$",
+        "insured_damage_'000_us$",
+        "insured_damage,_adjusted_'000_us$",
+        "total_damage_'000_us$",
+        "total_damage,_adjusted_'000_us$",
+        "cpi",
+        "admin_units",
+        "gadm_admin_units",
+        "entry_date",
+        "last_update",
+        "start_date",
+        "end_date",
+        "event_date"
+      ],
+      "data_types": {
+        "admin_units": "string",
+        "aid_contribution_'000_us$": "integer",
+        "appeal": "string",
+        "associated_types": "string",
+        "classification_key": "string",
+        "country": "string",
+        "cpi": "number",
+        "declaration": "string",
+        "disaster_group": "string",
+        "disaster_subgroup": "string",
+        "disaster_subtype": "string",
+        "disaster_type": "string",
+        "disno.": "string",
+        "end_date": "string",
+        "end_day": "integer",
+        "end_month": "integer",
+        "end_year": "integer",
+        "entry_date": "string",
+        "event_date": "string",
+        "event_name": "unknown",
+        "external_ids": "string",
+        "gadm_admin_units": "string",
+        "historic": "string",
+        "insured_damage,_adjusted_'000_us$": "integer",
+        "insured_damage_'000_us$": "integer",
+        "iso": "string",
+        "last_update": "string",
+        "latitude": "number",
+        "location": "string",
+        "longitude": "number",
+        "magnitude": "number",
+        "magnitude_scale": "string",
+        "no._affected": "integer",
+        "no._homeless": "integer",
+        "no._injured": "integer",
+        "ofda_bha_response": "string",
+        "origin": "string",
+        "reconstruction_costs,_adjusted_'000_us$": "integer",
+        "reconstruction_costs_'000_us$": "integer",
+        "region": "string",
+        "river_basin": "string",
+        "start_date": "string",
+        "start_day": "integer",
+        "start_month": "integer",
+        "start_year": "integer",
+        "subregion": "string",
+        "total_affected": "integer",
+        "total_damage,_adjusted_'000_us$": "integer",
+        "total_damage_'000_us$": "integer",
+        "total_deaths": "integer"
+      },
+      "date_coverage": {
+        "end": "2026-08-14",
+        "invalid_start_dates": 0,
+        "rows_with_start_year": 707,
+        "start": "2000-01-02",
+        "valid_start_dates": 707
+      },
+      "duplicate_quality": {
+        "duplicate_event_id_rows": 0,
+        "exact_duplicate_rows": 0
+      },
+      "event_categories": [
+        "Earthquake"
+      ],
+      "geography": {
+        "coordinate_coverage_percent": 96.18,
+        "invalid_coordinate_rows": 0,
+        "rows_with_both_valid_coordinates": 680,
+        "unique_countries": 94
+      },
+      "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
+      "manifest": "ml\\datasets\\historical_data\\processed\\earthquakes.manifest.json",
+      "manifest_validation": "VALIDATED",
+      "missing_percent": {
+        "admin_units": 12.31,
+        "aid_contribution_'000_us$": 90.95,
+        "associated_types": 76.24,
+        "cpi": 1.98,
+        "event_name": 100.0,
+        "external_ids": 11.6,
+        "gadm_admin_units": 26.73,
+        "insured_damage,_adjusted_'000_us$": 89.11,
+        "insured_damage_'000_us$": 89.11,
+        "latitude": 3.82,
+        "location": 0.71,
+        "longitude": 3.82,
+        "magnitude": 0.28,
+        "no._affected": 25.18,
+        "no._homeless": 70.01,
+        "no._injured": 17.54,
+        "origin": 99.29,
+        "reconstruction_costs,_adjusted_'000_us$": 98.44,
+        "reconstruction_costs_'000_us$": 98.44,
+        "river_basin": 99.29,
+        "total_affected": 2.97,
+        "total_damage,_adjusted_'000_us$": 56.44,
+        "total_damage_'000_us$": 56.01,
+        "total_deaths": 34.09
+      },
+      "name": "earthquakes",
+      "path": "ml\\datasets\\historical_data\\processed\\earthquakes.csv",
+      "processed_input_file": "emdat_cleaned.csv",
+      "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
+      "rows": 707,
+      "sha256": "890fa425f8b750bc4413db6fd43a8f4902f3078920ae32d00d679c7dbc6cf475",
+      "source_file": "public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx",
+      "source_name": "EM-DAT International Disaster Database",
+      "source_reference": "https://public.emdat.be/",
+      "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
+      "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
+      "training_suitable": false
+    },
+    {
+      "columns": [
+        "disno.",
+        "historic",
+        "classification_key",
+        "disaster_group",
+        "disaster_subgroup",
+        "disaster_type",
+        "disaster_subtype",
+        "external_ids",
+        "event_name",
+        "iso",
+        "country",
+        "subregion",
+        "region",
+        "location",
+        "origin",
+        "associated_types",
+        "ofda_bha_response",
+        "appeal",
+        "declaration",
+        "aid_contribution_'000_us$",
+        "magnitude",
+        "magnitude_scale",
+        "latitude",
+        "longitude",
+        "river_basin",
+        "start_year",
+        "start_month",
+        "start_day",
+        "end_year",
+        "end_month",
+        "end_day",
+        "total_deaths",
+        "no._injured",
+        "no._affected",
+        "no._homeless",
+        "total_affected",
+        "reconstruction_costs_'000_us$",
+        "reconstruction_costs,_adjusted_'000_us$",
+        "insured_damage_'000_us$",
+        "insured_damage,_adjusted_'000_us$",
+        "total_damage_'000_us$",
+        "total_damage,_adjusted_'000_us$",
+        "cpi",
+        "admin_units",
+        "gadm_admin_units",
+        "entry_date",
+        "last_update",
+        "start_date",
+        "end_date",
+        "event_date"
+      ],
+      "data_types": {
+        "admin_units": "string",
+        "aid_contribution_'000_us$": "integer",
+        "appeal": "string",
+        "associated_types": "string",
+        "classification_key": "string",
+        "country": "string",
+        "cpi": "number",
+        "declaration": "string",
+        "disaster_group": "string",
+        "disaster_subgroup": "string",
+        "disaster_subtype": "string",
+        "disaster_type": "string",
+        "disno.": "string",
+        "end_date": "string",
+        "end_day": "integer",
+        "end_month": "integer",
+        "end_year": "integer",
+        "entry_date": "string",
+        "event_date": "string",
+        "event_name": "string",
+        "external_ids": "string",
+        "gadm_admin_units": "string",
+        "historic": "string",
+        "insured_damage,_adjusted_'000_us$": "integer",
+        "insured_damage_'000_us$": "integer",
+        "iso": "string",
+        "last_update": "string",
+        "latitude": "number",
+        "location": "string",
+        "longitude": "number",
+        "magnitude": "number",
+        "magnitude_scale": "string",
+        "no._affected": "integer",
+        "no._homeless": "integer",
+        "no._injured": "integer",
+        "ofda_bha_response": "string",
+        "origin": "string",
+        "reconstruction_costs,_adjusted_'000_us$": "integer",
+        "reconstruction_costs_'000_us$": "integer",
+        "region": "string",
+        "river_basin": "string",
+        "start_date": "string",
+        "start_day": "integer",
+        "start_month": "integer",
+        "start_year": "integer",
+        "subregion": "string",
+        "total_affected": "integer",
+        "total_damage,_adjusted_'000_us$": "integer",
+        "total_damage_'000_us$": "integer",
+        "total_deaths": "integer"
+      },
+      "date_coverage": {
+        "end": "2026-08-26",
+        "invalid_start_dates": 0,
+        "rows_with_start_year": 4291,
+        "start": "2000-01-01",
+        "valid_start_dates": 4006
+      },
+      "duplicate_quality": {
+        "duplicate_event_id_rows": 0,
+        "exact_duplicate_rows": 0
+      },
+      "event_categories": [
+        "Flood"
+      ],
+      "geography": {
+        "coordinate_coverage_percent": 23.44,
+        "invalid_coordinate_rows": 0,
+        "rows_with_both_valid_coordinates": 1006,
+        "unique_countries": 181
+      },
+      "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
+      "manifest": "ml\\datasets\\historical_data\\processed\\floods.manifest.json",
+      "manifest_validation": "VALIDATED",
+      "missing_percent": {
+        "admin_units": 11.47,
+        "aid_contribution_'000_us$": 94.03,
+        "associated_types": 65.44,
+        "cpi": 1.03,
+        "end_date": 6.2,
+        "end_day": 6.2,
+        "end_month": 0.02,
+        "event_date": 6.64,
+        "event_name": 99.74,
+        "external_ids": 62.43,
+        "gadm_admin_units": 16.94,
+        "insured_damage,_adjusted_'000_us$": 96.01,
+        "insured_damage_'000_us$": 96.01,
+        "latitude": 76.56,
+        "location": 0.61,
+        "longitude": 76.56,
+        "magnitude": 67.42,
+        "no._affected": 18.76,
+        "no._homeless": 88.23,
+        "no._injured": 79.59,
+        "origin": 19.02,
+        "reconstruction_costs,_adjusted_'000_us$": 99.67,
+        "reconstruction_costs_'000_us$": 99.65,
+        "river_basin": 70.96,
+        "start_date": 6.64,
+        "start_day": 6.64,
+        "start_month": 0.02,
+        "total_affected": 9.62,
+        "total_damage,_adjusted_'000_us$": 71.92,
+        "total_damage_'000_us$": 71.75,
+        "total_deaths": 26.66
+      },
+      "name": "floods",
+      "path": "ml\\datasets\\historical_data\\processed\\floods.csv",
+      "processed_input_file": "emdat_cleaned.csv",
+      "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
+      "rows": 4291,
+      "sha256": "2d402e10fb087c44fd6def03117a81487fbd927cac8f0f1a88cf2e4c554c6998",
+      "source_file": "public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx",
+      "source_name": "EM-DAT International Disaster Database",
+      "source_reference": "https://public.emdat.be/",
+      "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
+      "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
+      "training_suitable": false
+    },
+    {
+      "columns": [
+        "disno.",
+        "historic",
+        "classification_key",
+        "disaster_group",
+        "disaster_subgroup",
+        "disaster_type",
+        "disaster_subtype",
+        "external_ids",
+        "event_name",
+        "iso",
+        "country",
+        "subregion",
+        "region",
+        "location",
+        "origin",
+        "associated_types",
+        "ofda_bha_response",
+        "appeal",
+        "declaration",
+        "aid_contribution_'000_us$",
+        "magnitude",
+        "magnitude_scale",
+        "latitude",
+        "longitude",
+        "river_basin",
+        "start_year",
+        "start_month",
+        "start_day",
+        "end_year",
+        "end_month",
+        "end_day",
+        "total_deaths",
+        "no._injured",
+        "no._affected",
+        "no._homeless",
+        "total_affected",
+        "reconstruction_costs_'000_us$",
+        "reconstruction_costs,_adjusted_'000_us$",
+        "insured_damage_'000_us$",
+        "insured_damage,_adjusted_'000_us$",
+        "total_damage_'000_us$",
+        "total_damage,_adjusted_'000_us$",
+        "cpi",
+        "admin_units",
+        "gadm_admin_units",
+        "entry_date",
+        "last_update",
+        "start_date",
+        "end_date",
+        "event_date"
+      ],
+      "data_types": {
+        "admin_units": "string",
+        "aid_contribution_'000_us$": "unknown",
+        "appeal": "string",
+        "associated_types": "string",
+        "classification_key": "string",
+        "country": "string",
+        "cpi": "number",
+        "declaration": "string",
+        "disaster_group": "string",
+        "disaster_subgroup": "string",
+        "disaster_subtype": "string",
+        "disaster_type": "string",
+        "disno.": "string",
+        "end_date": "string",
+        "end_day": "integer",
+        "end_month": "integer",
+        "end_year": "integer",
+        "entry_date": "string",
+        "event_date": "string",
+        "event_name": "string",
+        "external_ids": "string",
+        "gadm_admin_units": "string",
+        "historic": "string",
+        "insured_damage,_adjusted_'000_us$": "integer",
+        "insured_damage_'000_us$": "integer",
+        "iso": "string",
+        "last_update": "string",
+        "latitude": "unknown",
+        "location": "string",
+        "longitude": "unknown",
+        "magnitude": "unknown",
+        "magnitude_scale": "unknown",
+        "no._affected": "integer",
+        "no._homeless": "unknown",
+        "no._injured": "integer",
+        "ofda_bha_response": "string",
+        "origin": "string",
+        "reconstruction_costs,_adjusted_'000_us$": "unknown",
+        "reconstruction_costs_'000_us$": "unknown",
+        "region": "string",
+        "river_basin": "string",
+        "start_date": "string",
+        "start_day": "integer",
+        "start_month": "integer",
+        "start_year": "integer",
+        "subregion": "string",
+        "total_affected": "integer",
+        "total_damage,_adjusted_'000_us$": "integer",
+        "total_damage_'000_us$": "integer",
+        "total_deaths": "integer"
+      },
+      "date_coverage": {
+        "end": "2025-07-07",
+        "invalid_start_dates": 0,
+        "rows_with_start_year": 8,
+        "start": "2021-02-07",
+        "valid_start_dates": 8
+      },
+      "duplicate_quality": {
+        "duplicate_event_id_rows": 0,
+        "exact_duplicate_rows": 0
+      },
+      "event_categories": [
+        "Glacial lake outburst flood"
+      ],
+      "geography": {
+        "coordinate_coverage_percent": 0.0,
+        "invalid_coordinate_rows": 0,
+        "rows_with_both_valid_coordinates": 0,
+        "unique_countries": 5
+      },
+      "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
+      "manifest": "ml\\datasets\\historical_data\\processed\\glacial_lake_outburst_floods.manifest.json",
+      "manifest_validation": "VALIDATED",
+      "missing_percent": {
+        "admin_units": 75.0,
+        "aid_contribution_'000_us$": 100.0,
+        "associated_types": 12.5,
+        "event_name": 87.5,
+        "external_ids": 87.5,
+        "gadm_admin_units": 62.5,
+        "insured_damage,_adjusted_'000_us$": 87.5,
+        "insured_damage_'000_us$": 87.5,
+        "latitude": 100.0,
+        "longitude": 100.0,
+        "magnitude": 100.0,
+        "magnitude_scale": 100.0,
+        "no._affected": 62.5,
+        "no._homeless": 100.0,
+        "no._injured": 75.0,
+        "origin": 75.0,
+        "reconstruction_costs,_adjusted_'000_us$": 100.0,
+        "reconstruction_costs_'000_us$": 100.0,
+        "river_basin": 87.5,
+        "total_affected": 50.0,
+        "total_damage,_adjusted_'000_us$": 75.0,
+        "total_damage_'000_us$": 75.0,
+        "total_deaths": 12.5
+      },
+      "name": "glacial_lake_outburst_floods",
+      "path": "ml\\datasets\\historical_data\\processed\\glacial_lake_outburst_floods.csv",
+      "processed_input_file": "emdat_cleaned.csv",
+      "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
+      "rows": 8,
+      "sha256": "ba89f662ed07921b870f28e88f1a47954165c95bf60700166127d786a24d9e17",
+      "source_file": "public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx",
+      "source_name": "EM-DAT International Disaster Database",
+      "source_reference": "https://public.emdat.be/",
+      "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
+      "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
+      "training_suitable": false
+    },
+    {
+      "columns": [
+        "disno.",
+        "historic",
+        "classification_key",
+        "disaster_group",
+        "disaster_subgroup",
+        "disaster_type",
+        "disaster_subtype",
+        "external_ids",
+        "event_name",
+        "iso",
+        "country",
+        "subregion",
+        "region",
+        "location",
+        "origin",
+        "associated_types",
+        "ofda_bha_response",
+        "appeal",
+        "declaration",
+        "aid_contribution_'000_us$",
+        "magnitude",
+        "magnitude_scale",
+        "latitude",
+        "longitude",
+        "river_basin",
+        "start_year",
+        "start_month",
+        "start_day",
+        "end_year",
+        "end_month",
+        "end_day",
+        "total_deaths",
+        "no._injured",
+        "no._affected",
+        "no._homeless",
+        "total_affected",
+        "reconstruction_costs_'000_us$",
+        "reconstruction_costs,_adjusted_'000_us$",
+        "insured_damage_'000_us$",
+        "insured_damage,_adjusted_'000_us$",
+        "total_damage_'000_us$",
+        "total_damage,_adjusted_'000_us$",
+        "cpi",
+        "admin_units",
+        "gadm_admin_units",
+        "entry_date",
+        "last_update",
+        "start_date",
+        "end_date",
+        "event_date"
+      ],
+      "data_types": {
+        "admin_units": "string",
+        "aid_contribution_'000_us$": "integer",
+        "appeal": "string",
+        "associated_types": "string",
+        "classification_key": "string",
+        "country": "string",
+        "cpi": "number",
+        "declaration": "string",
+        "disaster_group": "string",
+        "disaster_subgroup": "string",
+        "disaster_subtype": "string",
+        "disaster_type": "string",
+        "disno.": "string",
+        "end_date": "string",
+        "end_day": "integer",
+        "end_month": "integer",
+        "end_year": "integer",
+        "entry_date": "string",
+        "event_date": "string",
+        "event_name": "string",
+        "external_ids": "string",
+        "gadm_admin_units": "string",
+        "historic": "string",
+        "insured_damage,_adjusted_'000_us$": "integer",
+        "insured_damage_'000_us$": "integer",
+        "iso": "string",
+        "last_update": "string",
+        "latitude": "number",
+        "location": "string",
+        "longitude": "number",
+        "magnitude": "unknown",
+        "magnitude_scale": "unknown",
+        "no._affected": "integer",
+        "no._homeless": "integer",
+        "no._injured": "integer",
+        "ofda_bha_response": "string",
+        "origin": "string",
+        "reconstruction_costs,_adjusted_'000_us$": "unknown",
+        "reconstruction_costs_'000_us$": "unknown",
+        "region": "string",
+        "river_basin": "string",
+        "start_date": "string",
+        "start_day": "integer",
+        "start_month": "integer",
+        "start_year": "integer",
+        "subregion": "string",
+        "total_affected": "integer",
+        "total_damage,_adjusted_'000_us$": "integer",
+        "total_damage_'000_us$": "integer",
+        "total_deaths": "integer"
+      },
+      "date_coverage": {
+        "end": "2026-08-23",
+        "invalid_start_dates": 0,
+        "rows_with_start_year": 519,
+        "start": "2000-01-19",
+        "valid_start_dates": 511
+      },
+      "duplicate_quality": {
+        "duplicate_event_id_rows": 0,
+        "exact_duplicate_rows": 0
+      },
+      "event_categories": [
+        "Mass movement (wet)",
+        "Mass movement (dry)"
+      ],
+      "geography": {
+        "coordinate_coverage_percent": 2.89,
+        "invalid_coordinate_rows": 0,
+        "rows_with_both_valid_coordinates": 15,
+        "unique_countries": 72
+      },
+      "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
+      "manifest": "ml\\datasets\\historical_data\\processed\\landslides.manifest.json",
+      "manifest_validation": "VALIDATED",
+      "missing_percent": {
+        "admin_units": 16.96,
+        "aid_contribution_'000_us$": 97.3,
+        "associated_types": 82.27,
+        "cpi": 2.31,
+        "end_date": 1.73,
+        "end_day": 1.73,
+        "event_date": 1.54,
+        "event_name": 99.23,
+        "external_ids": 77.65,
+        "gadm_admin_units": 33.91,
+        "insured_damage,_adjusted_'000_us$": 99.23,
+        "insured_damage_'000_us$": 99.23,
+        "latitude": 97.11,
+        "location": 0.58,
+        "longitude": 97.11,
+        "magnitude": 100.0,
+        "magnitude_scale": 100.0,
+        "no._affected": 63.39,
+        "no._homeless": 83.82,
+        "no._injured": 60.31,
+        "origin": 39.69,
+        "reconstruction_costs,_adjusted_'000_us$": 100.0,
+        "reconstruction_costs_'000_us$": 100.0,
+        "river_basin": 97.5,
+        "start_date": 1.54,
+        "start_day": 1.54,
+        "total_affected": 33.53,
+        "total_damage,_adjusted_'000_us$": 89.79,
+        "total_damage_'000_us$": 89.4,
+        "total_deaths": 3.08
+      },
+      "name": "landslides",
+      "path": "ml\\datasets\\historical_data\\processed\\landslides.csv",
+      "processed_input_file": "emdat_cleaned.csv",
+      "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
+      "rows": 519,
+      "sha256": "ec3eb4103a492add99a814cd21f11f1c0a28bd81613d5295fcdb806acfc5bd1a",
+      "source_file": "public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx",
+      "source_name": "EM-DAT International Disaster Database",
+      "source_reference": "https://public.emdat.be/",
+      "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
+      "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
+      "training_suitable": false
+    },
+    {
+      "columns": [
+        "disno.",
+        "historic",
+        "classification_key",
+        "disaster_group",
+        "disaster_subgroup",
+        "disaster_type",
+        "disaster_subtype",
+        "external_ids",
+        "event_name",
+        "iso",
+        "country",
+        "subregion",
+        "region",
+        "location",
+        "origin",
+        "associated_types",
+        "ofda_bha_response",
+        "appeal",
+        "declaration",
+        "aid_contribution_'000_us$",
+        "magnitude",
+        "magnitude_scale",
+        "latitude",
+        "longitude",
+        "river_basin",
+        "start_year",
+        "start_month",
+        "start_day",
+        "end_year",
+        "end_month",
+        "end_day",
+        "total_deaths",
+        "no._injured",
+        "no._affected",
+        "no._homeless",
+        "total_affected",
+        "reconstruction_costs_'000_us$",
+        "reconstruction_costs,_adjusted_'000_us$",
+        "insured_damage_'000_us$",
+        "insured_damage,_adjusted_'000_us$",
+        "total_damage_'000_us$",
+        "total_damage,_adjusted_'000_us$",
+        "cpi",
+        "admin_units",
+        "gadm_admin_units",
+        "entry_date",
+        "last_update",
+        "start_date",
+        "end_date",
+        "event_date"
+      ],
+      "data_types": {
+        "admin_units": "string",
+        "aid_contribution_'000_us$": "integer",
+        "appeal": "string",
+        "associated_types": "string",
+        "classification_key": "string",
+        "country": "string",
+        "cpi": "number",
+        "declaration": "string",
+        "disaster_group": "string",
+        "disaster_subgroup": "string",
+        "disaster_subtype": "string",
+        "disaster_type": "string",
+        "disno.": "string",
+        "end_date": "string",
+        "end_day": "integer",
+        "end_month": "integer",
+        "end_year": "integer",
+        "entry_date": "string",
+        "event_date": "string",
+        "event_name": "string",
+        "external_ids": "string",
+        "gadm_admin_units": "string",
+        "historic": "string",
+        "insured_damage,_adjusted_'000_us$": "integer",
+        "insured_damage_'000_us$": "number",
+        "iso": "string",
+        "last_update": "string",
+        "latitude": "number",
+        "location": "string",
+        "longitude": "number",
+        "magnitude": "number",
+        "magnitude_scale": "string",
+        "no._affected": "integer",
+        "no._homeless": "integer",
+        "no._injured": "integer",
+        "ofda_bha_response": "string",
+        "origin": "string",
+        "reconstruction_costs,_adjusted_'000_us$": "integer",
+        "reconstruction_costs_'000_us$": "integer",
+        "region": "string",
+        "river_basin": "string",
+        "start_date": "string",
+        "start_day": "integer",
+        "start_month": "integer",
+        "start_year": "integer",
+        "subregion": "string",
+        "total_affected": "integer",
+        "total_damage,_adjusted_'000_us$": "integer",
+        "total_damage_'000_us$": "number",
+        "total_deaths": "integer"
+      },
+      "date_coverage": {
+        "end": "2026-11-10",
+        "invalid_start_dates": 0,
+        "rows_with_start_year": 2929,
+        "start": "2000-01-02",
+        "valid_start_dates": 2865
+      },
+      "duplicate_quality": {
+        "duplicate_event_id_rows": 0,
+        "exact_duplicate_rows": 0
+      },
+      "event_categories": [
+        "Storm"
+      ],
+      "geography": {
+        "coordinate_coverage_percent": 3.93,
+        "invalid_coordinate_rows": 0,
+        "rows_with_both_valid_coordinates": 115,
+        "unique_countries": 190
+      },
+      "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
+      "manifest": "ml\\datasets\\historical_data\\processed\\storms_cyclones.manifest.json",
+      "manifest_validation": "VALIDATED",
+      "missing_percent": {
+        "admin_units": 21.0,
+        "aid_contribution_'000_us$": 96.76,
+        "associated_types": 46.19,
+        "cpi": 2.53,
+        "end_date": 2.15,
+        "end_day": 2.15,
+        "event_date": 2.19,
+        "event_name": 41.38,
+        "external_ids": 55.31,
+        "gadm_admin_units": 23.32,
+        "insured_damage,_adjusted_'000_us$": 86.24,
+        "insured_damage_'000_us$": 86.17,
+        "latitude": 96.07,
+        "location": 6.08,
+        "longitude": 96.07,
+        "magnitude": 68.45,
+        "no._affected": 43.6,
+        "no._homeless": 88.08,
+        "no._injured": 63.5,
+        "origin": 97.17,
+        "reconstruction_costs,_adjusted_'000_us$": 99.83,
+        "reconstruction_costs_'000_us$": 99.83,
+        "river_basin": 97.92,
+        "start_date": 2.19,
+        "start_day": 2.19,
+        "total_affected": 25.64,
+        "total_damage,_adjusted_'000_us$": 51.59,
+        "total_damage_'000_us$": 50.87,
+        "total_deaths": 25.4
+      },
+      "name": "storms_cyclones",
+      "path": "ml\\datasets\\historical_data\\processed\\storms_cyclones.csv",
+      "processed_input_file": "emdat_cleaned.csv",
+      "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
+      "rows": 2929,
+      "sha256": "867bdd88ba4d94b75afe2d56ec605315413a051869b51c2daed73c36d844fa19",
+      "source_file": "public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx",
+      "source_name": "EM-DAT International Disaster Database",
+      "source_reference": "https://public.emdat.be/",
+      "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
+      "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
+      "training_suitable": false
+    },
+    {
+      "columns": [
+        "disno.",
+        "historic",
+        "classification_key",
+        "disaster_group",
+        "disaster_subgroup",
+        "disaster_type",
+        "disaster_subtype",
+        "external_ids",
+        "event_name",
+        "iso",
+        "country",
+        "subregion",
+        "region",
+        "location",
+        "origin",
+        "associated_types",
+        "ofda_bha_response",
+        "appeal",
+        "declaration",
+        "aid_contribution_'000_us$",
+        "magnitude",
+        "magnitude_scale",
+        "latitude",
+        "longitude",
+        "river_basin",
+        "start_year",
+        "start_month",
+        "start_day",
+        "end_year",
+        "end_month",
+        "end_day",
+        "total_deaths",
+        "no._injured",
+        "no._affected",
+        "no._homeless",
+        "total_affected",
+        "reconstruction_costs_'000_us$",
+        "reconstruction_costs,_adjusted_'000_us$",
+        "insured_damage_'000_us$",
+        "insured_damage,_adjusted_'000_us$",
+        "total_damage_'000_us$",
+        "total_damage,_adjusted_'000_us$",
+        "cpi",
+        "admin_units",
+        "gadm_admin_units",
+        "entry_date",
+        "last_update",
+        "start_date",
+        "end_date",
+        "event_date"
+      ],
+      "data_types": {
+        "admin_units": "string",
+        "aid_contribution_'000_us$": "integer",
+        "appeal": "string",
+        "associated_types": "string",
+        "classification_key": "string",
+        "country": "string",
+        "cpi": "number",
+        "declaration": "string",
+        "disaster_group": "string",
+        "disaster_subgroup": "string",
+        "disaster_subtype": "string",
+        "disaster_type": "string",
+        "disno.": "string",
+        "end_date": "string",
+        "end_day": "integer",
+        "end_month": "integer",
+        "end_year": "integer",
+        "entry_date": "string",
+        "event_date": "string",
+        "event_name": "string",
+        "external_ids": "string",
+        "gadm_admin_units": "string",
+        "historic": "string",
+        "insured_damage,_adjusted_'000_us$": "integer",
+        "insured_damage_'000_us$": "integer",
+        "iso": "string",
+        "last_update": "string",
+        "latitude": "unknown",
+        "location": "string",
+        "longitude": "unknown",
+        "magnitude": "number",
+        "magnitude_scale": "string",
+        "no._affected": "integer",
+        "no._homeless": "integer",
+        "no._injured": "integer",
+        "ofda_bha_response": "string",
+        "origin": "string",
+        "reconstruction_costs,_adjusted_'000_us$": "integer",
+        "reconstruction_costs_'000_us$": "integer",
+        "region": "string",
+        "river_basin": "unknown",
+        "start_date": "string",
+        "start_day": "integer",
+        "start_month": "integer",
+        "start_year": "integer",
+        "subregion": "string",
+        "total_affected": "integer",
+        "total_damage,_adjusted_'000_us$": "integer",
+        "total_damage_'000_us$": "integer",
+        "total_deaths": "integer"
+      },
+      "date_coverage": {
+        "end": "2026-08-26",
+        "invalid_start_dates": 0,
+        "rows_with_start_year": 356,
+        "start": "2000-01-15",
+        "valid_start_dates": 269
+      },
+      "duplicate_quality": {
+        "duplicate_event_id_rows": 0,
+        "exact_duplicate_rows": 0
+      },
+      "event_categories": [
+        "Wildfire"
+      ],
+      "geography": {
+        "coordinate_coverage_percent": 0.0,
+        "invalid_coordinate_rows": 0,
+        "rows_with_both_valid_coordinates": 0,
+        "unique_countries": 66
+      },
+      "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
+      "manifest": "ml\\datasets\\historical_data\\processed\\wildfires.manifest.json",
+      "manifest_validation": "VALIDATED",
+      "missing_percent": {
+        "admin_units": 21.35,
+        "aid_contribution_'000_us$": 98.88,
+        "associated_types": 85.67,
+        "cpi": 3.37,
+        "end_date": 24.72,
+        "end_day": 24.72,
+        "end_month": 0.56,
+        "event_date": 24.44,
+        "event_name": 85.39,
+        "external_ids": 82.87,
+        "gadm_admin_units": 21.35,
+        "insured_damage,_adjusted_'000_us$": 86.8,
+        "insured_damage_'000_us$": 86.52,
+        "latitude": 100.0,
+        "location": 0.28,
+        "longitude": 100.0,
+        "magnitude": 75.28,
+        "no._affected": 49.44,
+        "no._homeless": 67.42,
+        "no._injured": 63.48,
+        "origin": 72.75,
+        "reconstruction_costs,_adjusted_'000_us$": 99.44,
+        "reconstruction_costs_'000_us$": 99.44,
+        "river_basin": 100.0,
+        "start_date": 24.44,
+        "start_day": 24.44,
+        "start_month": 0.28,
+        "total_affected": 21.91,
+        "total_damage,_adjusted_'000_us$": 61.8,
+        "total_damage_'000_us$": 61.24,
+        "total_deaths": 48.31
+      },
+      "name": "wildfires",
+      "path": "ml\\datasets\\historical_data\\processed\\wildfires.csv",
+      "processed_input_file": "emdat_cleaned.csv",
+      "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
+      "rows": 356,
+      "sha256": "188cea5bd5b2a4a64e6e5d4d55d24a73517bd46464bdb7215aa2582505eeb5ab",
+      "source_file": "public_emdat_custom_request_2026-09-30_65676a52-2bac-4e9b-b454-70d54b055fa3.xlsx",
+      "source_name": "EM-DAT International Disaster Database",
+      "source_reference": "https://public.emdat.be/",
+      "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
+      "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
+      "training_suitable": false
+    }
+  ],
+  "limitations": [
+    "EM-DAT records are reported event/impact records and are not proof of complete event or no-event surveillance.",
+    "Missing event coordinates prevent site-level joins for many records; unlocated rows remain in country/year analytics only.",
+    "Missing impact fields mean reported-impact sums are not complete totals.",
+    "Flood event records do not provide a continuous flood-risk or calibrated probability target.",
+    "EM-DAT redistribution is subject to the access terms of the supplied academic/research request."
+  ],
+  "source": "EM-DAT event and impact records; not environmental measurements or forecasts.",
+  "status": "READY",
+  "summary": {
+    "data_quality": {
+      "duplicate_event_id_rows_within_extracts": 0,
+      "event_ids_shared_between_extracts": 0,
+      "event_ids_shared_between_extracts_sample": {},
+      "exact_duplicate_rows": 0,
+      "rows_missing_or_without_a_valid_coordinate_pair": 6994,
+      "rows_with_valid_coordinates": 1816
+    },
+    "event_ids_present_in_multiple_extracts": 0,
+    "events_by_country": [
+      {
+        "count": 635,
+        "country": "China"
+      },
+      {
+        "count": 623,
+        "country": "United States of America"
+      },
+      {
+        "count": 381,
+        "country": "Indonesia"
+      },
+      {
+        "count": 371,
+        "country": "Philippines"
+      },
+      {
+        "count": 369,
+        "country": "India"
+      },
+      {
+        "count": 199,
+        "country": "Viet Nam"
+      },
+      {
+        "count": 169,
+        "country": "Japan"
+      },
+      {
+        "count": 159,
+        "country": "Mexico"
+      },
+      {
+        "count": 152,
+        "country": "Afghanistan"
+      },
+      {
+        "count": 151,
+        "country": "Brazil"
+      },
+      {
+        "count": 147,
+        "country": "Pakistan"
+      },
+      {
+        "count": 133,
+        "country": "Bangladesh"
+      },
+      {
+        "count": 128,
+        "country": "Colombia"
+      },
+      {
+        "count": 125,
+        "country": "Australia"
+      },
+      {
+        "count": 121,
+        "country": "Thailand"
+      },
+      {
+        "count": 119,
+        "country": "Iran (Islamic Republic of)"
+      },
+      {
+        "count": 109,
+        "country": "France"
+      },
+      {
+        "count": 106,
+        "country": "Russian Federation"
+      },
+      {
+        "count": 95,
+        "country": "Peru"
+      },
+      {
+        "count": 89,
+        "country": "Haiti"
+      },
+      {
+        "count": 86,
+        "country": "Türkiye"
+      },
+      {
+        "count": 80,
+        "country": "Italy"
+      },
+      {
+        "count": 80,
+        "country": "Malaysia"
+      },
+      {
+        "count": 79,
+        "country": "South Africa"
+      },
+      {
+        "count": 77,
+        "country": "Canada"
+      },
+      {
+        "count": 76,
+        "country": "Guatemala"
+      },
+      {
+        "count": 75,
+        "country": "Argentina"
+      },
+      {
+        "count": 75,
+        "country": "Democratic Republic of the Congo"
+      },
+      {
+        "count": 75,
+        "country": "Sri Lanka"
+      },
+      {
+        "count": 74,
+        "country": "Taiwan (Province of China)"
+      },
+      {
+        "count": 72,
+        "country": "Nepal"
+      },
+      {
+        "count": 67,
+        "country": "Madagascar"
+      },
+      {
+        "count": 65,
+        "country": "Mozambique"
+      },
+      {
+        "count": 64,
+        "country": "Kenya"
+      },
+      {
+        "count": 64,
+        "country": "Nigeria"
+      },
+      {
+        "count": 63,
+        "country": "Republic of Korea"
+      },
+      {
+        "count": 62,
+        "country": "Dominican Republic"
+      },
+      {
+        "count": 62,
+        "country": "Spain"
+      },
+      {
+        "count": 61,
+        "country": "Chile"
+      },
+      {
+        "count": 60,
+        "country": "Bolivia (Plurinational State of)"
+      },
+      {
+        "count": 60,
+        "country": "Myanmar"
+      },
+      {
+        "count": 57,
+        "country": "United Kingdom of Great Britain and Northern Ireland"
+      },
+      {
+        "count": 57,
+        "country": "United Republic of Tanzania"
+      },
+      {
+        "count": 55,
+        "country": "Greece"
+      },
+      {
+        "count": 55,
+        "country": "Uganda"
+      },
+      {
+        "count": 54,
+        "country": "Romania"
+      },
+      {
+        "count": 53,
+        "country": "Tajikistan"
+      },
+      {
+        "count": 52,
+        "country": "Ethiopia"
+      },
+      {
+        "count": 50,
+        "country": "Ecuador"
+      },
+      {
+        "count": 49,
+        "country": "Algeria"
+      },
+      {
+        "count": 49,
+        "country": "Malawi"
+      },
+      {
+        "count": 48,
+        "country": "Germany"
+      },
+      {
+        "count": 48,
+        "country": "Honduras"
+      },
+      {
+        "count": 48,
+        "country": "Somalia"
+      },
+      {
+        "count": 48,
+        "country": "Yemen"
+      },
+      {
+        "count": 47,
+        "country": "Angola"
+      },
+      {
+        "count": 46,
+        "country": "Cuba"
+      },
+      {
+        "count": 46,
+        "country": "Papua New Guinea"
+      },
+      {
+        "count": 43,
+        "country": "Burundi"
+      },
+      {
+        "count": 42,
+        "country": "Venezuela (Bolivarian Republic of)"
+      },
+      {
+        "count": 40,
+        "country": "Nicaragua"
+      },
+      {
+        "count": 38,
+        "country": "El Salvador"
+      },
+      {
+        "count": 38,
+        "country": "Panama"
+      },
+      {
+        "count": 37,
+        "country": "New Zealand"
+      },
+      {
+        "count": 36,
+        "country": "Costa Rica"
+      },
+      {
+        "count": 36,
+        "country": "Rwanda"
+      },
+      {
+        "count": 35,
+        "country": "Bulgaria"
+      },
+      {
+        "count": 32,
+        "country": "Poland"
+      },
+      {
+        "count": 32,
+        "country": "Sudan"
+      },
+      {
+        "count": 31,
+        "country": "Niger"
+      },
+      {
+        "count": 30,
+        "country": "Democratic People's Republic of Korea"
+      },
+      {
+        "count": 30,
+        "country": "Lao People's Democratic Republic"
+      },
+      {
+        "count": 30,
+        "country": "Portugal"
+      },
+      {
+        "count": 29,
+        "country": "Cambodia"
+      },
+      {
+        "count": 29,
+        "country": "Morocco"
+      },
+      {
+        "count": 29,
+        "country": "Switzerland"
+      },
+      {
+        "count": 28,
+        "country": "Central African Republic"
+      },
+      {
+        "count": 28,
+        "country": "Fiji"
+      },
+      {
+        "count": 27,
+        "country": "Bosnia and Herzegovina"
+      },
+      {
+        "count": 27,
+        "country": "Croatia"
+      },
+      {
+        "count": 27,
+        "country": "Paraguay"
+      },
+      {
+        "count": 26,
+        "country": "Czechia"
+      },
+      {
+        "count": 26,
+        "country": "Ghana"
+      },
+      {
+        "count": 26,
+        "country": "Uruguay"
+      },
+      {
+        "count": 25,
+        "country": "Belgium"
+      },
+      {
+        "count": 25,
+        "country": "Georgia"
+      },
+      {
+        "count": 24,
+        "country": "Austria"
+      },
+      {
+        "count": 24,
+        "country": "Zambia"
+      },
+      {
+        "count": 23,
+        "country": "Cameroon"
+      },
+      {
+        "count": 23,
+        "country": "Mali"
+      },
+      {
+        "count": 23,
+        "country": "Mongolia"
+      },
+      {
+        "count": 23,
+        "country": "Saudi Arabia"
+      },
+      {
+        "count": 23,
+        "country": "Serbia"
+      },
+      {
+        "count": 22,
+        "country": "Albania"
+      },
+      {
+        "count": 22,
+        "country": "Iraq"
+      },
+      {
+        "count": 22,
+        "country": "Kyrgyzstan"
+      },
+      {
+        "count": 22,
+        "country": "Puerto Rico"
+      },
+      {
+        "count": 22,
+        "country": "Ukraine"
+      },
+      {
+        "count": 22,
+        "country": "Zimbabwe"
+      },
+      {
+        "count": 21,
+        "country": "Chad"
+      },
+      {
+        "count": 21,
+        "country": "Jamaica"
+      },
+      {
+        "count": 21,
+        "country": "Syrian Arab Republic"
+      },
+      {
+        "count": 20,
+        "country": "Guinea"
+      },
+      {
+        "count": 20,
+        "country": "Solomon Islands"
+      },
+      {
+        "count": 19,
+        "country": "China, Hong Kong Special Administrative Region"
+      },
+      {
+        "count": 18,
+        "country": "Burkina Faso"
+      },
+      {
+        "count": 18,
+        "country": "Kazakhstan"
+      },
+      {
+        "count": 18,
+        "country": "Namibia"
+      },
+      {
+        "count": 18,
+        "country": "South Sudan"
+      },
+      {
+        "count": 17,
+        "country": "Bahamas"
+      },
+      {
+        "count": 17,
+        "country": "Côte d’Ivoire"
+      },
+      {
+        "count": 17,
+        "country": "Gambia"
+      },
+      {
+        "count": 17,
+        "country": "Hungary"
+      },
+      {
+        "count": 17,
+        "country": "Mauritania"
+      },
+      {
+        "count": 17,
+        "country": "Senegal"
+      },
+      {
+        "count": 17,
+        "country": "Sierra Leone"
+      },
+      {
+        "count": 17,
+        "country": "Slovakia"
+      },
+      {
+        "count": 17,
+        "country": "Vanuatu"
+      },
+      {
+        "count": 16,
+        "country": "Belize"
+      },
+      {
+        "count": 16,
+        "country": "Ireland"
+      },
+      {
+        "count": 16,
+        "country": "Netherlands (Kingdom of the)"
+      },
+      {
+        "count": 16,
+        "country": "Oman"
+      },
+      {
+        "count": 15,
+        "country": "Benin"
+      },
+      {
+        "count": 15,
+        "country": "North Macedonia"
+      },
+      {
+        "count": 14,
+        "country": "Congo"
+      },
+      {
+        "count": 13,
+        "country": "Egypt"
+      },
+      {
+        "count": 12,
+        "country": "Botswana"
+      },
+      {
+        "count": 12,
+        "country": "Slovenia"
+      },
+      {
+        "count": 11,
+        "country": "Israel"
+      },
+      {
+        "count": 11,
+        "country": "Saint Vincent and the Grenadines"
+      },
+      {
+        "count": 11,
+        "country": "Tunisia"
+      },
+      {
+        "count": 10,
+        "country": "Lebanon"
+      },
+      {
+        "count": 10,
+        "country": "Norway"
+      },
+      {
+        "count": 10,
+        "country": "Saint Lucia"
+      },
+      {
+        "count": 10,
+        "country": "Togo"
+      },
+      {
+        "count": 10,
+        "country": "Tonga"
+      },
+      {
+        "count": 9,
+        "country": "Armenia"
+      },
+      {
+        "count": 9,
+        "country": "Liberia"
+      },
+      {
+        "count": 9,
+        "country": "Réunion"
+      },
+      {
+        "count": 9,
+        "country": "Serbia Montenegro"
+      },
+      {
+        "count": 8,
+        "country": "Azerbaijan"
+      },
+      {
+        "count": 8,
+        "country": "Barbados"
+      },
+      {
+        "count": 8,
+        "country": "Cayman Islands"
+      },
+      {
+        "count": 8,
+        "country": "Comoros"
+      },
+      {
+        "count": 8,
+        "country": "Eswatini"
+      },
+      {
+        "count": 8,
+        "country": "Lesotho"
+      },
+      {
+        "count": 8,
+        "country": "Micronesia (Federated States of)"
+      },
+      {
+        "count": 8,
+        "country": "Timor-Leste"
+      },
+      {
+        "count": 7,
+        "country": "Bhutan"
+      },
+      {
+        "count": 7,
+        "country": "Denmark"
+      },
+      {
+        "count": 7,
+        "country": "Gabon"
+      },
+      {
+        "count": 7,
+        "country": "Guam"
+      },
+      {
+        "count": 7,
+        "country": "Guinea-Bissau"
+      },
+      {
+        "count": 7,
+        "country": "Guyana"
+      },
+      {
+        "count": 7,
+        "country": "Mauritius"
+      },
+      {
+        "count": 7,
+        "country": "State of Palestine"
+      },
+      {
+        "count": 7,
+        "country": "Sweden"
+      },
+      {
+        "count": 6,
+        "country": "Canary Islands"
+      },
+      {
+        "count": 6,
+        "country": "Cyprus"
+      },
+      {
+        "count": 6,
+        "country": "Northern Mariana Islands"
+      },
+      {
+        "count": 6,
+        "country": "Republic of Moldova"
+      },
+      {
+        "count": 6,
+        "country": "Samoa"
+      },
+      {
+        "count": 6,
+        "country": "Trinidad and Tobago"
+      },
+      {
+        "count": 5,
+        "country": "Dominica"
+      },
+      {
+        "count": 5,
+        "country": "Montenegro"
+      },
+      {
+        "count": 5,
+        "country": "Turks and Caicos Islands"
+      },
+      {
+        "count": 5,
+        "country": "Uzbekistan"
+      },
+      {
+        "count": 4,
+        "country": "American Samoa"
+      },
+      {
+        "count": 4,
+        "country": "Cabo Verde"
+      },
+      {
+        "count": 4,
+        "country": "Djibouti"
+      },
+      {
+        "count": 4,
+        "country": "Grenada"
+      },
+      {
+        "count": 4,
+        "country": "Guadeloupe"
+      },
+      {
+        "count": 4,
+        "country": "Latvia"
+      },
+      {
+        "count": 4,
+        "country": "Libya"
+      },
+      {
+        "count": 4,
+        "country": "Maldives"
+      },
+      {
+        "count": 4,
+        "country": "Marshall Islands"
+      },
+      {
+        "count": 4,
+        "country": "Martinique"
+      },
+      {
+        "count": 4,
+        "country": "Seychelles"
+      },
+      {
+        "count": 4,
+        "country": "Suriname"
+      },
+      {
+        "count": 3,
+        "country": "Antigua and Barbuda"
+      },
+      {
+        "count": 3,
+        "country": "Belarus"
+      },
+      {
+        "count": 3,
+        "country": "China, Macao Special Administrative Region"
+      },
+      {
+        "count": 3,
+        "country": "Cook Islands"
+      },
+      {
+        "count": 3,
+        "country": "Estonia"
+      },
+      {
+        "count": 3,
+        "country": "Iceland"
+      },
+      {
+        "count": 3,
+        "country": "Jordan"
+      },
+      {
+        "count": 3,
+        "country": "Kiribati"
+      },
+      {
+        "count": 3,
+        "country": "Lithuania"
+      },
+      {
+        "count": 3,
+        "country": "Luxembourg"
+      },
+      {
+        "count": 3,
+        "country": "Palau"
+      },
+      {
+        "count": 3,
+        "country": "United Arab Emirates"
+      },
+      {
+        "count": 3,
+        "country": "United States Virgin Islands"
+      },
+      {
+        "count": 2,
+        "country": "Bermuda"
+      },
+      {
+        "count": 2,
+        "country": "British Virgin Islands"
+      },
+      {
+        "count": 2,
+        "country": "Eritrea"
+      },
+      {
+        "count": 2,
+        "country": "French Guiana"
+      },
+      {
+        "count": 2,
+        "country": "French Polynesia"
+      },
+      {
+        "count": 2,
+        "country": "New Caledonia"
+      },
+      {
+        "count": 2,
+        "country": "Saint Kitts and Nevis"
+      },
+      {
+        "count": 2,
+        "country": "Tuvalu"
+      },
+      {
+        "count": 1,
+        "country": "Anguilla"
+      },
+      {
+        "count": 1,
+        "country": "Azores Islands"
+      },
+      {
+        "count": 1,
+        "country": "Equatorial Guinea"
+      },
+      {
+        "count": 1,
+        "country": "Finland"
+      },
+      {
+        "count": 1,
+        "country": "Kuwait"
+      },
+      {
+        "count": 1,
+        "country": "Mayotte"
+      },
+      {
+        "count": 1,
+        "country": "Niue"
+      },
+      {
+        "count": 1,
+        "country": "Qatar"
+      },
+      {
+        "count": 1,
+        "country": "Saint Barthélemy"
+      },
+      {
+        "count": 1,
+        "country": "Saint Helena"
+      },
+      {
+        "count": 1,
+        "country": "Saint Martin (French Part)"
+      },
+      {
+        "count": 1,
+        "country": "Sao Tome and Principe"
+      },
+      {
+        "count": 1,
+        "country": "Sint Maarten (Dutch part)"
+      },
+      {
+        "count": 1,
+        "country": "Tokelau"
+      },
+      {
+        "count": 1,
+        "country": "Turkmenistan"
+      },
+      {
+        "count": 1,
+        "country": "Wallis and Futuna Islands"
+      }
+    ],
+    "events_by_disaster_type": {
+      "Earthquake": 707,
+      "Flood": 4291,
+      "Glacial lake outburst flood": 8,
+      "Mass movement (dry)": 15,
+      "Mass movement (wet)": 504,
+      "Storm": 2929,
+      "Wildfire": 356
+    },
+    "events_by_year": {
+      "2000": 330,
+      "2001": 316,
+      "2002": 362,
+      "2003": 320,
+      "2004": 318,
+      "2005": 372,
+      "2006": 356,
+      "2007": 369,
+      "2008": 315,
+      "2009": 298,
+      "2010": 341,
+      "2011": 290,
+      "2012": 275,
+      "2013": 309,
+      "2014": 279,
+      "2015": 334,
+      "2016": 299,
+      "2017": 323,
+      "2018": 268,
+      "2019": 358,
+      "2020": 379,
+      "2021": 401,
+      "2022": 350,
+      "2023": 377,
+      "2024": 364,
+      "2025": 351,
+      "2026": 156
+    },
+    "reported_impacts": {
+      "total_affected": {
+        "interpretation": "Descriptive sum of non-missing source reports; coverage is incomplete.",
+        "reported_records": 7369,
+        "sum_of_reported_values": 3021353903.0,
+        "unit": "people"
+      },
+      "total_damage_'000_us$": {
+        "interpretation": "Descriptive sum of non-missing source reports; coverage is incomplete.",
+        "reported_records": 3157,
+        "sum_of_reported_values": 3673624250.92,
+        "unit": "thousand source-reported US dollars"
+      },
+      "total_deaths": {
+        "interpretation": "Descriptive sum of non-missing source reports; coverage is incomplete.",
+        "reported_records": 6492,
+        "sum_of_reported_values": 1210351.0,
+        "unit": "people"
+      }
+    },
+    "source_rows_across_extracts": 8810,
+    "unique_event_ids": 8810
+  }
+}

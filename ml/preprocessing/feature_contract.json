@@ -1,0 +1,107 @@
+{
+  "schema_version": "flood-environmental-predictors-v1",
+  "feature_schema_version": "flood-environmental-predictors-v1",
+  "status": "CANDIDATE_NOT_READY_FOR_TRAINING_OR_INFERENCE",
+  "target_definition": null,
+  "prediction_horizon": null,
+  "runtime_feature_builder": "NOT_AVAILABLE",
+  "legacy_schema": {
+    "version": "flood-risk-factors-v1",
+    "status": "RETIRED_FROM_ACTIVE_INFERENCE",
+    "feature_count": 20
+  },
+  "feature_order": [
+    "antecedent_precipitation_1d_mm",
+    "antecedent_precipitation_3d_mm",
+    "antecedent_precipitation_7d_mm",
+    "temperature_mean_c",
+    "relative_humidity_mean_percent",
+    "wind_speed_max_kmh"
+  ],
+  "features": [
+    {
+      "name": "antecedent_precipitation_1d_mm",
+      "description": "Precipitation accumulated over the complete UTC feature day immediately before issue.",
+      "data_type": "float",
+      "unit": "mm",
+      "source": "Open-Meteo Archive best_match daily precipitation_sum",
+      "temporal_aggregation": "One complete UTC feature day ending at issue time.",
+      "spatial_resolution": "Provider-resolved gridded point returned in the raw response.",
+      "valid_range": [0, null],
+      "missing_value_handling": "Exclude rows without a complete source day.",
+      "transformation": "Trailing one-day sum; no future dates included.",
+      "available_at_training": true,
+      "available_at_inference": false
+    },
+    {
+      "name": "antecedent_precipitation_3d_mm",
+      "description": "Precipitation accumulated over the three complete UTC feature days immediately before issue.",
+      "data_type": "float",
+      "unit": "mm",
+      "source": "Open-Meteo Archive daily precipitation_sum",
+      "temporal_aggregation": "Three complete UTC feature days ending at issue time.",
+      "spatial_resolution": "Provider-resolved gridded point returned in the raw response.",
+      "valid_range": [0, null],
+      "missing_value_handling": "Exclude rows unless all three source days are present.",
+      "transformation": "Trailing three-day sum; no future dates included.",
+      "available_at_training": true,
+      "available_at_inference": false
+    },
+    {
+      "name": "antecedent_precipitation_7d_mm",
+      "description": "Precipitation accumulated over the seven complete UTC feature days immediately before issue.",
+      "data_type": "float",
+      "unit": "mm",
+      "source": "Open-Meteo Archive daily precipitation_sum",
+      "temporal_aggregation": "Seven complete UTC feature days ending at issue time.",
+      "spatial_resolution": "Provider-resolved gridded point returned in the raw response.",
+      "valid_range": [0, null],
+      "missing_value_handling": "Exclude rows unless all seven source days are present.",
+      "transformation": "Trailing seven-day sum; no future dates included.",
+      "available_at_training": true,
+      "available_at_inference": false
+    },
+    {
+      "name": "temperature_mean_c",
+      "description": "Mean 2 m air temperature over the complete UTC feature day.",
+      "data_type": "float",
+      "unit": "degC",
+      "source": "Open-Meteo Archive best_match daily temperature_2m_mean",
+      "temporal_aggregation": "Daily UTC mean.",
+      "spatial_resolution": "Provider-resolved gridded point returned in the raw response.",
+      "valid_range": [-80, 65],
+      "missing_value_handling": "Exclude rows without the daily value.",
+      "transformation": "No conversion; source unit is degrees Celsius.",
+      "available_at_training": true,
+      "available_at_inference": false
+    },
+    {
+      "name": "relative_humidity_mean_percent",
+      "description": "Mean 2 m relative humidity over the complete UTC feature day.",
+      "data_type": "float",
+      "unit": "%",
+      "source": "Open-Meteo Archive best_match daily relative_humidity_2m_mean",
+      "temporal_aggregation": "Daily UTC mean.",
+      "spatial_resolution": "Provider-resolved gridded point returned in the raw response.",
+      "valid_range": [0, 100],
+      "missing_value_handling": "Exclude rows without the daily value.",
+      "transformation": "No conversion; source unit is percent.",
+      "available_at_training": true,
+      "available_at_inference": false
+    },
+    {
+      "name": "wind_speed_max_kmh",
+      "description": "Maximum 10 m wind speed over the complete UTC feature day.",
+      "data_type": "float",
+      "unit": "km/h",
+      "source": "Open-Meteo Archive best_match daily wind_speed_10m_max",
+      "temporal_aggregation": "Daily UTC maximum.",
+      "spatial_resolution": "Provider-resolved gridded point returned in the raw response.",
+      "valid_range": [0, 400],
+      "missing_value_handling": "Exclude rows without the daily value.",
+      "transformation": "No conversion; source unit is km/h.",
+      "available_at_training": true,
+      "available_at_inference": false
+    }
+  ]
+}

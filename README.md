@@ -2,25 +2,27 @@
 
 ## AI-Powered Disaster Prediction & Decision Support System
 
-DisasterGuard AI is an AI-powered disaster management and early warning platform designed to predict potential disaster risks and support emergency decision-making. By integrating weather, hydrological, historical disaster, satellite, and GIS data with AI/ML, the platform provides risk prediction, explainable AI analysis, GIS-based visualization, Digital Twin simulation, emergency recommendations, resource optimization, and disaster alerts.
+DisasterGuard AI is an academic disaster-management demonstration that integrates weather, hydrological, historical, satellite and GIS data with a web application for data readiness, illustrative risk estimates, mapping, scenario simulation, recommendations, resource planning and in-app alerts.
+
+> **Readiness notice:** Flood prediction is currently disabled (the API returns HTTP 503) because there is no compatible trained artifact, verified feature-source mapping or runtime feature builder. Existing scores are unverified history; heuristic estimates and Digital Twin scenarios are not validated forecasts or official warnings. See [`docs/PROJECT_COMPLETION_STATUS.md`](./docs/PROJECT_COMPLETION_STATUS.md).
 
 ---
 
 ## ✨ Features
 
-- 🤖 AI-Based Disaster Risk Prediction
-- 🔍 Explainable AI using SHAP
+- 🤖 Flood model readiness gate and demonstrator weather estimates for supported non-flood hazards
+- 🔍 SHAP explanations only when a compatible trained model is available
 - 🗺 GIS-Based Risk Visualization
 - 🧪 Digital Twin Disaster Simulation
 - 🧠 AI-Based Emergency Recommendations
 - 🚑 Emergency Resource Optimization
-- 🚨 Emergency Alerts & Notifications
+- 🚨 In-app estimate alerts (no SMS/email/push delivery)
 - 🌦 Weather Data Integration
 - 💧 Hydrological Data Integration
 - 🛰 Satellite Data Integration
 - 📚 Historical Disaster Data Analysis
 - 📊 Disaster Risk Analysis
-- 👥 Role-Based Access
+- 👤 Bearer-token user authentication (no role-based access control)
 
 ---
 
@@ -74,11 +76,11 @@ DisasterGuard-AI
 
 🤖 Disaster Risk Prediction
 
-Uses environmental and historical disaster data to predict potential disaster risks and classify them into different risk levels.
+Flood inference remains unavailable until validated training data, model artifact and matching runtime features are supplied. Existing wildfire/storm estimates are demonstrator heuristics, not validated forecasts.
 
 🔍 Explainable AI
 
-Uses SHAP-based analysis to identify the important factors contributing to a disaster-risk prediction and provide understandable explanations.
+Uses SHAP when a compatible trained artifact is installed; no fabricated explanations are returned when it is unavailable.
 
 🗺 GIS Risk Visualization
 
@@ -86,7 +88,7 @@ Displays predicted disaster-risk areas and locations using an interactive GIS ma
 
 🧪 Digital Twin Simulation
 
-Provides what-if scenario analysis by simulating changes in environmental conditions and observing their possible impact on disaster risk.
+Provides illustrative what-if calculations for supported weather inputs. Results are not physically calibrated forecasts.
 
 🧠 AI Emergency Recommendations
 
@@ -98,7 +100,7 @@ Supports emergency resource allocation based on predicted risk areas and availab
 
 🚨 Emergency Alerts
 
-Generates alerts for relevant users when the predicted risk reaches a configured level.
+Persists in-app alerts for eligible demonstrator estimates above a configurable threshold. These are not official warnings and have no external message delivery.
 
 ---
 
@@ -156,31 +158,31 @@ Risk Assessment
 Clone the Repository  
 - git clone https://github.com/eddulapreethi/disaster-management-system.git  
 Navigate to the Project  
-- cd DisasterGuard-AI  
+- cd disaster-management-system
 Backend Setup  
-- cd backend  
-- python -m venv venv
+- cd backend
+- py -m venv .venv
+- .\.venv\Scripts\Activate.ps1
+- pip install -r requirements.txt
+- Copy-Item .env.example .env
+- Set a long random JWT_SECRET_KEY in backend\.env
 
-Activate the virtual environment and install dependencies:
-
-- pip install -r requirements.txt  
-Frontend Setup  
-- cd frontend  
-- npm install  
-Configure  
-Configure the database  
-Add required API keys  
-Configure environment variables  
-Ensure all required dependencies are installed  
-Run the Project
-
-Start the backend:
+Start the backend from the `backend` directory:
 
 - uvicorn app.main:app --reload
 
-Start the frontend:
+In a second terminal, start the frontend:
 
+- cd frontend
+- npm ci
 - npm run dev
+
+Run automated checks:
+
+- From the repository root: `python -m pytest backend\tests ml -q`
+- From `frontend`: `npm test` and `npm run build`
+
+The backend defaults to a local SQLite database. External Ollama and Copernicus services require their own local installation or server-side credentials. Review [`backend/README.md`](./backend/README.md) and [`docs/`](./docs) before enabling integrations or using the project operationally.
 
 ---
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { apiGet, apiPost } from '../services/api'
+import { apiDelete, apiGet, apiPatch, apiPost } from '../services/api'
 
 const EMPTY_RESOURCE = {
   name: '', resource_type: 'water', quantity: '', unit: 'litres', latitude: '', longitude: '',
@@ -13,6 +13,7 @@ export default function ResourceAllocation() {
   const [resourceForm, setResourceForm] = useState(EMPTY_RESOURCE)
   const [demand, setDemand] = useState(EMPTY_DEMAND)
   const [plan, setPlan] = useState(null)
+  const [editingResourceId, setEditingResourceId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -36,16 +37,49 @@ export default function ResourceAllocation() {
     setError('')
     setSaving(true)
     try {
-      await apiPost('/resources', {
+      const payload = {
         ...resourceForm,
         quantity: Number(resourceForm.quantity),
         latitude: Number(resourceForm.latitude),
         longitude: Number(resourceForm.longitude),
-      })
+      }
+      if (editingResourceId == null) await apiPost('/resources', payload)
+      else await apiPatch(`/resources/${editingResourceId}`, payload)
       setResourceForm(EMPTY_RESOURCE)
+      setEditingResourceId(null)
       await refreshResources()
     } catch (requestError) {
       setError(requestError.message || 'Could not add inventory.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function editResource(resource) {
+    setEditingResourceId(resource.id)
+    setResourceForm({
+      name: resource.name,
+      resource_type: resource.resource_type,
+      quantity: String(resource.quantity),
+      unit: resource.unit,
+      latitude: String(resource.latitude),
+      longitude: String(resource.longitude),
+    })
+  }
+
+  async function removeResource(resource) {
+    if (!window.confirm(`Remove ${resource.name} from inventory?`)) return
+    setError('')
+    setSaving(true)
+    try {
+      await apiDelete(`/resources/${resource.id}`)
+      if (editingResourceId === resource.id) {
+        setEditingResourceId(null)
+        setResourceForm(EMPTY_RESOURCE)
+      }
+      await refreshResources()
+    } catch (requestError) {
+      setError(requestError.message || 'Could not remove inventory.')
     } finally {
       setSaving(false)
     }
@@ -97,7 +131,7 @@ export default function ResourceAllocation() {
         </form>
 
         <form className="card" onSubmit={addResource}>
-          <div className="sectitle">Add inventory</div>
+          <div className="sectitle">{editingResourceId == null ? 'Add inventory' : 'Edit inventory'}</div>
           <label>Resource name</label>
           <input className="text-input" required value={resourceForm.name} onChange={event => setResourceForm(value => ({ ...value, name: event.target.value }))} />
           <div className="formgrid">
@@ -107,7 +141,8 @@ export default function ResourceAllocation() {
             <div><label>Latitude</label><input className="text-input" required type="number" step="any" min="-90" max="90" value={resourceForm.latitude} onChange={event => setResourceForm(value => ({ ...value, latitude: event.target.value }))} /></div>
             <div><label>Longitude</label><input className="text-input" required type="number" step="any" min="-180" max="180" value={resourceForm.longitude} onChange={event => setResourceForm(value => ({ ...value, longitude: event.target.value }))} /></div>
           </div>
-          <button className="btn" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Add to inventory'}</button>
+          <button className="btn" type="submit" disabled={saving}>{saving ? 'Saving...' : editingResourceId == null ? 'Add to inventory' : 'Save inventory changes'}</button>
+          {editingResourceId != null && <button className="btn-outline" type="button" onClick={() => { setEditingResourceId(null); setResourceForm(EMPTY_RESOURCE) }}>Cancel edit</button>}
         </form>
       </div>
       {plan && (
@@ -130,11 +165,11 @@ export default function ResourceAllocation() {
         <table>
           <thead>
             <tr>
-              <th>Name</th><th>Type</th><th>Quantity</th><th>Location</th><th>Status</th>
+              <th>Name</th><th>Type</th><th>Quantity</th><th>Location</th><th>Status</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {resources.map(resource => <tr key={resource.id}><td>{resource.name}</td><td>{resource.resource_type}</td><td>{resource.quantity} {resource.unit}</td><td>{resource.latitude}, {resource.longitude}</td><td>{resource.status}</td></tr>)}
+            {resources.map(resource => <tr key={resource.id}><td>{resource.name}</td><td>{resource.resource_type}</td><td>{resource.quantity} {resource.unit}</td><td>{resource.latitude}, {resource.longitude}</td><td>{resource.status}</td><td><button className="btn-outline" type="button" disabled={saving} onClick={() => editResource(resource)}>Edit</button> <button className="btn-outline" type="button" disabled={saving} onClick={() => removeResource(resource)}>Remove</button></td></tr>)}
           </tbody>
         </table>
       </div>

@@ -35,6 +35,7 @@ def risk_points(
                     "disaster_type": item.disaster_type,
                     "risk_score": item.risk_score,
                     "risk_level": item.risk_level,
+                    "verification_status": "unverified_saved_record",
                     "created_at": item.created_at.isoformat(),
                 },
             }

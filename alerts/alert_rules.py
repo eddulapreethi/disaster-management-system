@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+import math
+import os
 from typing import Literal
 
 RiskLevel = Literal["low", "moderate", "high", "critical"]
@@ -17,6 +19,17 @@ THRESHOLDS: tuple[tuple[float, RiskLevel], ...] = (
     (30.0, "moderate"),
     (0.0, "low"),
 )
+
+
+def get_minimum_alert_score() -> float:
+    raw = os.getenv("ALERT_MINIMUM_SCORE", "30")
+    try:
+        threshold = float(raw)
+    except ValueError as error:
+        raise RuntimeError("ALERT_MINIMUM_SCORE must be a number between 0 and 100.") from error
+    if not math.isfinite(threshold) or not 0 <= threshold <= 100:
+        raise RuntimeError("ALERT_MINIMUM_SCORE must be a number between 0 and 100.")
+    return threshold
 
 
 def classify_risk_score(score: float) -> RiskLevel:

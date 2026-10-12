@@ -58,7 +58,7 @@ export default function App() {
             </Routes>
           </main>
         </div>
-        <footer>Connected to FastAPI backend at {import.meta.env.VITE_API_BASE || 'http://localhost:8000'} — falls back to an offline estimate if unreachable.</footer>
+        <footer>Backend: {import.meta.env.VITE_API_BASE || 'http://localhost:8000'}. Offline estimates are not generated when the backend is unavailable.</footer>
       </div>
     </BrowserRouter>
   )

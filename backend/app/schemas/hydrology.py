@@ -41,19 +41,29 @@ class HydrologySourceStatus(BaseModel):
     source: str
     resource_id: str
     status: ReadinessStatus
+    freshness_status: ReadinessStatus
+    collection_status: str
     message: str | None
     last_observation: datetime | None
+    observation_age_seconds: int | None
     last_fetch: datetime | None
+    station_id: str | None
     latest_station: str | None
+    update_frequency: str
+    stale_after_hours: int
     water_level: float | None
     water_level_unit: str | None = None
     discharge: float | None
     rainfall: float | None
     rainfall_unit: str | None = None
     records_received: int
+    records_returned: int
+    valid_records: int
     inserted_count: int
     duplicates_skipped: int
     parse_errors: int
+    newer_observation_found: bool
+    latest_error: str | None
 
     @field_serializer("last_observation", "last_fetch", when_used="json")
     def serialize_utc_timestamp(self, value: datetime | None) -> str | None:
@@ -72,6 +82,7 @@ class HydrologyStatusResponse(BaseModel):
 class DataReadinessResponse(BaseModel):
     checked_at: datetime
     sources: dict[str, dict[str, Any]]
+    historical_data: dict[str, Any]
     features: dict[str, Any]
     ml_model: dict[str, Any]
     prediction: dict[str, Any]

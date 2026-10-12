@@ -24,6 +24,7 @@ export default function RiskMapPage() {
             lat,
             lng,
             risk: properties.risk_score,
+            verificationStatus: properties.verification_status,
             createdAt: properties.created_at,
           }
         })
@@ -42,7 +43,7 @@ export default function RiskMapPage() {
   return (
     <div>
       <h2 className="title">Regional risk map</h2>
-      <p className="sub">Saved predictions for your account. Click a marker to inspect its location and risk score.</p>
+      <p className="sub">Saved historical records for your account only. Scores are unverified saved values, not forecasts or emergency guidance.</p>
       {loading && <div className="card">Loading saved risk locations...</div>}
       {error && <div className="card" role="alert">{error}</div>}
       {!loading && !error && points.length === 0 && <div className="card">No saved predictions to map yet. Run a prediction first.</div>}
@@ -51,7 +52,7 @@ export default function RiskMapPage() {
         <div className="detailbox">
           <h4>{selected.name}</h4>
           <div style={{ color: 'var(--ink2)', fontSize: '.8rem', marginBottom: '.5rem' }}>{selected.disasterType}</div>
-          <div className="kv"><span>Risk score</span><span className={`pill ${riskBand(selected.risk) === 'medium' ? 'med' : riskBand(selected.risk)}`}>{selected.risk}/100</span></div>
+          <div className="kv"><span>Legacy score (unverified)</span><span className={`pill ${riskBand(selected.risk) === 'medium' ? 'med' : riskBand(selected.risk)}`}>{selected.risk}/100</span></div>
           <div className="kv"><span>Coordinates</span><span>{selected.lat.toFixed(4)}, {selected.lng.toFixed(4)}</span></div>
           <div className="kv"><span>Prediction time</span><span>{new Date(selected.createdAt).toLocaleString()}</span></div>
         </div>

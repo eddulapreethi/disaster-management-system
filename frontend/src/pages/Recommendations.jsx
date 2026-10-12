@@ -50,7 +50,8 @@ export default function Recommendations() {
   return (
     <div>
       <h2 className="title">AI emergency recommendations</h2>
-      <p className="sub">Guidance is generated from your latest saved prediction and, when available, your latest simulation.</p>
+      <p className="sub">Suggestions are generated from saved records and/or a Digital Twin scenario. Saved scores and simulations are unverified estimates, not a confirmed forecast or official warning.</p>
+      {hasPrediction && <div className="card explain" role="note">The flood model is not ready. These recommendations are general precautionary guidance and must not be interpreted as confirmation that a flood will occur. Follow official local alerts and instructions.</div>}
       {loading && <div className="card">Generating recommendations...</div>}
       {error && <div className="card" role="alert">{error}</div>}
       {!loading && !error && !hasPrediction && <div className="card">Run a prediction before requesting recommendations. <Link to="/risk-prediction">Open risk prediction</Link></div>}

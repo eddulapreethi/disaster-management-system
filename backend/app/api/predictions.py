@@ -36,6 +36,7 @@ def predict(
     project_root = str(Path(__file__).resolve().parents[3])
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
+    from alerts.alert_rules import get_minimum_alert_score
     from alerts.alert_generator import generate_alert
 
     alert, _decision = generate_alert(
@@ -44,14 +45,16 @@ def predict(
             "risk_score": prediction.risk_score,
             "latitude": prediction.latitude,
             "longitude": prediction.longitude,
-        }
+        },
+        minimum_alert_score=get_minimum_alert_score(),
     )
+    saved_alert = None
     if alert is not None:
-        create_alert(db, user, AlertCreate(**alert.to_backend_payload()))
+        saved_alert = create_alert(db, user, AlertCreate(**alert.to_backend_payload()))
     return {
         "prediction": prediction,
         "recommendations": get_recommendations(data.disaster_type, prediction.risk_level),
-        "alert_generated": alert is not None,
+        "alert_generated": saved_alert is not None,
         **details,
     }
 

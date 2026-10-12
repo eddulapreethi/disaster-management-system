@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
@@ -16,6 +16,10 @@ class HydrologyCollectionState(Base):
     last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_successful_fetch_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_observation_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    records_returned: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    valid_records: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    newer_observation_found: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     source_record_high_watermark: Mapped[int | None] = mapped_column(Integer, nullable=True)
     records_received: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     inserted_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

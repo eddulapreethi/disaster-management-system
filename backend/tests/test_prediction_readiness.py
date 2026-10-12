@@ -54,7 +54,9 @@ class PredictionReadinessTests(unittest.TestCase):
         self.assertEqual(readiness["ml_model"]["status"], "NOT_READY")
         self.assertIn("No trained model artifact", readiness["ml_model"]["message"])
         self.assertEqual(readiness["features"]["status"], "NOT_READY")
-        self.assertIn("authoritative units", readiness["features"]["message"])
+        self.assertEqual(readiness["features"]["contract_status"], "VALIDATED")
+        self.assertEqual(readiness["features"]["legacy_feature_schema_status"], "RETIRED")
+        self.assertIn("No compatible model or live runtime feature builder", readiness["features"]["message"])
         self.assertEqual(readiness["prediction"]["status"], "NOT_READY")
         self.assertIn("not verified", readiness["prediction"]["message"])
 

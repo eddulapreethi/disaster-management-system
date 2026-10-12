@@ -25,6 +25,8 @@ Supported product features include saved risk estimates, risk-map visualization,
 
 The application has no role-based user system. Login and registration use the backend's ordinary user account endpoints; the returned bearer token is stored in browser `localStorage` and sent with protected API requests.
 
+Inventory supports create, edit, remove and list operations; resource plans reserve persisted stock and report shortages. Alert cards display persisted API fields and explicitly label automated estimates as not official warnings. Alert listing is read-only. Scenario runs require all three weather measurements and will not substitute defaults when the data is incomplete.
+
 The authenticated assistant at `/assistant` sends ordinary questions to the configured Ollama `qwen2.5:3b` model through its OpenAI-compatible API; failures never fall back to a cloud provider. Follow-up context is limited to the latest eight user/assistant messages. Questions about documented project capabilities can include relevant passages retrieved from repository documentation; saved predictions, readiness, weather and hydrology questions use backend services and stored records instead of model guesses. The assistant has no general web-search integration, so it does not claim live external research. Its chat request allows up to 125 seconds for local inference; other API calls keep the standard 8-second timeout. Backend health and configured model availability are available through authenticated `GET /api/assistant/status`.
 
 ## Run Locally
@@ -41,6 +43,7 @@ Vite serves the frontend at <http://localhost:5173>. To create and preview a pro
 ```powershell
 npm run build
 npm run preview
+npm test
 ```
 
 ## Backend URL
@@ -54,6 +57,8 @@ VITE_API_BASE=http://localhost:8000
 The shared API client checks the backend root and prefixes feature requests with `/api`. The risk estimate screen uses a location-matched, fresh weather observation from the backend and sends its observation ID to `/api/predictions`; the backend rechecks that the record exists, matches the location, and is fresh. It does not invent weather defaults or fall back to a browser-side demo result. Until the 20-feature source/units and runtime mapping are validated and a compatible artifact is trained, the UI result is only an explicitly labeled demonstrator weather heuristic—not a calibrated probability or forecast. See `../ml/README.md` for current model readiness and required training data. The risk map and alerts read the signed-in user's saved backend records; simulation results and resource plans also use backend APIs.
 
 The backend polls Open-Meteo and public NWDP/CWC telemetry on configurable schedules and stores observations; the dashboard displays a data-readiness panel with observation/fetch times and stale/unavailable states. CWC water-level and rainfall sources are hourly, so polling every minute does not guarantee a new measurement every time. Satellite search is available in the backend but is not yet displayed in the React UI. Licensed, aligned flood training data, a trained model artifact, PostGIS runtime deployment, and external SMS/email/push delivery are not included yet.
+
+The frontend unit tests use Node's built-in test runner (`node --test`) and cover API alert-field presentation and weather-to-simulation validation; they are not browser-driven end-to-end tests.
 
 ## Frontend Layout
 
