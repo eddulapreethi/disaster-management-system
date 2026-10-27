@@ -8,16 +8,11 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from ml.preprocessing.acquire_open_meteo_archive import DEFAULT_OUTPUT as DEFAULT_ARCHIVE
 from ml.preprocessing.file_integrity import sha256_file
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_RAW = (
-    PROJECT_ROOT
-    / "datasets"
-    / "weather"
-    / "raw"
-    / "open_meteo_koch_2020-2024_best_match.json"
-)
+DEFAULT_RAW = DEFAULT_ARCHIVE
 DEFAULT_OUTPUT = PROJECT_ROOT / "datasets" / "processed" / "koch_historical_daily_predictors.csv"
 SCHEMA_VERSION = "flood-environmental-predictors-v1"
 TARGET_ID = "cwc_gauge_danger_level_exceedance_24h_v1"

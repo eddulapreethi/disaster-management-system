@@ -1,5 +1,5 @@
 # Weather Training Data
 
-Store authorized historical weather data used for model development here, such as time, location, temperature, precipitation, humidity, wind speed and pressure. Live or near-real-time observations must be fetched by a backend data-collection service and stored as application records; they do not belong in this training-data directory.
+The current weather observations snapshot is stored here. The canonical raw Open-Meteo archive and its acquisition manifest belong at `ml/datasets/raw_sources/open_meteo/archive.json` and `ml/datasets/raw_sources/open_meteo/archive.manifest.json`, which are the paths checked by the flood readiness service. Do not keep a second default copy under `datasets/weather/raw`.
 
-The current model training pipeline does not ingest raw weather columns directly. Convert and validate them into the model's documented flood features before training, and record source, license, units, timezone, spatial resolution and preprocessing steps. No sample dataset is included.
+Live or near-real-time observations must be fetched by a backend data-collection service and stored as application records. Historical raw data is not automatically training-ready: review source permissions, units, UTC dates, returned grid coordinates, spatial/model metadata availability, and gauge/catchment suitability before feature preparation. A manifest records provenance but does not establish licensing approval. No sample archive is included.

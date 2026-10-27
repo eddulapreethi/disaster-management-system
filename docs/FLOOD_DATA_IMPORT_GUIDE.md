@@ -62,7 +62,30 @@ An adapter error such as “does not match an explicitly reviewed mapping” req
 
 ### Weather archive conversion and rerun commands
 
-Use only an authorized historical archive for the gauge/grid point under review. The feature builder accepts the project's Open-Meteo Archive JSON response (not CSV), reads its sidecar archive manifest, checks the required daily variables, and writes the six contract features plus a data-quality/provenance manifest. Its default archive is a single Kochi study point; that file is not multi-gauge coverage. For each intended grid location, acquire/retain a matching archive and manifest under `raw_sources`; do not label unrelated coordinates as a gauge match or combine grids without an explicit, reviewed procedure.
+The acquisition command defaults to the existing Kochi coordinates (9.9312, 76.2673), the existing 2020-01-01 through 2024-12-31 date range, and UTC. Its default raw archive and sidecar manifest are exactly the paths checked by `flood_target_readiness.py`: `ml/datasets/raw_sources/open_meteo/archive.json` and `archive.manifest.json`.
+
+```powershell
+python -m ml.preprocessing.acquire_open_meteo_archive
+```
+
+No archive is acquired by running the test suite. Before making a real request, review provider terms and avoid overwriting existing files. The command refuses to overwrite either the archive or its manifest unless `--force` is explicitly supplied.
+
+For a non-default location, provide both WGS 84 coordinates and an explicit output path. Use only coordinates from an authoritative gauge record after confirming the gauge identity; this does not establish that the weather grid is hydrologically representative. To put the selected archive at the readiness path, use:
+
+```powershell
+python -m ml.preprocessing.acquire_open_meteo_archive `
+  --latitude <reviewed_gauge_latitude> `
+  --longitude <reviewed_gauge_longitude> `
+  --start-date 2020-01-01 `
+  --end-date 2024-12-31 `
+  --output ml/datasets/raw_sources/open_meteo/archive.json
+```
+
+Do not use `--force` unless replacing that exact archive and its manifest is explicitly intended and authorized. The readiness service currently checks one canonical archive path; separately named per-gauge archives are not automatically discovered as multi-gauge coverage.
+
+The manifest distinguishes requested coordinates from provider-returned grid coordinates and records the requested date range, returned dates, UTC settings, units, row count, retrieval time, and source-file hash. The request asks for `best_match`; the manifest reports the model and spatial resolution as unavailable unless the response itself supplies those fields. It records licensing evidence as `NOT_VERIFIED`; a generated manifest or a catalog URL is not permission.
+
+The feature builder accepts the Open-Meteo Archive JSON response (not CSV), reads its sidecar manifest, checks required daily variables, and writes the six contract features plus a data-quality/provenance manifest. It uses the same canonical archive path by default; an explicit `--input` supports a separately reviewed archive without copying it into another competing default location. One archive is not multi-gauge coverage. Do not label unrelated coordinates as a gauge match or combine grids without an explicit, reviewed procedure.
 
 ```powershell
 python -m ml.preprocessing.flood_environmental_dataset `
@@ -70,7 +93,7 @@ python -m ml.preprocessing.flood_environmental_dataset `
   --output ml/datasets/flood_training/prepared_predictors.csv
 ```
 
-The `--input` must have a matching `<archive>.manifest.json` created with the source archive, not a hand-written or illustrative manifest. Confirm that the manifest's requested/returned coordinates, model, date range, units, and license/terms apply to the intended location and use.
+The `--input` must have a matching `<archive>.manifest.json` created with the source archive, not a hand-written or illustrative manifest. Review requested and returned coordinates, date range, units, and terms. Provider model identity and native resolution may be unavailable; do not infer them from the `best_match` request.
 
 Once every canonical evidence file and the five source entries in `source_metadata.json` have been reviewed, assess candidate windows (this does not create labels):
 
@@ -87,6 +110,7 @@ python -m ml.preprocessing.flood_training_data_import `
 ```
 
 The metadata entry for each source (`observations`, `danger_levels`, `crosswalk`, `coverage`, `predictors`) must include `source_name,source_url,access_status,license_status,license_reference,license_evidence_reference,retrieved_at_utc,source_timezone,raw_source_file,raw_source_sha256,field_mapping_reference`. For normalized NWDP observations, reference the unchanged raw export and its actual hash; for predictors, reference the original weather JSON and its manifest, not just the derived CSV. Store the applicable source-specific documentary license evidence in `ml/datasets/flood_training/licensing_evidence.json`; an Open-Meteo URL or NWDP “Other (Open)” catalog string is not proof that the intended reuse is permitted.
+For `observations`, also declare `water_level_unit` (must be `m`) in `source_metadata.json`. Keep the gauge-specific `vertical_datum` in the reviewed mapping and normalized observations, with the same datum recorded in official danger-level rows. These declarations are consistency checks, not provider authentication.
 
 Rerun the report after imports or evidence review:
 
@@ -130,6 +154,27 @@ The sample files in `ml/preprocessing/templates/` demonstrate headers only. Ever
 Omit `--observation-timezone` only when every observation timestamp itself carries an explicit timezone. The timezone flag applies only to naive observation timestamps; threshold, coverage, review, retrieval, and predictor times must carry a timezone.
 
 The exact commands above use actual project paths from the repository root. Never modify a provider's raw export in place. The validator writes a *window assessment* CSV and a manifest of input/output SHA-256 hashes; it does not emit a training-ready label dataset.
+
+### Gauge-package preflight
+
+Before attempting window assessment, check the prospective source package without creating labels:
+
+```powershell
+python -m ml.preprocessing.flood_gauge_package_preflight `
+  --root . `
+  --output ml/datasets/flood_training/gauge_package_preflight.json
+```
+
+The report checks the official-site mapping, canonical gauge observations, danger-level intervals, coverage declarations and gaps, weather crosswalk/grid alignment, source/normalization provenance, timestamps/timezones, and the five-source permission inventory. It lists missing files, invalid fields, and evidence still needed. It also checks the unchanged NWDP export at `ml/datasets/raw_sources/nwdp/cwc_export.csv` and provider metadata at `resource_metadata.json`; the observation normalizer manifest must hash-link those raw inputs, the canonical site mapping, and output. For documented gaps, add `gap_start_utc,gap_end_utc,gap_reason` columns to the coverage CSV; a declared gap remains `UNVERIFIED` for completeness and cannot support a negative window.
+
+Each requirement uses one of four states:
+
+- `MISSING`: a required file or declaration is absent.
+- `INVALID`: syntax, field values, hashes, timestamps, units, coordinates, or consistency checks failed.
+- `UNVERIFIED`: values are illustrative/test-only, unknown, declare a gap, or await external source/scientific verification.
+- `READY`: local package syntax and declared fields pass only. `source_verification_status` remains `NOT_VERIFIED` and `scientific_review_status` remains `NOT_REVIEWED`; this is not approval.
+
+The report's `training_readiness` is always `NOT_READY`. It is also included as `gauge_package_preflight` in the normal flood-target readiness report and backend `/api/data-readiness` response. A syntactically complete package can be ready for external review without being official evidence. The checks cannot authenticate a gauge registry, source export, license/permission record, monitoring completeness claim, or catchment assessment. Template rows and `TEST_ONLY` examples never count as evidence.
 
 ### Canonical field meanings
 
