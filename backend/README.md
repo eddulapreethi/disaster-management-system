@@ -4,15 +4,20 @@ FastAPI backend for the DisasterGuard AI frontend. It has user authentication bu
 
 ## Setup (Windows)
 
-From `C:\MajorProject\disaster-management-system\backend`:
+From the project directory:
 
 ```powershell
+cd backend
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
 Create `.env` with a long random `JWT_SECRET_KEY`. A trained flood-model artifact is not currently included. `GET /api/data-readiness` validates the configured model artifact, feature manifest, and runtime feature path rather than relying on file presence. The current 20-feature schema has no verified units/source mapping, and runtime weather/hydrology does not produce those features; see `../ml/README.md` for the measured data gaps and training requirements. Do not interpret the current demonstrator heuristic as a calibrated probability or forecast.
+
+### Local database files
+
+The default SQLite database is `backend/disasterguard.db`. Relative SQLite paths in `DATABASE_URL` (including the example `sqlite:///./disasterguard.db`) are resolved from the backend directory, so starting the API from a different working directory will still use the same database. Keep local database files and `.env` out of source control. Any older database copies are kept separately under `backend/data/legacy/` and are not used by the application.
 
 ### General-purpose assistant
 

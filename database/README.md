@@ -2,6 +2,8 @@
 
 The SQL scripts here describe the runtime PostgreSQL/PostGIS application database. They are separate from `ml/datasets/` (training/evaluation inputs) and `gis/data/` (map display files). Do not commit a database dump or duplicate those datasets here.
 
+Local SQLite development uses `backend/disasterguard.db`; relative SQLite `DATABASE_URL` values resolve from the backend directory regardless of the launch directory. An older local database copy is preserved at `backend/data/legacy/disasterguard-root.db` and is not used by the application. Both files are ignored by Git.
+
 ## Apply the schema
 
 Create a PostgreSQL database, ensure the PostGIS extension is available, then apply scripts from this directory in this order:
