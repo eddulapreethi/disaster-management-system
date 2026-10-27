@@ -1,5 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { apiPost } from '../services/api'
+import {
+  clearAssistantConversation,
+  getAssistantStorage,
+  INITIAL_ASSISTANT_MESSAGE,
+  loadAssistantDraft,
+  loadAssistantConversation,
+  saveAssistantDraft,
+  saveAssistantConversation,
+} from '../services/assistantConversation'
 
 const QUICK_QUESTIONS = [
   'What is a flood?',
@@ -15,22 +24,32 @@ function formatMessageText(text) {
 }
 
 export default function Assistant() {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      text: 'Ask about disaster-management concepts, this project, or its latest stored system data.',
-    },
-  ])
-  const [question, setQuestion] = useState('')
+  const [messages, setMessages] = useState(() => loadAssistantConversation(getAssistantStorage()))
+  const [question, setQuestion] = useState(() => loadAssistantDraft(getAssistantStorage()))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [failedQuestion, setFailedQuestion] = useState('')
+  const [historySaveError, setHistorySaveError] = useState(false)
+  const [draftSaveError, setDraftSaveError] = useState(false)
+
+  useEffect(() => {
+    setHistorySaveError(!saveAssistantConversation(getAssistantStorage(), messages))
+  }, [messages])
+
+  function startNewConversation() {
+    setHistorySaveError(!clearAssistantConversation(getAssistantStorage()))
+    setMessages([{ ...INITIAL_ASSISTANT_MESSAGE, created_at: new Date().toISOString() }])
+    setQuestion('')
+    setDraftSaveError(false)
+    setError('')
+    setFailedQuestion('')
+  }
 
   async function ask(value = question, retry = false) {
     const submitted = value.trim()
     if (!submitted || loading) return
 
-    const nextUserMessage = { role: 'user', text: submitted }
+    const nextUserMessage = { role: 'user', text: submitted, created_at: new Date().toISOString() }
     const historyMessages = messages
       .filter((message, index) => index > 0 && (message.role === 'assistant' || message.role === 'user'))
       .map(message => ({ role: message.role, text: message.text }))
@@ -42,6 +61,7 @@ export default function Assistant() {
 
     if (!retry) setMessages(current => [...current, nextUserMessage])
     setQuestion('')
+    setDraftSaveError(!saveAssistantDraft(getAssistantStorage(), ''))
     setError('')
     setLoading(true)
     try {
@@ -60,6 +80,7 @@ export default function Assistant() {
         {
           role: 'assistant',
           text: response.answer,
+          created_at: new Date().toISOString(),
           category: response.category,
           disclaimer: response.disclaimer,
           sources: response.sources || [],
@@ -82,6 +103,7 @@ export default function Assistant() {
     <div>
       <h2 className="title">DisasterGuard assistant</h2>
       <p className="sub">Ask general questions or about DisasterGuard. Open-ended answers use the local Ollama model; project data is answered from stored records. It is not an emergency authority.</p>
+      <button className="btn-outline" type="button" onClick={startNewConversation} disabled={loading}>New conversation</button>
       <section className="chatwrap" aria-label="DisasterGuard assistant chat">
         <div className="chatlog" aria-live="polite">
           {messages.map((message, index) => (
@@ -114,7 +136,11 @@ export default function Assistant() {
           <input
             aria-label="Ask a question"
             value={question}
-            onChange={event => setQuestion(event.target.value)}
+            onChange={event => {
+              const draft = event.target.value
+              setQuestion(draft)
+              setDraftSaveError(!saveAssistantDraft(getAssistantStorage(), draft))
+            }}
             maxLength={1000}
             placeholder="Ask anything, or ask about project and stored data…"
             disabled={loading}
@@ -122,6 +148,7 @@ export default function Assistant() {
           <button className="btn" type="submit" disabled={loading || !question.trim()}>{loading ? 'Checking…' : 'Ask'}</button>
         </form>
       </section>
+      {(historySaveError || draftSaveError) && <p role="alert" className="error">The prompt or conversation could not be saved in this browser tab; it may be lost when navigating away.</p>}
       {error && (
         <p role="alert" className="error">
           {error}

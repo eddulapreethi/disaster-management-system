@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 import math
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
 from typing import Any
+
+from ml.preprocessing.file_integrity import sha256_file
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATASETS_DIR = PROJECT_ROOT / "ml" / "datasets" / "historical_data" / "processed"
@@ -34,11 +35,7 @@ MISSING_VALUES = {"", "na", "n/a", "null", "none", "-"}
 
 
 def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return sha256_file(path)
 
 
 def _is_missing(value: Any) -> bool:
@@ -91,7 +88,7 @@ def _load_dataset(
     dataset_path = _safe_child(datasets_dir, manifest_path.name.removesuffix(".manifest.json") + ".csv", "Dataset path")
     if not dataset_path.is_file():
         raise ValueError(f"Dataset CSV is missing: {dataset_path.name}.")
-    dataset_hash = _sha256(dataset_path)
+    dataset_hash = sha256_file(dataset_path, normalize_csv_line_endings=True)
     if manifest.get("dataset_sha256") != dataset_hash:
         raise ValueError(f"Dataset SHA-256 does not match {manifest_path.name}.")
     if validation.get("sha256") != dataset_hash:

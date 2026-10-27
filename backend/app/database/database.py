@@ -80,6 +80,24 @@ def _upgrade_sqlite_hydrology_schema(bind=engine) -> None:
                 )
 
 
+def _upgrade_sqlite_resource_constraints(bind=engine) -> None:
+    if bind.dialect.name != "sqlite" or not inspect(bind).has_table("resources"):
+        return
+
+    with bind.begin() as connection:
+        for operation, event in (("insert", "INSERT"), ("update", "UPDATE")):
+            connection.execute(
+                text(
+                    f"CREATE TRIGGER IF NOT EXISTS trg_resources_validate_{operation} "
+                    f"BEFORE {event} ON resources "
+                    "WHEN NEW.quantity IS NULL OR NEW.quantity < 0 "
+                    "OR NEW.latitude IS NULL OR NEW.latitude NOT BETWEEN -90 AND 90 "
+                    "OR NEW.longitude IS NULL OR NEW.longitude NOT BETWEEN -180 AND 180 "
+                    "BEGIN SELECT RAISE(ABORT, 'Resource quantity or coordinates are invalid'); END"
+                )
+            )
+
+
 def create_tables() -> None:
     # Import models so SQLAlchemy registers their tables before create_all.
     from app.models import (  # noqa: F401
@@ -97,6 +115,7 @@ def create_tables() -> None:
     Base.metadata.create_all(bind=engine)
     _upgrade_sqlite_weather_schema()
     _upgrade_sqlite_hydrology_schema()
+    _upgrade_sqlite_resource_constraints()
 
 
 def get_db() -> Generator[Session, None, None]:

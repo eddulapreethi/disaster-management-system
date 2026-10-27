@@ -1,4 +1,5 @@
 from collections.abc import Mapping, Sequence
+import math
 from typing import Any
 
 from gis.gis_processing import haversine_distance_km
@@ -21,25 +22,46 @@ def allocate_resources(
         resource_type = str(demand.get("resource_type", "")).strip()
         if not resource_type:
             raise ValueError(f"Demand at index {index} has no resource_type.")
-        quantity = int(demand.get("quantity", 0))
-        if quantity < 0:
-            raise ValueError(f"Demand at index {index} has negative quantity.")
+        raw_quantity = demand.get("quantity", 0)
+        if isinstance(raw_quantity, bool) or not isinstance(raw_quantity, int):
+            raise ValueError(f"Demand at index {index} quantity must be an integer.")
+        quantity = raw_quantity
+        if quantity <= 0:
+            raise ValueError(f"Demand at index {index} quantity must be greater than zero.")
+        if isinstance(demand["latitude"], bool) or isinstance(demand["longitude"], bool):
+            raise ValueError(f"Demand at index {index} has invalid coordinates.")
         latitude = float(demand["latitude"])
         longitude = float(demand["longitude"])
-        if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+        if (
+            not math.isfinite(latitude)
+            or not math.isfinite(longitude)
+            or not (-90 <= latitude <= 90 and -180 <= longitude <= 180)
+        ):
             raise ValueError(f"Demand at index {index} has invalid coordinates.")
-        priority_score = float(demand.get("priority_score", 0.0))
-        if not 0 <= priority_score <= 100:
+        raw_priority = demand.get("priority_score", 0.0)
+        if isinstance(raw_priority, bool):
+            raise ValueError(f"Demand at index {index} priority_score must be numeric.")
+        priority_score = float(raw_priority)
+        if not math.isfinite(priority_score) or not 0 <= priority_score <= 100:
             raise ValueError(f"Demand at index {index} priority_score must be between 0 and 100.")
+        demand_id = str(demand.get("id", index)).strip()
+        if not demand_id:
+            raise ValueError(f"Demand at index {index} has a blank id.")
+        unit = demand.get("unit")
+        if unit is not None:
+            unit = str(unit).strip()
+            if not unit:
+                raise ValueError(f"Demand at index {index} has a blank unit.")
         normalized.append(
             {
                 **demand,
-                "id": str(demand.get("id", index)),
+                "id": demand_id,
                 "resource_type": resource_type,
                 "quantity": quantity,
                 "latitude": latitude,
                 "longitude": longitude,
                 "priority_score": priority_score,
+                "unit": unit,
                 "_position": index,
             }
         )

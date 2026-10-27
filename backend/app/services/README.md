@@ -27,6 +27,8 @@ For an existing PostgreSQL database, inspect possible duplicate rows and apply `
 
 `GET /api/weather/latest` returns the latest stored record per configured location, including `observation_time`, `fetched_at`, `created_at`, and `source`.
 
+`GET /api/weather/current?latitude=51.5072&longitude=-0.1276` requests fresh Open-Meteo current conditions for the authenticated user's selected coordinates. This on-demand endpoint is independent of `WEATHER_LOCATIONS_JSON`, validates the provider timestamp and required measurements, and returns an explicit error when the provider cannot serve the location. It does not create an observation record.
+
 `GET /api/weather/status` reports:
 
 - `READY`: a recent valid observation exists in the database and the latest collection cycle did not fail.
@@ -56,6 +58,10 @@ GET http://127.0.0.1:8000/api/data-readiness
 ```
 
 Run offline tests from `backend/` with `python -m pytest tests/test_weather_service.py -q`. Tests mock the source and do not call Open-Meteo.
+
+The Digital Twin API fetches this same on-demand weather baseline on the backend, then saves the requested coordinates and provider observation time with each illustrative simulation. Flood scenarios may add a user-entered hypothetical rainfall amount; a percentage change to zero current precipitation remains zero. The output is weather-only and does not include hydrology, terrain, drainage, exposure, or a time-series rainfall window, so a zero score is not evidence of zero disaster risk.
+
+The assistant stores its transcript and unsent prompt draft in per-tab `sessionStorage` so both are restored after route changes and refreshes, without persisting user conversations in the application database. Starting a new conversation or signing out clears both; common labeled credentials, bearer tokens, and recognizable key formats are redacted before browser persistence. Ollama's installed-model list is cached in backend memory for 20 seconds to avoid an extra local HTTP check on every prompt, and each chat request asks Ollama to keep the configured model loaded for ten minutes.
 
 ## NWDP/CWC Hydrology
 

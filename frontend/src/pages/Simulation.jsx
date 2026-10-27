@@ -1,7 +1,5 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { apiPost } from '../services/api'
-import { fetchLiveWeather } from '../services/weatherService'
-import { simulationMeasurements } from '../services/simulationService'
 import { riskColor } from '../services/stationData'
 import LocationSearchField from '../components/LocationSearchField'
 
@@ -20,6 +18,7 @@ export default function Simulation() {
   const [selected, setSelected] = useState(DEFAULT_LOCATION)
   const [disasterType, setDisasterType] = useState('flood')
   const [rainfallChange, setRainfallChange] = useState(0)
+  const [additionalRainfall, setAdditionalRainfall] = useState(0)
   const [windChange, setWindChange] = useState(0)
   const [temperatureChange, setTemperatureChange] = useState(0)
   const [result, setResult] = useState(null)
@@ -30,11 +29,12 @@ export default function Simulation() {
     setLoading(true)
     setError('')
     try {
-      const weather = await fetchLiveWeather(selected.latitude, selected.longitude)
       const simulation = await apiPost('/simulations', {
         disaster_type: disasterType,
-        ...simulationMeasurements(weather),
+        latitude: selected.latitude,
+        longitude: selected.longitude,
         rainfall_change_percent: rainfallChange,
+        additional_rainfall_mm: additionalRainfall,
         wind_change_percent: windChange,
         temperature_change_c: temperatureChange,
       })
@@ -64,13 +64,18 @@ export default function Simulation() {
           </div>
 
           <label style={{ marginTop: '.8rem' }}>Hazard type</label>
-          <select value={disasterType} onChange={event => setDisasterType(event.target.value)}>
+          <select value={disasterType} onChange={event => { setDisasterType(event.target.value); setAdditionalRainfall(0); setWindChange(0); setTemperatureChange(0) }}>
             <option value="flood">Flood</option>
             <option value="storm">Storm</option>
             <option value="wildfire">Wildfire</option>
           </select>
           <label style={{ marginTop: '.8rem' }}>Rainfall increase (%) <span className="rangeval">{rainfallChange}</span></label>
           <input type="range" min="-100" max="500" value={rainfallChange} onChange={event => setRainfallChange(Number(event.target.value))} />
+          {disasterType === 'flood' && <>
+            <label style={{ marginTop: '.8rem' }}>Hypothetical additional rainfall (mm) <span className="rangeval">{additionalRainfall}</span></label>
+            <input type="range" min="0" max="500" value={additionalRainfall} onChange={event => setAdditionalRainfall(Number(event.target.value))} />
+            <p className="explain">A percentage change alone remains zero when current precipitation is zero. This explicit amount is a user-defined what-if input, not a forecast.</p>
+          </>}
           {(disasterType === 'storm' || disasterType === 'wildfire') && <>
             <label style={{ marginTop: '.8rem' }}>Wind increase (%) <span className="rangeval">{windChange}</span></label>
             <input type="range" min="-100" max="500" value={windChange} onChange={event => setWindChange(Number(event.target.value))} />
@@ -91,7 +96,8 @@ export default function Simulation() {
               </div>
               <div className="kv"><span>Risk change</span><span>{result.score_change > 0 ? '+' : ''}{result.score_change}</span></div>
               <div className="kv"><span>Projected risk level</span><span>{result.scenario_risk_level}</span></div>
-              <div className="kv"><span>Baseline weather</span><span>{result.baseline_conditions.rainfall_mm} mm rain, {result.baseline_conditions.temperature_c} C, {result.baseline_conditions.wind_speed_kmh} km/h wind</span></div>
+              <div className="kv"><span>Baseline weather</span><span>{result.baseline_conditions.rainfall_mm} mm precipitation, {result.baseline_conditions.temperature_c} C, {result.baseline_conditions.wind_speed_kmh} km/h wind</span></div>
+              <div className="kv"><span>Weather source</span><span>{result.weather_source} · observed {new Date(result.weather_observation_time).toLocaleString()}</span></div>
               <div className="reco">{result.note}</div>
             </>
           ) || <p>Choose scenario conditions and run a simulation.</p>}

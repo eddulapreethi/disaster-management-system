@@ -10,6 +10,11 @@ from ml.preprocessing.flood_environmental_dataset import (
     FEATURE_COLUMNS,
     FEATURE_SCHEMA,
     LABEL_COLUMNS,
+    TARGET_DEFINITION,
+    TARGET_GEOGRAPHIC_UNIT,
+    TARGET_ID,
+    TARGET_NEGATIVE_DEFINITION,
+    TARGET_POSITIVE_DEFINITION,
     align_explicit_labels,
     build_predictor_dataset,
     build_predictor_frame,
@@ -44,11 +49,13 @@ def archive_payload(day_count: int = 10) -> dict:
 def approved_target() -> dict:
     return {
         "status": "APPROVED",
-        "definition": "Explicitly observed flood occurrence in the named spatial unit in the next UTC day.",
-        "geographic_unit": "Provider grid location identified by location_id.",
+        "target_id": TARGET_ID,
+        "definition": TARGET_DEFINITION,
+        "geographic_unit": TARGET_GEOGRAPHIC_UNIT,
         "prediction_horizon_hours": 24,
-        "positive_label_definition": "A source record directly confirms flood presence during the complete window.",
-        "negative_label_definition": "A source record confirms complete observation coverage and no flood during the window.",
+        "positive_label_definition": TARGET_POSITIVE_DEFINITION,
+        "negative_label_definition": TARGET_NEGATIVE_DEFINITION,
+        "location_crosswalk_reference": "reviewed-gauge-grid-crosswalk-v1",
         "approval_reference": "reviewed-target-spec-v1",
     }
 
@@ -59,15 +66,21 @@ def labels_for(predictor_rows: pd.DataFrame) -> pd.DataFrame:
     for index, row in selected.iterrows():
         rows.append(
             {
-                "location_id": row["location_id"],
+                "gauge_id": f"gauge-{index}",
+                "grid_location_id": row["location_id"],
+                "location_crosswalk_reference": "reviewed-gauge-grid-crosswalk-v1",
                 "target_window_start_utc": row["candidate_target_window_start_utc"],
                 "target_window_end_utc": row["candidate_target_window_end_utc"],
                 "flood_occurrence": int(index == selected.index[-1]),
                 "label_source": "official-monitoring-record",
                 "source_record_id": f"record-{index}",
-                "label_method": "documented inundation observation",
+                "label_method": "gauge stage compared with effective danger level",
                 "label_confidence": 1.0,
+                "observed_max_water_level_m": 21.0 if index == selected.index[-1] else 12.0,
+                "official_danger_level_m": 20.0,
+                "danger_level_source": "CWC danger-level register row",
                 "coverage_complete": True,
+                "coverage_evidence_reference": "gauge-window-coverage-record.csv",
             }
         )
     return pd.DataFrame(rows, columns=LABEL_COLUMNS)
@@ -87,6 +100,10 @@ def test_machine_readable_contract_matches_candidate_feature_schema() -> None:
 
     assert contract["schema_version"] == "flood-environmental-predictors-v1"
     assert contract["status"] == "CANDIDATE_NOT_READY_FOR_TRAINING_OR_INFERENCE"
+    assert contract["target"]["target_id"] == TARGET_ID
+    assert contract["target"]["definition"] == TARGET_DEFINITION
+    assert contract["target"]["prediction_horizon_hours"] == 24
+    assert contract["target"]["status"] == "PROPOSED_REQUIRES_DOMAIN_APPROVAL"
     assert contract["legacy_schema"]["status"] == "RETIRED_FROM_ACTIVE_INFERENCE"
     assert contract["feature_order"] == list(FEATURE_COLUMNS)
     assert [
@@ -186,6 +203,7 @@ def test_duplicate_and_conflicting_labels_are_counted_or_rejected() -> None:
     conflict = labels.iloc[[0]].copy()
     conflict.loc[:, "flood_occurrence"] = 1
     conflict.loc[:, "coverage_complete"] = True
+    conflict.loc[:, "observed_max_water_level_m"] = 21.0
     with pytest.raises(ValueError, match="conflicting location/window"):
         align_explicit_labels(
             predictors,
@@ -221,7 +239,7 @@ def test_deterministic_predictor_build_writes_manifest_and_quality_report(tmp_pa
     assert first["manifest"]["dataset_sha256"] == second["manifest"]["dataset_sha256"]
     assert first["manifest"]["row_count"] == 4
     assert first["manifest"]["training_suitable"] is False
-    assert first["manifest"]["target_definition"] is None
+    assert first["manifest"]["target_definition"] == TARGET_DEFINITION
     assert first["quality"]["training_status"] == "NOT_READY"
     assert output.with_name("predictors.quality.json").is_file()
 
@@ -236,6 +254,74 @@ def test_label_join_rejects_partial_and_nonmatching_windows() -> None:
 
     labels = labels_for(predictors)
     labels.loc[0, "target_window_start_utc"] = "2020-01-06T00:00:00+05:30"
+    labels.loc[0, "target_window_end_utc"] = "2020-01-07T00:00:00+05:30"
     joined, quality = align_explicit_labels(predictors, labels, approved_target())
     assert quality["unmatched_label_records"] == 1
     assert len(joined) == 1
+
+
+def test_label_join_rejects_unsupported_target_and_invalid_observations() -> None:
+    predictors, _ = build_predictor_frame(archive_payload())
+    predictors = predictors.loc[predictors.loc[:, FEATURE_COLUMNS].notna().all(axis=1)]
+    labels = labels_for(predictors)
+
+    wrong_target = approved_target()
+    wrong_target["target_id"] = "unreviewed-target"
+    with pytest.raises(ValueError, match="does not match the versioned"):
+        align_explicit_labels(predictors, labels, wrong_target)
+
+    below_danger_positive = labels.copy()
+    below_danger_positive.loc[1, "observed_max_water_level_m"] = 19.9
+    with pytest.raises(ValueError, match="Positive labels require a measured stage"):
+        align_explicit_labels(predictors, below_danger_positive, approved_target())
+
+    negative_at_danger = labels.copy()
+    negative_at_danger.loc[0, "observed_max_water_level_m"] = 20.0
+    with pytest.raises(ValueError, match="Negative labels cannot include"):
+        align_explicit_labels(predictors, negative_at_danger, approved_target())
+
+    missing_coverage_reference = labels.copy()
+    missing_coverage_reference.loc[0, "coverage_evidence_reference"] = ""
+    with pytest.raises(ValueError, match="coverage_evidence_reference"):
+        align_explicit_labels(predictors, missing_coverage_reference, approved_target())
+
+    naive_timestamp = labels.copy()
+    naive_timestamp.loc[0, "target_window_start_utc"] = "2020-01-08T00:00:00"
+    with pytest.raises(ValueError, match="timezone offset"):
+        align_explicit_labels(predictors, naive_timestamp, approved_target())
+
+    invalid_coordinates = predictors.copy()
+    invalid_coordinates.loc[invalid_coordinates.index[0], "grid_latitude"] = 91
+    with pytest.raises(ValueError, match="valid WGS 84 bounds"):
+        align_explicit_labels(invalid_coordinates, labels, approved_target())
+
+    incorrect_crosswalk = labels.copy()
+    incorrect_crosswalk.loc[0, "location_crosswalk_reference"] = "different-crosswalk"
+    with pytest.raises(ValueError, match="exact reviewed gauge-to-grid crosswalk"):
+        align_explicit_labels(predictors, incorrect_crosswalk, approved_target())
+
+
+def test_label_join_supports_multiple_gauges_per_weather_grid() -> None:
+    predictors, _ = build_predictor_frame(archive_payload())
+    predictors = predictors.loc[predictors.loc[:, FEATURE_COLUMNS].notna().all(axis=1)]
+    labels = labels_for(predictors)
+    second_gauge = labels.iloc[[0]].copy()
+    second_gauge.loc[:, "gauge_id"] = "another-gauge-on-same-grid"
+
+    joined, quality = align_explicit_labels(
+        predictors,
+        pd.concat([labels, second_gauge], ignore_index=True),
+        approved_target(),
+    )
+
+    assert len(joined) == 3
+    assert quality["distinct_gauge_count"] == 3
+
+
+def test_label_join_requires_issue_time_to_equal_target_window_start() -> None:
+    predictors, _ = build_predictor_frame(archive_payload())
+    predictors = predictors.loc[predictors.loc[:, FEATURE_COLUMNS].notna().all(axis=1)]
+    predictors.loc[predictors.index[0], "prediction_issue_time_utc"] = "2020-01-08T01:00:00Z"
+
+    with pytest.raises(ValueError, match="begin exactly at prediction issue time"):
+        align_explicit_labels(predictors, labels_for(predictors), approved_target())

@@ -2,28 +2,33 @@
 
 **Status:** Historical descriptive analytics are `READY`; supervised training, compatible model, runtime feature inference, and prediction remain `NOT_READY`.
 
-## Intended target
+## Proposed first target (requires approval)
 
-The old model contract calls its regression target `FloodProbability`, but repository evidence does not establish that the values are calibrated event probabilities. The candidate environmental pipeline does not select or construct a flood target; its target status is `UNSELECTED`. There is no validated, per-location negative monitoring coverage from which non-events may be inferred.
+The proposed version-one target is **CWC/NWDP gauge danger-level exceedance within 24 hours**: at an identified gauge, predict whether measured stage reaches or exceeds that gauge's official danger level at any time during `[issue_time_utc, issue_time_utc + 24 hours)`. The geographic unit is the gauge, linked to one Open-Meteo grid point through a documented, reviewed crosswalk. This is a threshold-warning target, not a general inundation label or a calibrated probability. The proposal is recorded as `cwc_gauge_danger_level_exceedance_24h_v1` with status `PROPOSED_REQUIRES_DOMAIN_APPROVAL`.
 
-Before training, the project owner/domain reviewer must approve:
-
-- whether the target is an observed flood occurrence, a continuous severity/index, or a calibrated probability;
-- the geographic unit, event definition, forecast horizon and time window;
-- authoritative positive-label source and a method for complete negative-monitoring coverage;
-- spatial/temporal alignment and grouping rules, including station/site/event leakage controls.
-
-Absence of an event record is not a valid negative label.
+A positive requires a valid stage observation at/above the danger threshold effective at that gauge and time. A negative requires documented complete, quality-controlled gauge observation coverage throughout the full window, with all valid measurements below threshold. An absent EM-DAT record, missing gauge sample, or missing flood report is never a negative.
 
 ## Data available and pipeline state
 
 - The reproducible analytics pipeline validates the six supplied EM-DAT extracts (8,810 rows, 8,810 unique IDs, no cross-extract overlap) and produces descriptive counts/impact summaries. See `docs/HISTORICAL_DATASET_ASSESSMENT.md` and `docs/ML_PIPELINE_EXECUTION_REPORT.md`. Analytics readiness is not training readiness.
 - The repository includes EM-DAT historical disaster records. Those event/impact records do not provide a location/time-matched sequence of environmental predictors plus verified flood/no-flood labels.
+- There are 4,291 reported flood records in the supplied EM-DAT extract; only 1,006 (23.44%) have valid coordinates. The records do not establish non-flood monitoring windows and are not usable as direct gauge-threshold labels.
+- The hydrological snapshot contains water-level observations, but the repository has no authoritative per-gauge danger-level history, complete-window monitoring evidence, or reviewed gauge-to-weather-grid crosswalk. It cannot safely supply positive or negative labels as-is.
+- The NWDP CKAN catalog was checked against CWC's official dataset package. It publicly lists historical Subernarekha hourly resources (1961–1990 and 1991–2020) and current 2026–2030 telemetry. The small 1961–1990 resource response inspected for this task contains only sparse rows dated 1969–1975; the catalog leaves quality-rating and validation-method fields unspecified. Its license is labeled only `Other (Open)`, not a named license. The 1991–2020 resource (about 30 MB) was not downloaded while its terms and quality remain unresolved.
+- An exact NWDP `danger level` package search did not identify a dedicated gauge-threshold register. The CWC Flood Forecasting portal is available, but no historical per-gauge threshold table, effective-date history, or reuse terms were verified. Ask CWC/NWDP for authoritative records and formal reuse terms before using any thresholds.
+- The configured Open-Meteo historical archive is absent. The existing weather snapshot is only 76 observations dated 2026-10-06 through 2026-10-11, is stale, and is not an aligned historical training series.
+- No explicit verified gauge-window label dataset or reliable negative examples are present. The readiness API reports the missing target approval, official threshold table, crosswalk, labels, and archive.
+- Snapshot inventory: the weather extract has 76 observations from 8 configured locations and no missing values in its exported fields; the hydrology extract has 17,957 observations from 32 gauges across two configured sources, with valid coordinates on all rows, but 723 missing water levels, 17,234 missing rainfall values, and no discharge values. Provider/source license terms are unverified for both exports.
 - The pre-existing untracked Open-Meteo archive downloader requests real daily historical environmental predictors at the Kochi study point and writes a hash/provenance manifest. It refuses to overwrite a raw file unless explicitly passed `--force`.
 - The corresponding predictor builder constructs six source-measured weather features: 1-, 3-, and 7-day antecedent precipitation, mean temperature, mean humidity, and maximum wind speed. It records units, requested/returned coordinates, UTC windows, source and file hashes, and missing-value/target limitations.
 - The six candidate features are not the old 20-feature ordinal schema, are explicitly unavailable at live inference, and cannot be passed to the existing model.
 - The current versioned candidate contract is documented in `docs/FEATURE_CONTRACT.md` and `ml/preprocessing/feature_contract.json`; the machine-readable contract is checked against the Python feature schema.
-- The candidate builder can align explicit labels only by exact location and UTC target window, requires documented approval fields, requires evidence fields, and does not infer negatives. A manifest does not authenticate the source or prove a scientific label definition.
+- The candidate builder aligns explicit labels by weather-grid ID and exact UTC window, requires gauge IDs plus the exact reviewed crosswalk reference, checks measured stage against the official threshold, requires complete coverage evidence for negatives, and never infers negatives. A manifest does not authenticate sources or prove scientific validity.
+- The readiness service still always returns `NOT_READY`, and now reports separate statuses for official danger levels, declared vertical-datum agreement, complete observation coverage, candidate negative-window checks, declared gauge/grid review, historical weather coverage, license evidence, target approval, and model evaluation. It distinguishes `syntax_status` from source verification and scientific review. A passing parser or declared approval never satisfies an evidence gate.
+- Expected acquisition/import paths are `ml/datasets/raw_sources/nwdp/`, `ml/datasets/raw_sources/open_meteo/archive.json`, `ml/datasets/raw_sources/open_meteo/archive.manifest.json`, `ml/datasets/flood_training/nwdp_site_mapping.csv`, `ml/datasets/hydrological/raw/gauge_water_level_observations.csv`, `ml/datasets/hydrological/raw/official_gauge_danger_levels.csv`, `ml/datasets/flood_training/gauge_grid_crosswalk.csv`, `ml/datasets/flood_training/gauge_coverage_evidence.csv`, `ml/datasets/flood_training/prepared_predictors.csv`, `ml/datasets/flood_training/window_assessments.csv`, `ml/datasets/flood_training/source_metadata.json`, and `ml/datasets/flood_training/licensing_evidence.json`. The historical Open-Meteo Kochi resource is still a single-point archive, not multi-gauge coverage.
+- `ml/preprocessing/normalize_nwdp_observations.py` converts the inspected NWDP/CWC CSV headers into the canonical observation schema using an exact station/LGD-code/coordinate mapping and an explicitly supplied source timezone. It retains source and mapping hashes in a sidecar manifest, but it does not infer gauge identity, measurement datum, or QC. The environmental dataset processor accepts the authorized Open-Meteo Archive JSON plus its sidecar manifest and writes candidate predictors; it does not treat the JSON or candidate rows as verified gauge-aligned data.
+- The canonical, provenance-hashing manual bundle validator in `ml/preprocessing/flood_training_data_import.py` performs syntactic/evidence consistency checks and emits positive, candidate-negative, or indeterminate assessments. It deliberately does not write `flood_occurrence` training labels or change readiness. A `NEGATIVE_EVIDENCE_CHECKS_PASSED` value is not source verification. See `docs/FLOOD_DATA_IMPORT_GUIDE.md` for the official-source audit, actual-format import commands, per-requirement readiness report, and field contract.
+- Illustrative CSVs under `ml/preprocessing/templates/` contain explicit `ILLUSTRATIVE_ONLY`/`UNVERIFIED` sentinels. They are examples, not evidence or training data.
 - No Open-Meteo archive was downloaded or incorporated during this review. The source's selected underlying model, exact native spatial resolution and redistribution terms need review before retaining/redistributing a real extract. No target labels or model artifact were generated.
 - The environmental predictor processor previously replaced a large 7-day precipitation sum with an unrelated fixed arithmetic sum. That fabricated substitution is removed and regression-tested; the output now retains the actual sum of the seven source measurements.
 
@@ -33,12 +38,15 @@ The existing model's 20 fields remain indices with an old numeric range of 0–1
 
 ## Runtime and model evidence still required
 
-1. Authorize/license and document a sufficiently representative multi-site dataset with verified environmental measurements and flood labels, including complete monitoring coverage for negative examples.
-2. Approve target semantics, geographic/time resolution, units, issue time, prediction horizon, label confidence/coverage policy, and source provenance.
-3. Choose either a fully verified mapping for the old feature contract or a deliberate, versioned replacement model schema. Do not silently mix them.
-4. Implement a deterministic runtime feature builder that uses only data available at the prediction issue time and validates freshness, station/location matching, units and missing inputs.
-5. Validate with chronological and site/event-grouped holdouts that prevent temporal and spatial leakage; compare against a meaningful baseline and report uncertainty, calibration if predicting probabilities, class imbalance, sample coverage and independent-site performance.
-6. Record schema/model versions, exact data/manifest hashes, preprocessing and training configuration, split policy, measured metrics and source/license evidence with the artifact.
-7. Test artifact loading, inference, unavailable/stale input handling and readiness behavior against the same schema before allowing the API to persist a result.
+1. Domain-approve the gauge-threshold target and obtain an authoritative, dated per-gauge danger-level register with units, quality, and license/access evidence.
+2. Obtain authorized historical gauge stage observations with stable gauge IDs, quality flags, timestamps/cadence, and records sufficient to establish complete coverage for negatives.
+3. Build and review the gauge-to-weather-grid crosswalk, including stable IDs, coordinates, matching method/tolerance, and its source/version.
+4. Obtain an authorized historical weather archive covering those gauges and dates; document Open-Meteo provider/model selection, resolution, terms, and the archive manifest.
+5. Produce verified labels only for exact 24-hour UTC windows where observed-stage evidence and threshold-effective dates align. Preserve positive source records and full negative coverage evidence.
+6. Require representative multi-gauge samples with positive and negative windows before selecting the Random Forest baseline. Use chronological, gauge/site-aware holdouts and event grouping where available; report precision, recall, F1, confusion matrix, prevalence, false-alarm/missed-warning consequences, and uncertainty.
+7. Use a deliberate, versioned feature schema compatible with training and inference; do not silently map the retired ordinal fields.
+8. Implement a deterministic runtime feature builder that uses only data available at issue time and validates freshness, station/gauge mapping, units, and missing inputs.
+9. Record schema/model versions, exact data/manifest hashes, preprocessing and training configuration, split policy, real metrics, and source/license evidence with the artifact.
+10. Test artifact loading, inference, unavailable/stale input handling, and readiness behavior against the same schema before allowing the API to persist a result.
 
 Until each required gate is met and reviewed, keep `/api/predictions` flood requests at HTTP 503 and do not use legacy scores for alerts or emergency decisions. The current readiness checks and tests enforcing this state must remain enabled.

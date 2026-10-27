@@ -200,6 +200,40 @@ def _fetch_batch(locations: list[dict[str, float | str]]) -> list[dict[str, Any]
     return [_parse_location_response(location, item) for location, item in zip(locations, response_items, strict=True)]
 
 
+def fetch_location_weather(latitude: float, longitude: float) -> dict[str, Any]:
+    """Fetch and validate current weather directly for one selected coordinate."""
+    if isinstance(latitude, bool) or isinstance(longitude, bool):
+        raise ValueError("Latitude and longitude must be numeric coordinates, not booleans.")
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+    except (TypeError, ValueError) as error:
+        raise ValueError("Latitude and longitude must be numeric.") from error
+    if not math.isfinite(latitude) or not -90 <= latitude <= 90:
+        raise ValueError("Latitude must be between -90 and 90.")
+    if not math.isfinite(longitude) or not -180 <= longitude <= 180:
+        raise ValueError("Longitude must be between -180 and 180.")
+
+    location = {
+        "name": f"Selected location ({latitude:.5f}, {longitude:.5f})",
+        "latitude": latitude,
+        "longitude": longitude,
+    }
+    record = _fetch_batch([location])[0]
+    age_seconds = (datetime.now(timezone.utc) - _as_utc(record["observation_time"])).total_seconds()
+    if age_seconds < -300:
+        raise RuntimeError("Open-Meteo returned an observation more than five minutes in the future.")
+    if age_seconds > get_max_age_seconds():
+        raise RuntimeError("Open-Meteo returned an observation outside the configured freshness window.")
+    required = ("temperature_c", "precipitation_mm", "wind_speed_kmh")
+    missing = [field for field in required if record[field] is None]
+    if missing:
+        raise RuntimeError(
+            "Open-Meteo did not provide required measurements: " + ", ".join(missing) + "."
+        )
+    return record
+
+
 def collect_weather_cycle() -> dict[str, Any]:
     if not _collection_lock.acquire(blocking=False):
         raise RuntimeError("A weather collection cycle is already running.")

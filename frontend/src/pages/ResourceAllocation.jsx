@@ -17,6 +17,20 @@ export default function ResourceAllocation() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+
+  function showCoordinateError(field, minimum, maximum, event) {
+    const input = event.currentTarget
+    let message = ''
+    if (input.validity.badInput) message = 'Enter a valid number.'
+    else if (input.validity.valueMissing) message = 'This coordinate is required.'
+    else if (!input.validity.valid) message = `Enter a coordinate between ${minimum} and ${maximum}.`
+    setFieldErrors(current => ({ ...current, [field]: message }))
+  }
+
+  function clearFieldError(field) {
+    setFieldErrors(current => ({ ...current, [field]: '' }))
+  }
 
   async function refreshResources() {
     const rows = await apiGet('/resources')
@@ -121,9 +135,9 @@ export default function ResourceAllocation() {
           <input className="text-input" required value={demand.resource_type} onChange={event => setDemand(value => ({ ...value, resource_type: event.target.value }))} />
           <div className="formgrid">
             <div><label>Quantity</label><input className="text-input" required type="number" min="1" value={demand.quantity} onChange={event => setDemand(value => ({ ...value, quantity: event.target.value }))} /></div>
-            <div><label>Unit</label><input className="text-input" value={demand.unit} onChange={event => setDemand(value => ({ ...value, unit: event.target.value }))} /></div>
-            <div><label>Latitude</label><input className="text-input" required type="number" step="any" min="-90" max="90" value={demand.latitude} onChange={event => setDemand(value => ({ ...value, latitude: event.target.value }))} /></div>
-            <div><label>Longitude</label><input className="text-input" required type="number" step="any" min="-180" max="180" value={demand.longitude} onChange={event => setDemand(value => ({ ...value, longitude: event.target.value }))} /></div>
+            <div><label>Unit</label><input className="text-input" required value={demand.unit} onChange={event => setDemand(value => ({ ...value, unit: event.target.value }))} /></div>
+            <div><label htmlFor="demand-latitude">Latitude (-90 to 90)</label><input id="demand-latitude" aria-invalid={Boolean(fieldErrors.demandLatitude)} aria-describedby="demand-latitude-error" className="text-input" required type="number" step="any" min="-90" max="90" value={demand.latitude} onInvalid={event => showCoordinateError('demandLatitude', -90, 90, event)} onChange={event => { clearFieldError('demandLatitude'); setDemand(value => ({ ...value, latitude: event.target.value })) }} />{fieldErrors.demandLatitude && <small id="demand-latitude-error" className="error" role="alert">{fieldErrors.demandLatitude}</small>}</div>
+            <div><label htmlFor="demand-longitude">Longitude (-180 to 180)</label><input id="demand-longitude" aria-invalid={Boolean(fieldErrors.demandLongitude)} aria-describedby="demand-longitude-error" className="text-input" required type="number" step="any" min="-180" max="180" value={demand.longitude} onInvalid={event => showCoordinateError('demandLongitude', -180, 180, event)} onChange={event => { clearFieldError('demandLongitude'); setDemand(value => ({ ...value, longitude: event.target.value })) }} />{fieldErrors.demandLongitude && <small id="demand-longitude-error" className="error" role="alert">{fieldErrors.demandLongitude}</small>}</div>
           </div>
           <label>Priority score (0-100) <span className="rangeval">{demand.priority_score}</span></label>
           <input type="range" min="0" max="100" value={demand.priority_score} onChange={event => setDemand(value => ({ ...value, priority_score: event.target.value }))} />
@@ -138,8 +152,8 @@ export default function ResourceAllocation() {
             <div><label>Type</label><input className="text-input" required value={resourceForm.resource_type} onChange={event => setResourceForm(value => ({ ...value, resource_type: event.target.value }))} /></div>
             <div><label>Quantity</label><input className="text-input" required type="number" min="0" value={resourceForm.quantity} onChange={event => setResourceForm(value => ({ ...value, quantity: event.target.value }))} /></div>
             <div><label>Unit</label><input className="text-input" required value={resourceForm.unit} onChange={event => setResourceForm(value => ({ ...value, unit: event.target.value }))} /></div>
-            <div><label>Latitude</label><input className="text-input" required type="number" step="any" min="-90" max="90" value={resourceForm.latitude} onChange={event => setResourceForm(value => ({ ...value, latitude: event.target.value }))} /></div>
-            <div><label>Longitude</label><input className="text-input" required type="number" step="any" min="-180" max="180" value={resourceForm.longitude} onChange={event => setResourceForm(value => ({ ...value, longitude: event.target.value }))} /></div>
+            <div><label htmlFor="resource-latitude">Latitude (-90 to 90)</label><input id="resource-latitude" aria-invalid={Boolean(fieldErrors.resourceLatitude)} aria-describedby="resource-latitude-error" className="text-input" required type="number" step="any" min="-90" max="90" value={resourceForm.latitude} onInvalid={event => showCoordinateError('resourceLatitude', -90, 90, event)} onChange={event => { clearFieldError('resourceLatitude'); setResourceForm(value => ({ ...value, latitude: event.target.value })) }} />{fieldErrors.resourceLatitude && <small id="resource-latitude-error" className="error" role="alert">{fieldErrors.resourceLatitude}</small>}</div>
+            <div><label htmlFor="resource-longitude">Longitude (-180 to 180)</label><input id="resource-longitude" aria-invalid={Boolean(fieldErrors.resourceLongitude)} aria-describedby="resource-longitude-error" className="text-input" required type="number" step="any" min="-180" max="180" value={resourceForm.longitude} onInvalid={event => showCoordinateError('resourceLongitude', -180, 180, event)} onChange={event => { clearFieldError('resourceLongitude'); setResourceForm(value => ({ ...value, longitude: event.target.value })) }} />{fieldErrors.resourceLongitude && <small id="resource-longitude-error" className="error" role="alert">{fieldErrors.resourceLongitude}</small>}</div>
           </div>
           <button className="btn" type="submit" disabled={saving}>{saving ? 'Saving...' : editingResourceId == null ? 'Add to inventory' : 'Save inventory changes'}</button>
           {editingResourceId != null && <button className="btn-outline" type="button" onClick={() => { setEditingResourceId(null); setResourceForm(EMPTY_RESOURCE) }}>Cancel edit</button>}

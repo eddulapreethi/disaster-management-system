@@ -214,6 +214,9 @@ def _readiness_fingerprint(project_root: Path, model_path: Path, user_id: int) -
     key_candidates = [
         root / "ml" / "datasets" / "historical_data" / "processed",
         root / "ml" / "datasets" / "historical_disasters" / "EM-DAT",
+        root / "ml" / "datasets" / "flood_training",
+        root / "ml" / "datasets" / "hydrological" / "raw",
+        root / "ml" / "datasets" / "weather" / "raw",
         root / "ml" / "models" / "trained_models",
     ]
     for location in key_candidates:
@@ -261,8 +264,10 @@ def get_data_readiness(db: Session, user: User) -> dict[str, Any]:
         SCHEMA_VERSION as environmental_feature_schema_version,
         validate_feature_schema,
     )
+    from ml.preprocessing.flood_target_readiness import get_flood_target_readiness
 
     validate_feature_schema()
+    flood_training_data = get_flood_target_readiness(project_root)
     features = {
         "status": "READY" if runtime_feature_builder_ready and model.get("status") == "READY" else "NOT_READY",
         "contract_status": "VALIDATED",
@@ -291,6 +296,7 @@ def get_data_readiness(db: Session, user: User) -> dict[str, Any]:
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "sources": {"weather": weather, "hydrology": hydrology, "gis": gis},
         "historical_data": get_historical_data_readiness(project_root),
+        "flood_training_data": flood_training_data,
         "ml_model": model,
         "features": features,
         "prediction": {

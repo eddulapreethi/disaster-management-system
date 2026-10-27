@@ -18,17 +18,24 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const [manualLatitude, setManualLatitude] = useState('')
+  const [manualLongitude, setManualLongitude] = useState('')
+  const [coordinateError, setCoordinateError] = useState('')
   const requestIdRef = useRef(0)
 
   useEffect(() => {
     if (value?.display_name || value?.name) {
       setQuery(value.display_name || value.name)
     }
+    if (Number.isFinite(Number(value?.latitude)) && Number.isFinite(Number(value?.longitude))) {
+      setManualLatitude(String(value.latitude))
+      setManualLongitude(String(value.longitude))
+    }
   }, [value])
 
   useEffect(() => {
     const trimmed = query.trim()
-    if (!trimmed || trimmed.length < 2) {
+    if (!trimmed || trimmed.length < 2 || trimmed.startsWith('Coordinates ')) {
       setResults([])
       setSearchLoading(false)
       setSearchError('')
@@ -62,21 +69,59 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
   }, [query])
 
   function handleLocationSelect(location) {
-    if (!location || !Number.isFinite(Number(location.latitude)) || !Number.isFinite(Number(location.longitude))) {
+    const latitude = Number(location?.latitude)
+    const longitude = Number(location?.longitude)
+    if (
+      !location
+      || !Number.isFinite(latitude)
+      || !Number.isFinite(longitude)
+      || latitude < -90
+      || latitude > 90
+      || longitude < -180
+      || longitude > 180
+    ) {
       setSearchError('The chosen location is missing valid coordinates.')
       return
     }
     const nextLocation = {
       ...location,
-      latitude: Number(location.latitude),
-      longitude: Number(location.longitude),
+      latitude,
+      longitude,
       display_name: location.display_name || [location.name, location.admin1, location.country].filter(Boolean).join(', '),
     }
     onChange?.(nextLocation)
+    setManualLatitude(String(nextLocation.latitude))
+    setManualLongitude(String(nextLocation.longitude))
+    setCoordinateError('')
     setResults([])
     setSearchError('')
     setHighlightedIndex(-1)
     setQuery(nextLocation.display_name)
+  }
+
+  function applyCoordinates() {
+    const latitude = Number(manualLatitude)
+    const longitude = Number(manualLongitude)
+    if (!manualLatitude.trim() || !Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
+      setCoordinateError('Enter a latitude between -90 and 90.')
+      return
+    }
+    if (!manualLongitude.trim() || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+      setCoordinateError('Enter a longitude between -180 and 180.')
+      return
+    }
+    const displayName = `Coordinates ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`
+    onChange?.({
+      name: 'Selected coordinates',
+      display_name: displayName,
+      country: '',
+      latitude,
+      longitude,
+    })
+    setQuery(displayName)
+    setResults([])
+    setSearchError('')
+    setCoordinateError('')
   }
 
   function handleSearchKeyDown(event) {
@@ -137,6 +182,19 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
       {!searchLoading && query.trim().length >= 2 && !searchError && !results.length && (
         <p className="explain" style={{ marginTop: '.75rem' }}>No supported locations matched that search. Try a broader city, district, or state name.</p>
       )}
+      <div className="formgrid" style={{ marginTop: '.8rem' }}>
+        <div>
+          <label htmlFor="manual-location-latitude">Or enter latitude</label>
+          <input id="manual-location-latitude" type="number" step="any" min="-90" max="90" value={manualLatitude} onChange={event => { setManualLatitude(event.target.value); setCoordinateError('') }} />
+        </div>
+        <div>
+          <label htmlFor="manual-location-longitude">Longitude</label>
+          <input id="manual-location-longitude" type="number" step="any" min="-180" max="180" value={manualLongitude} onChange={event => { setManualLongitude(event.target.value); setCoordinateError('') }} />
+        </div>
+      </div>
+      <button className="btn-outline" type="button" style={{ marginTop: '.5rem' }} onClick={applyCoordinates}>Use coordinates</button>
+      {coordinateError && <p className="error" role="alert">{coordinateError}</p>}
+      <p className="explain">Weather availability depends on the configured provider and selected coordinates; a coordinate does not guarantee hazard-model coverage.</p>
     </>
   )
 }

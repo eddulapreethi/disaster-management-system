@@ -1,4 +1,4 @@
-from sqlalchemy import Float, Integer, String
+from sqlalchemy import CheckConstraint, Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
@@ -6,6 +6,11 @@ from app.database.connection import Base
 
 class Resource(Base):
     __tablename__ = "resources"
+    __table_args__ = (
+        CheckConstraint("quantity >= 0", name="ck_resources_quantity_nonnegative"),
+        CheckConstraint("latitude BETWEEN -90 AND 90", name="ck_resources_latitude"),
+        CheckConstraint("longitude BETWEEN -180 AND 180", name="ck_resources_longitude"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)

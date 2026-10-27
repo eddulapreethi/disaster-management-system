@@ -2,6 +2,7 @@ import { apiPost } from './api'
 
 const KEY = 'disasterguard_user'
 const TOKEN_KEY = 'disasterguard_access_token'
+const ASSISTANT_HISTORY_KEY = 'disasterguard_assistant_messages'
 
 export async function login(email, password) {
   const result = await apiPost('/auth/login', { email: email.trim().toLowerCase(), password })
@@ -25,6 +26,7 @@ export function logout() {
   localStorage.removeItem(TOKEN_KEY)
   sessionStorage.removeItem('disasterguard_latest_prediction')
   sessionStorage.removeItem('disasterguard_last_simulation')
+  sessionStorage.removeItem(ASSISTANT_HISTORY_KEY)
 }
 
 export function getCurrentUser() {

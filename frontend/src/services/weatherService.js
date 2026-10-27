@@ -1,21 +1,19 @@
 import { apiGet } from './api'
 
 export async function fetchLiveWeather(lat, lng) {
-  const [snapshot, status] = await Promise.all([
-    apiGet('/weather/latest'),
-    apiGet('/weather/status'),
-  ])
-  const station = snapshot.observations.reduce((nearest, observation) => {
-    const distance = (observation.latitude - lat) ** 2 + (observation.longitude - lng) ** 2
-    return !nearest || distance < nearest.distance ? { observation, distance } : nearest
-  }, null)
-  if (!station || station.distance > 0.0004) {
-    const error = new Error('Weather is not ready for this location yet. The backend collector is fetching its first Open-Meteo reading; retry shortly.')
-    error.code = 'WEATHER_NOT_READY'
-    throw error
+  const validNumber = value => (
+    (typeof value === 'number' || typeof value === 'string')
+    && String(value).trim() !== ''
+    && Number.isFinite(Number(value))
+  )
+  const latitude = Number(lat)
+  const longitude = Number(lng)
+  if (!validNumber(lat) || !validNumber(lng)
+    || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    throw new Error('Select a location with valid latitude and longitude coordinates.')
   }
-
-  const reading = station.observation
+  const query = new URLSearchParams({ latitude: String(latitude), longitude: String(longitude) })
+  const reading = await apiGet(`/weather/current?${query}`)
   const requiredMeasurements = {
     temperature_c: reading.temperature_c,
     precipitation_mm: reading.precipitation_mm,
@@ -25,34 +23,23 @@ export async function fetchLiveWeather(lat, lng) {
     .filter(([, value]) => value == null || !Number.isFinite(Number(value)))
     .map(([name]) => name)
   if (missingMeasurements.length) {
-    const error = new Error(`The stored weather observation is missing ${missingMeasurements.join(', ')}. No estimate was created.`)
+    const error = new Error(`The weather provider omitted ${missingMeasurements.join(', ')}. No estimate was created.`)
     error.code = 'WEATHER_NOT_READY'
     throw error
   }
   const observationTime = new Date(reading.observation_time)
   const ageSeconds = (Date.now() - observationTime.getTime()) / 1000
   if (!Number.isFinite(ageSeconds)) {
-    const error = new Error('The stored weather observation has an invalid timestamp. No estimate was created.')
+    const error = new Error('The weather provider returned an invalid observation timestamp. No estimate was created.')
     error.code = 'WEATHER_NOT_READY'
     throw error
   }
   if (ageSeconds < -300) {
-    const error = new Error('The stored weather observation timestamp is more than five minutes in the future. No estimate was created.')
-    error.code = 'WEATHER_NOT_READY'
-    throw error
-  }
-  if (
-    !Number.isFinite(status.max_age_seconds)
-    || status.max_age_seconds <= 0
-    || ageSeconds > status.max_age_seconds
-  ) {
-    const observedAt = observationTime.toLocaleString()
-    const error = new Error(`The nearest stored weather observation is stale (observed ${observedAt}); no estimate was created.`)
+    const error = new Error('The weather provider observation timestamp is more than five minutes in the future. No estimate was created.')
     error.code = 'WEATHER_NOT_READY'
     throw error
   }
   return {
-    observationId: reading.id,
     temperatureC: reading.temperature_c,
     humidityPercent: reading.humidity_percent,
     precipitationMm: reading.precipitation_mm,
@@ -62,6 +49,5 @@ export async function fetchLiveWeather(lat, lng) {
     observationTime: reading.observation_time,
     fetchedAt: reading.fetched_at,
     source: reading.source,
-    collector: snapshot.collector,
   }
 }

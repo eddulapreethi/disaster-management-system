@@ -1,0 +1,2 @@
+location_id,grid_latitude,grid_longitude,prediction_issue_time_utc,candidate_target_window_start_utc,candidate_target_window_end_utc,antecedent_precipitation_1d_mm,antecedent_precipitation_3d_mm,antecedent_precipitation_7d_mm,temperature_mean_c,relative_humidity_mean_percent,wind_speed_max_kmh
+ILLUSTRATIVE_ONLY,0.0,0.0,2000-01-01T00:00:00Z,2000-01-01T00:00:00Z,2000-01-02T00:00:00Z,0.0,0.0,0.0,0.0,0.0,0.0

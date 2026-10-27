@@ -34,7 +34,7 @@ DisasterGuard AI is an academic disaster-management demonstration that integrate
 | Backend | Python, FastAPI |
 | Machine Learning | Scikit-learn |
 | Explainable AI | SHAP |
-| Database | PostgreSQL |
+| Database | SQLite (local default), PostgreSQL/PostGIS (configured deployments) |
 | GIS | Leaflet.js, OpenStreetMap |
 | Data Processing | Pandas, NumPy |
 | Tools | Git, GitHub |
@@ -43,31 +43,22 @@ DisasterGuard AI is an academic disaster-management demonstration that integrate
 
 ## 📂 Project Structure
 ```text
-DisasterGuard-AI
+disaster-management-system/
 │
+├── ai-assistant/
+├── alerts/
 ├── backend/
-│   └── FastAPI Application
-│
+│   ├── app/                 FastAPI application
+│   ├── data/legacy/         Preserved older local database copies
+│   └── disasterguard.db     Local runtime SQLite database
+├── database/                PostgreSQL/PostGIS schema and migrations
 ├── frontend/
-│   └── React Application
-│
-├── ml/
-│   ├── datasets/
-│   ├── preprocessing/
-│   ├── models/
-│   └── prediction/
-│
+├── ml/                      Datasets, preprocessing and models
 ├── gis/
-│
 ├── digital-twin/
-│
+├── explainable-ai/
+├── resource-optimization/
 ├── docs/
-│   └── diagrams/
-│
-├── screenshots/
-│
-├── .env.example
-├── .gitignore
 └── README.md
 ```
 ---
@@ -183,6 +174,8 @@ Run automated checks:
 - From `frontend`: `npm test` and `npm run build`
 
 The backend defaults to a local SQLite database. External Ollama and Copernicus services require their own local installation or server-side credentials. Review [`backend/README.md`](./backend/README.md) and [`docs/`](./docs) before enabling integrations or using the project operationally.
+
+All project code and data should remain under this project directory. The active local SQLite database is `backend/disasterguard.db`; relative SQLite `DATABASE_URL` values resolve there even when the backend is started from another directory. Older local database files, if present, are preserved separately in `backend/data/legacy/` and are not used at runtime. Temporary caches, virtual environments, and generated test output are local tooling artifacts, not project data.
 
 ---
 

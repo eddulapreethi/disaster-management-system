@@ -41,7 +41,12 @@ export default function RiskPrediction() {
     }
   }
 
-  const canPredict = Number.isFinite(selected.latitude) && Number.isFinite(selected.longitude)
+  const canPredict = Number.isFinite(selected.latitude)
+    && selected.latitude >= -90
+    && selected.latitude <= 90
+    && Number.isFinite(selected.longitude)
+    && selected.longitude >= -180
+    && selected.longitude <= 180
 
   return (
     <div>

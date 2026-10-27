@@ -4,15 +4,20 @@ FastAPI backend for the DisasterGuard AI frontend. It has user authentication bu
 
 ## Setup (Windows)
 
-From `C:\MajorProject\disaster-management-system\backend`:
+From the project directory:
 
 ```powershell
+cd backend
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
 Create `.env` with a long random `JWT_SECRET_KEY`. A trained flood-model artifact is not currently included. `GET /api/data-readiness` validates the configured model artifact, feature manifest, and runtime feature path rather than relying on file presence. The current 20-feature schema has no verified units/source mapping, and runtime weather/hydrology does not produce those features; see `../ml/README.md` for the measured data gaps and training requirements. Do not interpret the current demonstrator heuristic as a calibrated probability or forecast.
+
+### Local database files
+
+The default SQLite database is `backend/disasterguard.db`. Relative SQLite paths in `DATABASE_URL` (including the example `sqlite:///./disasterguard.db`) are resolved from the backend directory, so starting the API from a different working directory will still use the same database. Keep local database files and `.env` out of source control. Any older database copies are kept separately under `backend/data/legacy/` and are not used by the application.
 
 ### General-purpose assistant
 
@@ -35,7 +40,7 @@ ollama run qwen2.5:3b
 
 Ollama must remain running while the backend uses it; the Windows Ollama application normally provides the local service. `ollama run` downloads the model if needed. The backend checks the configured Ollama `/api/tags` endpoint before generation and reports when Ollama is unreachable or the model is not installed. No API key or billing is needed. The configured Ollama URL is the only target: failures return an error and never trigger cloud failover. Never put provider credentials in frontend code or commit a populated `.env`. Restart the backend after changing `.env`.
 
-The backend supplies at most the eight latest validated user/assistant history messages. For project capability questions, it retrieves a small set of relevant passages from an allowlist of local repository Markdown files and supplies those as evidence to the model. Weather, hydrology, readiness, saved predictions, and historical comparisons continue to use backend services and stored records rather than model guesses. A request for a location-specific current flood risk reports matching stored observations, if any, and explicitly distinguishes those observations from a prediction. No web-search integration is configured, so provider output is not live research and is returned without fabricated citations. If Ollama is unavailable or generation fails, the API returns a safe, actionable error rather than treating failed generation as a successful answer. `DISASTERGUARD_ASSISTANT_TIMEOUT_SECONDS` configures the model response timeout (default 120 seconds); the frontend allows 125 seconds for the full request. The authenticated `GET /api/assistant/status` endpoint reports Ollama reachability and whether the configured model is installed.
+The backend supplies at most the eight latest validated user/assistant history messages. For project capability questions, it retrieves a small set of relevant passages from an allowlist of local repository Markdown files and supplies those as evidence to the model. Responses are kept concise by default and capped at 512 tokens; the request asks Ollama to keep the configured model loaded for ten minutes to reduce cold-start delays between questions. These settings do not change the configured model or guarantee fast inference on CPU-only hardware. Weather, hydrology, readiness, saved predictions, and historical comparisons continue to use backend services and stored records rather than model guesses. A request for a location-specific current flood risk reports matching stored observations, if any, and explicitly distinguishes those observations from a prediction. No web-search integration is configured, so provider output is not live research and is returned without fabricated citations. If Ollama is unavailable or generation fails, the API returns a safe, actionable error rather than treating failed generation as a successful answer. `DISASTERGUARD_ASSISTANT_TIMEOUT_SECONDS` configures the model response timeout (default 120 seconds); the frontend allows 125 seconds for the full request. The authenticated `GET /api/assistant/status` endpoint reports Ollama reachability and whether the configured model is installed.
 
 All persisted observation datetimes are UTC. SQLite does not retain timezone metadata in `DateTime(timezone=True)` columns, so API serializers explicitly treat naive database values as UTC and emit ISO timestamps with a `Z` suffix; browsers must not interpret stored UTC as local time. Freshness is based on the provider's `observation_time`, not `fetched_at`; observations more than five minutes in the future are reported as errors.
 

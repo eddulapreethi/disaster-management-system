@@ -4,10 +4,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 class ResourceCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     resource_type: str = Field(min_length=1, max_length=60)
-    quantity: int = Field(ge=0)
+    quantity: int = Field(ge=0, strict=True)
     unit: str = Field(default="units", min_length=1, max_length=30)
-    latitude: float = Field(ge=-90, le=90)
-    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False, strict=True)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False, strict=True)
 
     @field_validator("name", "resource_type", "unit")
     @classmethod
@@ -21,10 +21,10 @@ class ResourceCreate(BaseModel):
 class ResourceUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     resource_type: str | None = Field(default=None, min_length=1, max_length=60)
-    quantity: int | None = Field(default=None, ge=0)
+    quantity: int | None = Field(default=None, ge=0, strict=True)
     unit: str | None = Field(default=None, min_length=1, max_length=30)
-    latitude: float | None = Field(default=None, ge=-90, le=90)
-    longitude: float | None = Field(default=None, ge=-180, le=180)
+    latitude: float | None = Field(default=None, ge=-90, le=90, allow_inf_nan=False, strict=True)
+    longitude: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False, strict=True)
 
     @field_validator("name", "resource_type", "unit")
     @classmethod
@@ -59,18 +59,28 @@ class ResourceRead(BaseModel):
 
 
 class AllocationRequest(BaseModel):
-    resource_id: int = Field(gt=0)
-    quantity: int = Field(gt=0)
+    resource_id: int = Field(gt=0, strict=True)
+    quantity: int = Field(gt=0, strict=True)
 
 
 class ResourceDemand(BaseModel):
     id: str = Field(min_length=1, max_length=100)
     resource_type: str = Field(min_length=1, max_length=60)
-    quantity: int = Field(gt=0)
+    quantity: int = Field(gt=0, strict=True)
     unit: str | None = Field(default=None, min_length=1, max_length=30)
-    latitude: float = Field(ge=-90, le=90)
-    longitude: float = Field(ge=-180, le=180)
-    priority_score: float = Field(default=0, ge=0, le=100)
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False, strict=True)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False, strict=True)
+    priority_score: float = Field(default=0, ge=0, le=100, allow_inf_nan=False, strict=True)
+
+    @field_validator("id", "resource_type", "unit")
+    @classmethod
+    def strip_required_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Demand ID, resource type, and unit cannot be blank.")
+        return normalized
 
 
 class ResourcePlanRequest(BaseModel):

@@ -60,6 +60,14 @@ tr:last-child td{border-bottom:none;}
 .map-layers{display:flex;gap:1rem;margin-bottom:.7rem;flex-wrap:wrap;}
 .map-layer-item{display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:var(--ink2);cursor:pointer;}
 .map-layer-item .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.gis-layer-controls{border:1px solid var(--border);border-radius:8px;margin:0 0 .7rem;padding:.45rem .65rem;}
+.gis-layer-controls legend{font-size:.76rem;font-weight:600;color:var(--ink2);padding:0 .25rem;}
+.gis-layer-list{display:flex;gap:.5rem 1rem;flex-wrap:wrap;}
+.gis-layer-row{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
+.gis-layer-heavy,.gis-layer-attribution{font-size:.7rem;color:var(--ink2);}
+.gis-layer-attribution{margin:.5rem 0 0;}
+.gis-layer-error{display:flex;align-items:center;gap:.4rem;color:var(--high);font-size:.72rem;}
+.gis-layer-error button{font:inherit;}
 .loading-wrap{display:flex;align-items:center;gap:.6rem;padding:1rem 0;color:var(--ink2);font-size:.85rem;}
 .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}

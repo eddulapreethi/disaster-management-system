@@ -22,7 +22,7 @@ export default function WeatherCard({ station }) {
       }
     }
     refresh()
-    const interval = setInterval(refresh, 60_000)
+    const interval = setInterval(refresh, 5 * 60_000)
     return () => {
       cancelled = true
       clearInterval(interval)
@@ -45,9 +45,8 @@ export default function WeatherCard({ station }) {
             <div className="kv"><span>Pressure</span><span>{weather.pressureHpa ?? '—'} hPa</span></div>
           </div>
           <p className="explain">Source: {weather.source || 'Open-Meteo'}.</p>
-          <p className="explain">Sensor observation: {weather.observationTime ? new Date(weather.observationTime).toLocaleString() : 'unknown'} · Fetched by backend: {weather.fetchedAt ? new Date(weather.fetchedAt).toLocaleString() : 'unknown'}.</p>
-          <p className="explain">Collector: {weather.collector.enabled ? 'running' : 'not running'} · Last poll: {weather.collector.last_cycle_finished_at ? new Date(weather.collector.last_cycle_finished_at).toLocaleString() : 'waiting for first poll'} · Successful locations: {weather.collector.successful_locations}/{weather.collector.configured_locations}.</p>
-          {weather.collector.failed_locations?.length > 0 && <p className="explain" role="status">Some locations failed to refresh: {weather.collector.failed_locations.map(item => item.location).join(', ')}.</p>}
+          <p className="explain">Provider observation: {weather.observationTime ? new Date(weather.observationTime).toLocaleString() : 'unknown'} · Fetched by backend: {weather.fetchedAt ? new Date(weather.fetchedAt).toLocaleString() : 'unknown'}.</p>
+          <p className="explain">Weather was fetched on demand for the selected coordinates; this is provider data, not a local sensor observation.</p>
         </>
       )}
     </div>

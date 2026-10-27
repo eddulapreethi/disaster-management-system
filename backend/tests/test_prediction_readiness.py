@@ -59,6 +59,20 @@ class PredictionReadinessTests(unittest.TestCase):
         self.assertIn("No compatible model or live runtime feature builder", readiness["features"]["message"])
         self.assertEqual(readiness["prediction"]["status"], "NOT_READY")
         self.assertIn("not verified", readiness["prediction"]["message"])
+        self.assertEqual(readiness["flood_training_data"]["status"], "NOT_READY")
+        self.assertEqual(
+            readiness["flood_training_data"]["target_id"],
+            "cwc_gauge_danger_level_exceedance_24h_v1",
+        )
+        self.assertEqual(readiness["flood_training_data"]["prediction_horizon_hours"], 24)
+        self.assertIn(
+            "verified_window_labels",
+            readiness["flood_training_data"]["missing_evidence"],
+        )
+        self.assertIn(
+            "gauge_coverage_evidence",
+            readiness["flood_training_data"]["missing_evidence"],
+        )
 
     def test_flood_prediction_is_unavailable_even_when_weather_is_fresh(self) -> None:
         now = datetime.now(timezone.utc)
@@ -141,3 +155,20 @@ class PredictionReadinessTests(unittest.TestCase):
             create_prediction(self.db, self.user, request)
 
         self.assertEqual(self.db.scalars(select(Prediction)).all(), [])
+
+    def test_demonstrator_risk_band_matches_the_displayed_risk_level_thresholds(self) -> None:
+        request = PredictionCreate(
+            disaster_type="storm",
+            latitude=9.9,
+            longitude=76.2,
+            rainfall_mm=0,
+            temperature_c=25,
+            wind_speed_kmh=37.5,
+        )
+
+        prediction, details = create_prediction(self.db, self.user, request)
+
+        self.assertEqual(prediction.risk_score, 30)
+        self.assertEqual(prediction.risk_level, "moderate")
+        self.assertEqual(details["risk_band"], "medium")
+        self.assertIn("unvalidated demonstrator", details["explanation"])

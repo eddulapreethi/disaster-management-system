@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from ml.preprocessing.file_integrity import sha256_file
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RAW = (
@@ -19,10 +20,29 @@ DEFAULT_RAW = (
 )
 DEFAULT_OUTPUT = PROJECT_ROOT / "datasets" / "processed" / "koch_historical_daily_predictors.csv"
 SCHEMA_VERSION = "flood-environmental-predictors-v1"
-TARGET_DEFINITION_STATUS = "UNSELECTED"
+TARGET_ID = "cwc_gauge_danger_level_exceedance_24h_v1"
+TARGET_DEFINITION_STATUS = "PROPOSED_REQUIRES_DOMAIN_APPROVAL"
+TARGET_DEFINITION = (
+    "For an identified monitored CWC/NWDP river gauge, predict whether the measured river stage "
+    "will reach or exceed that gauge's documented official danger level at any time during the "
+    "half-open 24-hour UTC window [prediction issue time, prediction issue time + 24 hours)."
+)
+TARGET_GEOGRAPHIC_UNIT = (
+    "One uniquely identified CWC/NWDP gauge, linked to one Open-Meteo grid point by a documented "
+    "and reviewed location crosswalk."
+)
+TARGET_POSITIVE_DEFINITION = (
+    "At least one valid gauge stage measurement in the target window is greater than or equal to "
+    "the official danger level effective for that gauge and period."
+)
+TARGET_NEGATIVE_DEFINITION = (
+    "The gauge's valid measurement coverage is documented complete for the entire target window, "
+    "and every valid stage measurement remains below the official danger level."
+)
 TARGET_LIMITATION = (
-    "No approved flood target can be constructed from the available records: no local gauge threshold, "
-    "verified inundation label product, or complete non-flood monitoring coverage is present."
+    "This is a proposed gauge danger-level exceedance target, not a general inundation label. "
+    "No approved gauge danger-level table, reviewed gauge-to-weather-grid crosswalk, or complete "
+    "non-exceedance monitoring-coverage evidence is present."
 )
 
 FEATURE_SCHEMA: tuple[dict[str, Any], ...] = (
@@ -40,7 +60,7 @@ FEATURE_SCHEMA: tuple[dict[str, Any], ...] = (
         "available_at_training": True,
         "available_at_inference": False,
         "valid_range": [0, None],
-        "suitable_for_candidate_target": "Potential precipitation predictor only; target unselected.",
+        "suitable_for_candidate_target": "Candidate predictor for the proposed 24-hour gauge danger-level target only.",
         "source_variable": "precipitation_sum",
     },
     {
@@ -57,7 +77,7 @@ FEATURE_SCHEMA: tuple[dict[str, Any], ...] = (
         "available_at_training": True,
         "available_at_inference": False,
         "valid_range": [0, None],
-        "suitable_for_candidate_target": "Potential precipitation predictor only; target unselected.",
+        "suitable_for_candidate_target": "Candidate predictor for the proposed 24-hour gauge danger-level target only.",
         "source_variable": "precipitation_sum",
     },
     {
@@ -74,7 +94,7 @@ FEATURE_SCHEMA: tuple[dict[str, Any], ...] = (
         "available_at_training": True,
         "available_at_inference": False,
         "valid_range": [0, None],
-        "suitable_for_candidate_target": "Potential precipitation predictor only; target unselected.",
+        "suitable_for_candidate_target": "Candidate predictor for the proposed 24-hour gauge danger-level target only.",
         "source_variable": "precipitation_sum",
     },
     {
@@ -91,7 +111,7 @@ FEATURE_SCHEMA: tuple[dict[str, Any], ...] = (
         "available_at_training": True,
         "available_at_inference": False,
         "valid_range": [-80, 65],
-        "suitable_for_candidate_target": "Potential meteorological predictor only; target unselected.",
+        "suitable_for_candidate_target": "Candidate predictor for the proposed 24-hour gauge danger-level target only.",
         "source_variable": "temperature_2m_mean",
     },
     {
@@ -108,7 +128,7 @@ FEATURE_SCHEMA: tuple[dict[str, Any], ...] = (
         "available_at_training": True,
         "available_at_inference": False,
         "valid_range": [0, 100],
-        "suitable_for_candidate_target": "Potential meteorological predictor only; target unselected.",
+        "suitable_for_candidate_target": "Candidate predictor for the proposed 24-hour gauge danger-level target only.",
         "source_variable": "relative_humidity_2m_mean",
     },
     {
@@ -125,7 +145,7 @@ FEATURE_SCHEMA: tuple[dict[str, Any], ...] = (
         "available_at_training": True,
         "available_at_inference": False,
         "valid_range": [0, 400],
-        "suitable_for_candidate_target": "Potential meteorological predictor only; target unselected.",
+        "suitable_for_candidate_target": "Candidate predictor for the proposed 24-hour gauge danger-level target only.",
         "source_variable": "wind_speed_10m_max",
     },
 )
@@ -143,7 +163,9 @@ METADATA_COLUMNS = (
 )
 OUTPUT_COLUMNS = (*METADATA_COLUMNS, *FEATURE_COLUMNS)
 LABEL_COLUMNS = (
-    "location_id",
+    "gauge_id",
+    "grid_location_id",
+    "location_crosswalk_reference",
     "target_window_start_utc",
     "target_window_end_utc",
     "flood_occurrence",
@@ -151,13 +173,18 @@ LABEL_COLUMNS = (
     "source_record_id",
     "label_method",
     "label_confidence",
+    "observed_max_water_level_m",
+    "official_danger_level_m",
+    "danger_level_source",
     "coverage_complete",
+    "coverage_evidence_reference",
 )
 TARGET_APPROVAL_FIELDS = (
     "definition",
     "geographic_unit",
     "positive_label_definition",
     "negative_label_definition",
+    "location_crosswalk_reference",
     "approval_reference",
 )
 SOURCE_UNITS = {
@@ -168,12 +195,8 @@ SOURCE_UNITS = {
 }
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def _sha256(path: Path, *, normalize_csv_line_endings: bool = False) -> str:
+    return sha256_file(path, normalize_csv_line_endings=normalize_csv_line_endings)
 
 
 def validate_feature_schema(schema: tuple[dict[str, Any], ...] = FEATURE_SCHEMA) -> None:
@@ -345,6 +368,9 @@ def build_predictor_frame(
         )
     quality = {
         "schema_version": SCHEMA_VERSION,
+        "target_id": TARGET_ID,
+        "target_definition": TARGET_DEFINITION,
+        "prediction_horizon_hours": 24,
         "target_definition_status": TARGET_DEFINITION_STATUS,
         "target_limitation": TARGET_LIMITATION,
         "source_rows": len(dates),
@@ -374,8 +400,9 @@ def build_predictor_frame(
             "Historical reanalysis is not currently available from the live inference feature builder.",
             "The provider's best_match selection does not identify its underlying model/native resolution "
             "in the response and can vary by variable or period.",
-            "Single-point weather history cannot establish spatial generalization; independent-site "
-            "validation data is required.",
+            "The historical candidate source is single-location; independent gauge/grid pairs are required "
+            "for location-aware validation.",
+            "No reviewed danger-level source, gauge-to-grid crosswalk, or complete gauge-coverage evidence is present.",
         ],
     }
     return frame, quality
@@ -400,6 +427,18 @@ def _parse_boolean(value: Any, field: str) -> bool:
     raise ValueError(f"Label field {field!r} must contain true/false.")
 
 
+def _parse_aware_utc(values: pd.Series, field: str) -> pd.Series:
+    strings = values.astype("string").str.strip()
+    if strings.isna().any() or strings.eq("").any():
+        raise ValueError(f"{field} must contain a timezone-aware timestamp for every row.")
+    if not strings.str.contains(r"(?:Z|[+-]\d{2}:?\d{2})$", case=False, regex=True).all():
+        raise ValueError(f"{field} must include a UTC marker or explicit timezone offset.")
+    parsed = pd.to_datetime(strings, errors="coerce", utc=True)
+    if parsed.isna().any():
+        raise ValueError(f"{field} must contain valid timezone-normalized UTC timestamps.")
+    return parsed
+
+
 def align_explicit_labels(
     predictors: pd.DataFrame,
     labels: pd.DataFrame,
@@ -412,6 +451,17 @@ def align_explicit_labels(
         raise ValueError(
             "A documented, explicitly approved target definition is required before joining labels."
         )
+    expected_target = {
+        "target_id": TARGET_ID,
+        "definition": TARGET_DEFINITION,
+        "geographic_unit": TARGET_GEOGRAPHIC_UNIT,
+        "positive_label_definition": TARGET_POSITIVE_DEFINITION,
+        "negative_label_definition": TARGET_NEGATIVE_DEFINITION,
+    }
+    if any(approved_target.get(field) != value for field, value in expected_target.items()):
+        raise ValueError(
+            "Approved target does not match the versioned 24-hour CWC gauge danger-level target."
+        )
     try:
         horizon_hours = float(approved_target["prediction_horizon_hours"])
     except (KeyError, TypeError, ValueError) as error:
@@ -420,8 +470,69 @@ def align_explicit_labels(
         raise ValueError("This version aligns only exact 24-hour target windows.")
     if not set(FEATURE_COLUMNS) <= set(predictors.columns):
         raise ValueError("Predictor table is missing one or more versioned environmental features.")
-    if predictors.loc[:, FEATURE_COLUMNS].isna().any().any():
-        raise ValueError("Incomplete predictor rows must be excluded before label alignment.")
+    predictor_required = {
+        "location_id",
+        "requested_latitude",
+        "requested_longitude",
+        "grid_latitude",
+        "grid_longitude",
+        "prediction_issue_time_utc",
+        "candidate_target_window_start_utc",
+        "candidate_target_window_end_utc",
+    }
+    missing_predictor_metadata = predictor_required - set(predictors.columns)
+    if missing_predictor_metadata:
+        raise ValueError(
+            "Predictor table is missing required location/time metadata: "
+            + ", ".join(sorted(missing_predictor_metadata))
+            + "."
+        )
+    if predictors.empty:
+        raise ValueError("Predictor table contains no complete labeled candidates.")
+    predictor_frame = predictors.copy()
+    if predictor_frame["location_id"].isna().any() or predictor_frame["location_id"].astype(str).str.strip().eq("").any():
+        raise ValueError("Predictor location_id must identify every location.")
+    for column, low, high in (
+        ("requested_latitude", -90, 90),
+        ("grid_latitude", -90, 90),
+        ("requested_longitude", -180, 180),
+        ("grid_longitude", -180, 180),
+    ):
+        try:
+            values = pd.to_numeric(predictor_frame[column], errors="raise").to_numpy(dtype=float)
+        except (TypeError, ValueError) as error:
+            raise ValueError(f"Predictor coordinates in {column!r} must be numeric.") from error
+        if not np.isfinite(values).all() or ((values < low) | (values > high)).any():
+            raise ValueError(f"Predictor coordinates in {column!r} are outside valid WGS 84 bounds.")
+        predictor_frame[column] = values
+    try:
+        feature_values = predictor_frame.loc[:, FEATURE_COLUMNS].apply(pd.to_numeric, errors="raise")
+    except (TypeError, ValueError) as error:
+        raise ValueError("Predictor features must contain numeric values.") from error
+    if feature_values.isna().any().any() or not np.isfinite(feature_values.to_numpy(dtype=float)).all():
+        raise ValueError("Predictor features contain missing or non-finite values.")
+    predictor_frame.loc[:, FEATURE_COLUMNS] = feature_values
+    predictor_frame["prediction_issue_time_utc"] = _parse_aware_utc(
+        predictor_frame["prediction_issue_time_utc"],
+        "prediction_issue_time_utc",
+    )
+    predictor_frame["candidate_target_window_start_utc"] = _parse_aware_utc(
+        predictor_frame["candidate_target_window_start_utc"],
+        "candidate_target_window_start_utc",
+    )
+    predictor_frame["candidate_target_window_end_utc"] = _parse_aware_utc(
+        predictor_frame["candidate_target_window_end_utc"],
+        "candidate_target_window_end_utc",
+    )
+    if not predictor_frame["prediction_issue_time_utc"].equals(
+        predictor_frame["candidate_target_window_start_utc"]
+    ):
+        raise ValueError("The target window must begin exactly at prediction issue time.")
+    if (
+        predictor_frame["candidate_target_window_end_utc"]
+        - predictor_frame["candidate_target_window_start_utc"]
+    ).ne(pd.Timedelta(hours=24)).any():
+        raise ValueError("Every predictor target window must cover exactly 24 hours.")
     missing = [column for column in LABEL_COLUMNS if column not in labels.columns]
     if missing:
         raise ValueError(f"Label file is missing required evidence columns: {', '.join(missing)}.")
@@ -429,27 +540,35 @@ def align_explicit_labels(
         raise ValueError("Label file contains no explicit observations.")
 
     label_frame = labels.loc[:, LABEL_COLUMNS].copy()
-    for column in ("location_id", "label_source", "source_record_id", "label_method"):
+    for column in (
+        "gauge_id",
+        "grid_location_id",
+        "location_crosswalk_reference",
+        "label_source",
+        "source_record_id",
+        "label_method",
+        "danger_level_source",
+    ):
         label_frame[column] = label_frame[column].astype("string").str.strip()
         if label_frame[column].isna().any() or label_frame[column].eq("").any():
             raise ValueError(f"Label evidence field {column!r} must be present for every record.")
-    start_strings = label_frame["target_window_start_utc"].astype(str)
-    end_strings = label_frame["target_window_end_utc"].astype(str)
-    offset_mask = start_strings.str.contains(r"[+-]\d{2}:?\d{2}$", na=False) | end_strings.str.contains(
-        r"[+-]\d{2}:?\d{2}$", na=False
+    if not label_frame["location_crosswalk_reference"].eq(
+        str(approved_target["location_crosswalk_reference"]).strip()
+    ).all():
+        raise ValueError(
+            "Every label must use the exact reviewed gauge-to-grid crosswalk in the approved target."
+        )
+    label_frame["target_window_start_utc"] = _parse_aware_utc(
+        label_frame["target_window_start_utc"],
+        "target_window_start_utc",
     )
-    label_frame["target_window_start_utc"] = pd.to_datetime(
-        label_frame["target_window_start_utc"], errors="coerce", utc=True
+    label_frame["target_window_end_utc"] = _parse_aware_utc(
+        label_frame["target_window_end_utc"],
+        "target_window_end_utc",
     )
-    label_frame["target_window_end_utc"] = pd.to_datetime(
-        label_frame["target_window_end_utc"], errors="coerce", utc=True
-    )
-    if label_frame[["target_window_start_utc", "target_window_end_utc"]].isna().any().any():
-        raise ValueError("Label windows must contain valid timezone-normalized UTC timestamps.")
-    strict_window_mask = ~offset_mask
     if (
-        label_frame.loc[strict_window_mask, "target_window_end_utc"]
-        - label_frame.loc[strict_window_mask, "target_window_start_utc"]
+        label_frame["target_window_end_utc"]
+        - label_frame["target_window_start_utc"]
     ).ne(pd.Timedelta(hours=24)).any():
         raise ValueError("Every label must cover exactly one 24-hour UTC window.")
     try:
@@ -459,37 +578,72 @@ def align_explicit_labels(
         label_frame["label_confidence"] = pd.to_numeric(
             label_frame["label_confidence"], errors="raise"
         )
+        label_frame["observed_max_water_level_m"] = pd.to_numeric(
+            label_frame["observed_max_water_level_m"], errors="raise"
+        )
+        label_frame["official_danger_level_m"] = pd.to_numeric(
+            label_frame["official_danger_level_m"], errors="raise"
+        )
     except (TypeError, ValueError) as error:
-        raise ValueError("Flood labels must be 0/1 and confidence must be numeric.") from error
+        raise ValueError(
+            "Flood labels, confidence, maximum observed stage, and official danger level must be numeric."
+        ) from error
     if not label_frame["flood_occurrence"].isin([0, 1]).all():
         raise ValueError("Flood occurrence labels must be exactly 0 or 1.")
     if (
-        not np.isfinite(label_frame["label_confidence"].to_numpy(dtype=float)).all()
-        or not label_frame["label_confidence"].between(0, 1).all()
+        not np.isfinite(
+            label_frame[
+                [
+                    "label_confidence",
+                    "observed_max_water_level_m",
+                    "official_danger_level_m",
+                ]
+            ].to_numpy(dtype=float)
+        ).all()
+        or not label_frame["label_confidence"].gt(0).all()
+        or not label_frame["label_confidence"].le(1).all()
     ):
-        raise ValueError("Label confidence must be finite and between 0 and 1.")
+        raise ValueError(
+            "Label confidence and stage measurements must be finite; confidence must be greater than 0 and at most 1."
+        )
+    positive = label_frame["flood_occurrence"].eq(1)
+    measured_exceedance = label_frame["observed_max_water_level_m"].ge(
+        label_frame["official_danger_level_m"]
+    )
+    if (positive & ~measured_exceedance).any():
+        raise ValueError("Positive labels require a measured stage at or above the official danger level.")
+    if (~positive & measured_exceedance).any():
+        raise ValueError("Negative labels cannot include a measured stage at or above the official danger level.")
     label_frame["coverage_complete"] = [
         _parse_boolean(value, "coverage_complete")
         for value in label_frame["coverage_complete"]
     ]
-    if (
-        label_frame.loc[label_frame["flood_occurrence"] == 0, "coverage_complete"]
-        .eq(False)
-        .any()
-    ):
+    negative = label_frame["flood_occurrence"].eq(0)
+    if label_frame.loc[negative, "coverage_complete"].eq(False).any():
         raise ValueError(
             "A negative flood label requires documented complete observation coverage; "
             "absence of an event record is not a negative label."
         )
+    coverage_references = label_frame["coverage_evidence_reference"].astype("string").str.strip()
+    if (coverage_references.loc[negative].isna() | coverage_references.loc[negative].eq("")).any():
+        raise ValueError("Negative labels require a coverage_evidence_reference.")
+    label_frame["coverage_evidence_reference"] = coverage_references
 
     label_keys = [
-        "location_id",
+        "gauge_id",
         "target_window_start_utc",
         "target_window_end_utc",
     ]
-    conflicting_groups = (
-        label_frame.groupby(label_keys, dropna=False)["flood_occurrence"].nunique().gt(1)
-    )
+    evidence_columns = [
+        "flood_occurrence",
+        "observed_max_water_level_m",
+        "official_danger_level_m",
+        "danger_level_source",
+        "coverage_complete",
+    ]
+    conflicting_groups = label_frame.groupby(label_keys, dropna=False)[
+        evidence_columns
+    ].nunique().gt(1).any(axis=1)
     conflicting_count = int(conflicting_groups.sum())
     if conflicting_count:
         raise ValueError(f"Found {conflicting_count} conflicting location/window label groups.")
@@ -500,13 +654,6 @@ def align_explicit_labels(
         .reset_index(drop=True)
     )
 
-    predictor_frame = predictors.copy()
-    predictor_frame["candidate_target_window_start_utc"] = pd.to_datetime(
-        predictor_frame["candidate_target_window_start_utc"], errors="coerce", utc=True
-    )
-    predictor_frame["candidate_target_window_end_utc"] = pd.to_datetime(
-        predictor_frame["candidate_target_window_end_utc"], errors="coerce", utc=True
-    )
     predictor_keys = [
         "location_id",
         "candidate_target_window_start_utc",
@@ -516,6 +663,7 @@ def align_explicit_labels(
         raise ValueError("Predictor table contains ambiguous duplicate location/window rows.")
     renamed_labels = label_frame.rename(
         columns={
+            "grid_location_id": "location_id",
             "target_window_start_utc": "candidate_target_window_start_utc",
             "target_window_end_utc": "candidate_target_window_end_utc",
         }
@@ -524,20 +672,25 @@ def align_explicit_labels(
         renamed_labels,
         on=predictor_keys,
         how="inner",
-        validate="one_to_one",
+        validate="one_to_many",
     )
     label_keys_for_join = renamed_labels.loc[:, predictor_keys]
-    predictor_keys_for_join = predictor_frame.loc[:, predictor_keys]
-    label_key_set = set(map(tuple, label_keys_for_join.itertuples(index=False, name=None)))
-    predictor_key_set = set(map(tuple, predictor_keys_for_join.itertuples(index=False, name=None)))
+    predictor_key_set = set(
+        map(tuple, predictor_frame.loc[:, predictor_keys].itertuples(index=False, name=None))
+    )
+    matched_label_mask = [
+        key in predictor_key_set
+        for key in label_keys_for_join.itertuples(index=False, name=None)
+    ]
     return joined, {
         "input_label_records": len(labels),
         "duplicate_label_records": duplicate_count,
         "conflicting_label_groups": conflicting_count,
-        "unmatched_label_records": len(renamed_labels) - len(label_key_set & predictor_key_set),
+        "unmatched_label_records": int((~pd.Series(matched_label_mask)).sum()),
         "matched_labeled_rows": len(joined),
         "positive_label_count": int(joined["flood_occurrence"].eq(1).sum()),
         "negative_label_count": int(joined["flood_occurrence"].eq(0).sum()),
+        "distinct_gauge_count": int(joined["gauge_id"].nunique()),
     }
 
 
@@ -556,7 +709,7 @@ def build_predictor_dataset(
     processed = frame.loc[complete].copy()
     output.parent.mkdir(parents=True, exist_ok=True)
     processed.to_csv(output, index=False, lineterminator="\n", float_format="%.6f")
-    csv_hash = _sha256(output)
+    csv_hash = _sha256(output, normalize_csv_line_endings=True)
     source_manifest_path = source_path.with_suffix(".manifest.json")
     source_manifest = json.loads(source_manifest_path.read_text(encoding="utf-8"))
     label_quality = {
@@ -604,7 +757,7 @@ def build_predictor_dataset(
                 "predictor_sha256": csv_hash,
                 "row_count": len(joined),
                 "column_count": len(joined.columns),
-                "dataset_sha256": _sha256(labeled_output_path),
+                "dataset_sha256": _sha256(labeled_output_path, normalize_csv_line_endings=True),
                 "label_quality": label_quality,
                 "training_suitable": False,
                 "training_limitation": (
@@ -615,6 +768,13 @@ def build_predictor_dataset(
         )
         quality.update(label_quality)
         quality["label_source_status"] = "USER_PROVIDED_REQUIRES_SOURCE_AUDIT"
+        quality["target_definition_status"] = "APPROVED_TARGET_LABELS_REQUIRE_SOURCE_AUDIT"
+        quality["target_definition"] = approved_target["definition"]
+        quality["target_coverage"] = {
+            "distinct_gauges": int(joined["gauge_id"].nunique()),
+            "first_issue_time_utc": str(joined["prediction_issue_time_utc"].min()),
+            "last_issue_time_utc": str(joined["prediction_issue_time_utc"].max()),
+        }
     manifest = {
         "manifest_version": "1.0",
         "dataset_name": "Kochi historical environmental predictor candidates",
@@ -632,8 +792,14 @@ def build_predictor_dataset(
         },
         "spatial_resolution": source_manifest["spatial_resolution"],
         "temporal_resolution": "Daily UTC, trailing features available at next-day issue time",
-        "target_definition": None,
-        "target_definition_status": TARGET_DEFINITION_STATUS,
+        "target_id": TARGET_ID,
+        "target_definition": TARGET_DEFINITION,
+        "target_definition_status": (
+            "APPROVED_TARGET_LABELS_REQUIRE_SOURCE_AUDIT"
+            if labels_path is not None
+            else TARGET_DEFINITION_STATUS
+        ),
+        "prediction_horizon_hours": 24,
         "feature_schema": list(FEATURE_SCHEMA),
         "feature_order": list(FEATURE_COLUMNS),
         "row_count": len(processed),
