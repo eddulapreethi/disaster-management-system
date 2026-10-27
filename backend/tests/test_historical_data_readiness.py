@@ -159,3 +159,53 @@ def test_historical_analytics_cache_is_invalidated_when_dataset_changes(tmp_path
     second = get_historical_analytics(tmp_path)
     assert second["summary"]["unique_event_ids"] == 2
     assert second["summary"]["events_by_disaster_type"]["Flood"] == 2
+
+
+def test_readiness_keeps_partial_analytics_visible_without_claiming_full_readiness(tmp_path) -> None:
+    source_dir = tmp_path / "ml" / "datasets" / "historical_disasters" / "EM-DAT"
+    processed_dir = tmp_path / "ml" / "datasets" / "historical_data" / "processed"
+    source_dir.mkdir(parents=True)
+    processed_dir.mkdir(parents=True)
+    source = source_dir / "source.xlsx"
+    source.write_bytes(b"test source workbook")
+    processed_input = processed_dir / "emdat_cleaned.csv"
+    processed_input.write_text("test input\n", encoding="utf-8")
+    header = (
+        "disno.,disaster_type,country,start_year,start_date,end_date,latitude,longitude,"
+        "total_deaths,total_affected,total_damage_'000_us$\n"
+    )
+    source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+    input_hash = sha256_file(processed_input)
+
+    for name, row, valid_hash in (
+        ("floods", "2020-0001,Flood,Testland,2020,2020-01-01,,10,20,1,4,5\n", True),
+        ("earthquakes", "2020-0002,Earthquake,Testland,2020,2020-01-02,,11,21,2,5,6\n", False),
+    ):
+        dataset = processed_dir / f"{name}.csv"
+        dataset.write_text(header + row, encoding="utf-8")
+        digest = sha256_file(dataset, normalize_csv_line_endings=True)
+        manifest = {
+            "dataset_name": name,
+            "row_count": 1,
+            "dataset_sha256": digest if valid_hash else "incorrect",
+            "source_file": source.name,
+            "source_sha256": source_hash,
+            "processed_input_file": processed_input.name,
+            "processed_input_sha256": input_hash,
+            "event_categories": ["Flood" if name == "floods" else "Earthquake"],
+            "target_definition": "Historical event classification only.",
+            "validation": {
+                "sha256": digest if valid_hash else "incorrect",
+                "non_empty": True,
+            },
+        }
+        (processed_dir / f"{name}.manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    result = get_historical_data_readiness(tmp_path)
+
+    assert result["status"] == "NOT_READY"
+    assert result["analytics_status"] == "PARTIAL"
+    assert result["source_status"] == "PARTIAL"
+    assert result["training_status"] == "NOT_READY"
+    assert result["analytics_summary"]["unique_event_ids"] == 1
+    assert result["failed_dataset_count"] == 1

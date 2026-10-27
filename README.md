@@ -79,7 +79,7 @@ Displays predicted disaster-risk areas and locations using an interactive GIS ma
 
 🧪 Digital Twin Simulation
 
-Provides illustrative what-if calculations for supported weather inputs. Results are not physically calibrated forecasts.
+The Stage 1 Digital Twin provides a local, deterministic rainfall what-if timeline over the Kochi reference GIS map. Its animated symbol is not a flood extent, forecast, or warning. See the [Stage 1 Digital Twin guide](./docs/DIGITAL_TWIN_STAGE_1.md) for usage, assumptions, validation, and Stage 2 requirements.
 
 🧠 AI Emergency Recommendations
 

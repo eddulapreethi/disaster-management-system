@@ -50,7 +50,20 @@ input[type=range]{width:100%;accent-color:var(--brand);}
 select,.text-input{width:100%;padding:.55rem;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--ink);font:inherit;}
 .rangeval{font:600 .85rem 'JetBrains Mono';float:right;color:var(--brand);}
 .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
-@media(max-width:640px){.formgrid{grid-template-columns:1fr;} .app-body{flex-direction:column;} .sidebar{width:100%;display:flex;overflow-x:auto;border-right:none;border-bottom:1px solid var(--border);}}
+@media(max-width:640px){
+  .formgrid{grid-template-columns:1fr;}
+  .app-body{flex-direction:column;}
+  .sidebar{width:100%;display:flex;overflow-x:auto;border-right:none;border-bottom:1px solid var(--border);}
+  .navbar-inner{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:'brand user theme' 'status status status';gap:.35rem .5rem;padding:.55rem .65rem;}
+  .brand{grid-area:brand;min-width:0;gap:.45rem;}
+  .brandname{font-size:.92rem;white-space:nowrap;}
+  .brandsub{display:none;}
+  .statuspill{grid-area:status;justify-self:start;margin:0;font-size:.65rem;}
+  .navbar-user{grid-area:user;gap:.3rem;margin:0;}
+  .navbar-email{display:none;}
+  .navbar-user .btn-outline,.navbar-user .btn{padding:.4rem .55rem;font-size:.7rem;white-space:nowrap;}
+  .themebtn{grid-area:theme;width:30px;height:30px;margin:0;}
+}
 .auth-wrap{display:flex;justify-content:center;padding:2rem 1rem;}
 .auth-card{width:100%;max-width:380px;}
 .auth-switch{font-size:.8rem;color:var(--ink2);margin-top:.8rem;text-align:center;}

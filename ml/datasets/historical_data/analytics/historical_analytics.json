@@ -1,5 +1,6 @@
 {
-  "analytics_version": "emdat-historical-analytics-v1",
+  "analytics_version": "emdat-historical-analytics-v2",
+  "as_of_date": "2026-10-27",
   "capabilities": {
     "environmental_flood_prediction": "NOT_SUPPORTED_NO_JOINED_VERIFIED_LABELS_AND_INFERENCE_FEATURES",
     "flood_event_classification": "NOT_SUPPORTED_NO_VALIDATED_NEGATIVE_EXAMPLES_OR_PREDICTION_UNIT",
@@ -8,6 +9,7 @@
   },
   "dataset_inventory": [
     {
+      "classification_field": "disaster_type",
       "columns": [
         "disno.",
         "historic",
@@ -112,12 +114,24 @@
         "total_damage_'000_us$": "integer",
         "total_deaths": "integer"
       },
+      "dataset_file": "earthquakes.csv",
       "date_coverage": {
+        "as_of_date": "2026-10-27",
         "end": "2026-08-14",
+        "end_before_start": 1,
+        "future_start_dates": 0,
+        "invalid_end_dates": 0,
         "invalid_start_dates": 0,
-        "rows_with_start_year": 707,
+        "missing_end_dates": 0,
+        "missing_start_dates": 0,
+        "missing_start_year": 0,
+        "parseable_end_dates": 707,
         "start": "2000-01-02",
+        "start_year_mismatches": 0,
         "valid_start_dates": 707
+      },
+      "disaster_type_counts": {
+        "Earthquake": 707
       },
       "duplicate_quality": {
         "duplicate_event_id_rows": 0,
@@ -127,14 +141,58 @@
         "Earthquake"
       ],
       "geography": {
+        "coordinate_coverage_denominator": 707,
         "coordinate_coverage_percent": 96.18,
         "invalid_coordinate_rows": 0,
+        "missing_country_rows": 0,
+        "missing_latitude": 27,
+        "missing_longitude": 27,
         "rows_with_both_valid_coordinates": 680,
+        "rows_with_partial_coordinates": 0,
         "unique_countries": 94
       },
+      "impact_coverage": {
+        "total_affected": {
+          "coverage_percent": 97.03,
+          "denominator_records": 707,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total affected",
+          "missing_records": 21,
+          "negative_records": 0,
+          "reported_records": 686,
+          "sum_of_reported_values": 168799215.0,
+          "unit": "people"
+        },
+        "total_damage_'000_us$": {
+          "coverage_percent": 43.99,
+          "denominator_records": 707,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total damage",
+          "missing_records": 396,
+          "negative_records": 0,
+          "reported_records": 311,
+          "sum_of_reported_values": 708745158.0,
+          "unit": "thousand source-reported US dollars"
+        },
+        "total_deaths": {
+          "coverage_percent": 65.91,
+          "denominator_records": 707,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported deaths",
+          "missing_records": 241,
+          "negative_records": 0,
+          "reported_records": 466,
+          "sum_of_reported_values": 805285.0,
+          "unit": "people"
+        }
+      },
       "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
-      "manifest": "ml\\datasets\\historical_data\\processed\\earthquakes.manifest.json",
       "manifest_validation": "VALIDATED",
+      "missing_country_rows": 0,
+      "missing_event_ids": 0,
       "missing_percent": {
         "admin_units": 12.31,
         "aid_contribution_'000_us$": 90.95,
@@ -161,8 +219,33 @@
         "total_damage_'000_us$": 56.01,
         "total_deaths": 34.09
       },
+      "missing_value_counts": {
+        "admin_units": 87,
+        "aid_contribution_'000_us$": 643,
+        "associated_types": 539,
+        "cpi": 14,
+        "event_name": 707,
+        "external_ids": 82,
+        "gadm_admin_units": 189,
+        "insured_damage,_adjusted_'000_us$": 630,
+        "insured_damage_'000_us$": 630,
+        "latitude": 27,
+        "location": 5,
+        "longitude": 27,
+        "magnitude": 2,
+        "no._affected": 178,
+        "no._homeless": 495,
+        "no._injured": 124,
+        "origin": 702,
+        "reconstruction_costs,_adjusted_'000_us$": 696,
+        "reconstruction_costs_'000_us$": 696,
+        "river_basin": 702,
+        "total_affected": 21,
+        "total_damage,_adjusted_'000_us$": 399,
+        "total_damage_'000_us$": 396,
+        "total_deaths": 241
+      },
       "name": "earthquakes",
-      "path": "ml\\datasets\\historical_data\\processed\\earthquakes.csv",
       "processed_input_file": "emdat_cleaned.csv",
       "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
       "rows": 707,
@@ -172,9 +255,23 @@
       "source_reference": "https://public.emdat.be/",
       "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
       "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
-      "training_suitable": false
+      "training_suitable": false,
+      "unique_event_count": 707,
+      "unique_event_ids": 707,
+      "warnings": [
+        "1 end date(s) precede their start date.",
+        "Coordinates are incomplete for some or all event rows."
+      ],
+      "year_aggregation_exclusions": {
+        "end_before_start": 1,
+        "future_start_date": 0,
+        "invalid_start_date": 0,
+        "missing_event_id": 0,
+        "missing_start_date": 0
+      }
     },
     {
+      "classification_field": "disaster_type",
       "columns": [
         "disno.",
         "historic",
@@ -279,12 +376,24 @@
         "total_damage_'000_us$": "integer",
         "total_deaths": "integer"
       },
+      "dataset_file": "floods.csv",
       "date_coverage": {
+        "as_of_date": "2026-10-27",
         "end": "2026-08-26",
+        "end_before_start": 0,
+        "future_start_dates": 0,
+        "invalid_end_dates": 0,
         "invalid_start_dates": 0,
-        "rows_with_start_year": 4291,
+        "missing_end_dates": 266,
+        "missing_start_dates": 285,
+        "missing_start_year": 0,
+        "parseable_end_dates": 4025,
         "start": "2000-01-01",
+        "start_year_mismatches": 0,
         "valid_start_dates": 4006
+      },
+      "disaster_type_counts": {
+        "Flood": 4291
       },
       "duplicate_quality": {
         "duplicate_event_id_rows": 0,
@@ -294,14 +403,58 @@
         "Flood"
       ],
       "geography": {
+        "coordinate_coverage_denominator": 4291,
         "coordinate_coverage_percent": 23.44,
         "invalid_coordinate_rows": 0,
+        "missing_country_rows": 0,
+        "missing_latitude": 3285,
+        "missing_longitude": 3285,
         "rows_with_both_valid_coordinates": 1006,
+        "rows_with_partial_coordinates": 0,
         "unique_countries": 181
       },
+      "impact_coverage": {
+        "total_affected": {
+          "coverage_percent": 90.38,
+          "denominator_records": 4291,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total affected",
+          "missing_records": 413,
+          "negative_records": 0,
+          "reported_records": 3878,
+          "sum_of_reported_values": 1894696619.0,
+          "unit": "people"
+        },
+        "total_damage_'000_us$": {
+          "coverage_percent": 28.25,
+          "denominator_records": 4291,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total damage",
+          "missing_records": 3079,
+          "negative_records": 0,
+          "reported_records": 1212,
+          "sum_of_reported_values": 833395528.0,
+          "unit": "thousand source-reported US dollars"
+        },
+        "total_deaths": {
+          "coverage_percent": 73.34,
+          "denominator_records": 4291,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported deaths",
+          "missing_records": 1144,
+          "negative_records": 0,
+          "reported_records": 3147,
+          "sum_of_reported_values": 149885.0,
+          "unit": "people"
+        }
+      },
       "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
-      "manifest": "ml\\datasets\\historical_data\\processed\\floods.manifest.json",
       "manifest_validation": "VALIDATED",
+      "missing_country_rows": 0,
+      "missing_event_ids": 0,
       "missing_percent": {
         "admin_units": 11.47,
         "aid_contribution_'000_us$": 94.03,
@@ -335,8 +488,40 @@
         "total_damage_'000_us$": 71.75,
         "total_deaths": 26.66
       },
+      "missing_value_counts": {
+        "admin_units": 492,
+        "aid_contribution_'000_us$": 4035,
+        "associated_types": 2808,
+        "cpi": 44,
+        "end_date": 266,
+        "end_day": 266,
+        "end_month": 1,
+        "event_date": 285,
+        "event_name": 4280,
+        "external_ids": 2679,
+        "gadm_admin_units": 727,
+        "insured_damage,_adjusted_'000_us$": 4120,
+        "insured_damage_'000_us$": 4120,
+        "latitude": 3285,
+        "location": 26,
+        "longitude": 3285,
+        "magnitude": 2893,
+        "no._affected": 805,
+        "no._homeless": 3786,
+        "no._injured": 3415,
+        "origin": 816,
+        "reconstruction_costs,_adjusted_'000_us$": 4277,
+        "reconstruction_costs_'000_us$": 4276,
+        "river_basin": 3045,
+        "start_date": 285,
+        "start_day": 285,
+        "start_month": 1,
+        "total_affected": 413,
+        "total_damage,_adjusted_'000_us$": 3086,
+        "total_damage_'000_us$": 3079,
+        "total_deaths": 1144
+      },
       "name": "floods",
-      "path": "ml\\datasets\\historical_data\\processed\\floods.csv",
       "processed_input_file": "emdat_cleaned.csv",
       "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
       "rows": 4291,
@@ -346,9 +531,23 @@
       "source_reference": "https://public.emdat.be/",
       "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
       "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
-      "training_suitable": false
+      "training_suitable": false,
+      "unique_event_count": 4291,
+      "unique_event_ids": 4291,
+      "warnings": [
+        "285 row(s) have no start date.",
+        "Coordinates are incomplete for some or all event rows."
+      ],
+      "year_aggregation_exclusions": {
+        "end_before_start": 0,
+        "future_start_date": 0,
+        "invalid_start_date": 0,
+        "missing_event_id": 0,
+        "missing_start_date": 285
+      }
     },
     {
+      "classification_field": "disaster_type",
       "columns": [
         "disno.",
         "historic",
@@ -453,12 +652,24 @@
         "total_damage_'000_us$": "integer",
         "total_deaths": "integer"
       },
+      "dataset_file": "glacial_lake_outburst_floods.csv",
       "date_coverage": {
+        "as_of_date": "2026-10-27",
         "end": "2025-07-07",
+        "end_before_start": 0,
+        "future_start_dates": 0,
+        "invalid_end_dates": 0,
         "invalid_start_dates": 0,
-        "rows_with_start_year": 8,
+        "missing_end_dates": 0,
+        "missing_start_dates": 0,
+        "missing_start_year": 0,
+        "parseable_end_dates": 8,
         "start": "2021-02-07",
+        "start_year_mismatches": 0,
         "valid_start_dates": 8
+      },
+      "disaster_type_counts": {
+        "Glacial lake outburst flood": 8
       },
       "duplicate_quality": {
         "duplicate_event_id_rows": 0,
@@ -468,14 +679,58 @@
         "Glacial lake outburst flood"
       ],
       "geography": {
+        "coordinate_coverage_denominator": 8,
         "coordinate_coverage_percent": 0.0,
         "invalid_coordinate_rows": 0,
+        "missing_country_rows": 0,
+        "missing_latitude": 8,
+        "missing_longitude": 8,
         "rows_with_both_valid_coordinates": 0,
+        "rows_with_partial_coordinates": 0,
         "unique_countries": 5
       },
+      "impact_coverage": {
+        "total_affected": {
+          "coverage_percent": 50.0,
+          "denominator_records": 8,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total affected",
+          "missing_records": 4,
+          "negative_records": 0,
+          "reported_records": 4,
+          "sum_of_reported_values": 94144.0,
+          "unit": "people"
+        },
+        "total_damage_'000_us$": {
+          "coverage_percent": 25.0,
+          "denominator_records": 8,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total damage",
+          "missing_records": 6,
+          "negative_records": 0,
+          "reported_records": 2,
+          "sum_of_reported_values": 710000.0,
+          "unit": "thousand source-reported US dollars"
+        },
+        "total_deaths": {
+          "coverage_percent": 87.5,
+          "denominator_records": 8,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported deaths",
+          "missing_records": 1,
+          "negative_records": 0,
+          "reported_records": 7,
+          "sum_of_reported_values": 478.0,
+          "unit": "people"
+        }
+      },
       "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
-      "manifest": "ml\\datasets\\historical_data\\processed\\glacial_lake_outburst_floods.manifest.json",
       "manifest_validation": "VALIDATED",
+      "missing_country_rows": 0,
+      "missing_event_ids": 0,
       "missing_percent": {
         "admin_units": 75.0,
         "aid_contribution_'000_us$": 100.0,
@@ -501,8 +756,32 @@
         "total_damage_'000_us$": 75.0,
         "total_deaths": 12.5
       },
+      "missing_value_counts": {
+        "admin_units": 6,
+        "aid_contribution_'000_us$": 8,
+        "associated_types": 1,
+        "event_name": 7,
+        "external_ids": 7,
+        "gadm_admin_units": 5,
+        "insured_damage,_adjusted_'000_us$": 7,
+        "insured_damage_'000_us$": 7,
+        "latitude": 8,
+        "longitude": 8,
+        "magnitude": 8,
+        "magnitude_scale": 8,
+        "no._affected": 5,
+        "no._homeless": 8,
+        "no._injured": 6,
+        "origin": 6,
+        "reconstruction_costs,_adjusted_'000_us$": 8,
+        "reconstruction_costs_'000_us$": 8,
+        "river_basin": 7,
+        "total_affected": 4,
+        "total_damage,_adjusted_'000_us$": 6,
+        "total_damage_'000_us$": 6,
+        "total_deaths": 1
+      },
       "name": "glacial_lake_outburst_floods",
-      "path": "ml\\datasets\\historical_data\\processed\\glacial_lake_outburst_floods.csv",
       "processed_input_file": "emdat_cleaned.csv",
       "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
       "rows": 8,
@@ -512,9 +791,22 @@
       "source_reference": "https://public.emdat.be/",
       "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
       "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
-      "training_suitable": false
+      "training_suitable": false,
+      "unique_event_count": 8,
+      "unique_event_ids": 8,
+      "warnings": [
+        "Coordinates are incomplete for some or all event rows."
+      ],
+      "year_aggregation_exclusions": {
+        "end_before_start": 0,
+        "future_start_date": 0,
+        "invalid_start_date": 0,
+        "missing_event_id": 0,
+        "missing_start_date": 0
+      }
     },
     {
+      "classification_field": "disaster_type",
       "columns": [
         "disno.",
         "historic",
@@ -619,12 +911,25 @@
         "total_damage_'000_us$": "integer",
         "total_deaths": "integer"
       },
+      "dataset_file": "landslides.csv",
       "date_coverage": {
+        "as_of_date": "2026-10-27",
         "end": "2026-08-23",
+        "end_before_start": 0,
+        "future_start_dates": 0,
+        "invalid_end_dates": 0,
         "invalid_start_dates": 0,
-        "rows_with_start_year": 519,
+        "missing_end_dates": 9,
+        "missing_start_dates": 8,
+        "missing_start_year": 0,
+        "parseable_end_dates": 510,
         "start": "2000-01-19",
+        "start_year_mismatches": 0,
         "valid_start_dates": 511
+      },
+      "disaster_type_counts": {
+        "Mass movement (dry)": 15,
+        "Mass movement (wet)": 504
       },
       "duplicate_quality": {
         "duplicate_event_id_rows": 0,
@@ -635,14 +940,58 @@
         "Mass movement (dry)"
       ],
       "geography": {
+        "coordinate_coverage_denominator": 519,
         "coordinate_coverage_percent": 2.89,
         "invalid_coordinate_rows": 0,
+        "missing_country_rows": 0,
+        "missing_latitude": 504,
+        "missing_longitude": 504,
         "rows_with_both_valid_coordinates": 15,
+        "rows_with_partial_coordinates": 0,
         "unique_countries": 72
       },
+      "impact_coverage": {
+        "total_affected": {
+          "coverage_percent": 66.47,
+          "denominator_records": 519,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total affected",
+          "missing_records": 174,
+          "negative_records": 0,
+          "reported_records": 345,
+          "sum_of_reported_values": 8621856.0,
+          "unit": "people"
+        },
+        "total_damage_'000_us$": {
+          "coverage_percent": 10.6,
+          "denominator_records": 519,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total damage",
+          "missing_records": 464,
+          "negative_records": 0,
+          "reported_records": 55,
+          "sum_of_reported_values": 5682270.0,
+          "unit": "thousand source-reported US dollars"
+        },
+        "total_deaths": {
+          "coverage_percent": 96.92,
+          "denominator_records": 519,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported deaths",
+          "missing_records": 16,
+          "negative_records": 0,
+          "reported_records": 503,
+          "sum_of_reported_values": 23589.0,
+          "unit": "people"
+        }
+      },
       "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
-      "manifest": "ml\\datasets\\historical_data\\processed\\landslides.manifest.json",
       "manifest_validation": "VALIDATED",
+      "missing_country_rows": 0,
+      "missing_event_ids": 0,
       "missing_percent": {
         "admin_units": 16.96,
         "aid_contribution_'000_us$": 97.3,
@@ -675,8 +1024,39 @@
         "total_damage_'000_us$": 89.4,
         "total_deaths": 3.08
       },
+      "missing_value_counts": {
+        "admin_units": 88,
+        "aid_contribution_'000_us$": 505,
+        "associated_types": 427,
+        "cpi": 12,
+        "end_date": 9,
+        "end_day": 9,
+        "event_date": 8,
+        "event_name": 515,
+        "external_ids": 403,
+        "gadm_admin_units": 176,
+        "insured_damage,_adjusted_'000_us$": 515,
+        "insured_damage_'000_us$": 515,
+        "latitude": 504,
+        "location": 3,
+        "longitude": 504,
+        "magnitude": 519,
+        "magnitude_scale": 519,
+        "no._affected": 329,
+        "no._homeless": 435,
+        "no._injured": 313,
+        "origin": 206,
+        "reconstruction_costs,_adjusted_'000_us$": 519,
+        "reconstruction_costs_'000_us$": 519,
+        "river_basin": 506,
+        "start_date": 8,
+        "start_day": 8,
+        "total_affected": 174,
+        "total_damage,_adjusted_'000_us$": 466,
+        "total_damage_'000_us$": 464,
+        "total_deaths": 16
+      },
       "name": "landslides",
-      "path": "ml\\datasets\\historical_data\\processed\\landslides.csv",
       "processed_input_file": "emdat_cleaned.csv",
       "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
       "rows": 519,
@@ -686,9 +1066,23 @@
       "source_reference": "https://public.emdat.be/",
       "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
       "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
-      "training_suitable": false
+      "training_suitable": false,
+      "unique_event_count": 519,
+      "unique_event_ids": 519,
+      "warnings": [
+        "8 row(s) have no start date.",
+        "Coordinates are incomplete for some or all event rows."
+      ],
+      "year_aggregation_exclusions": {
+        "end_before_start": 0,
+        "future_start_date": 0,
+        "invalid_start_date": 0,
+        "missing_event_id": 0,
+        "missing_start_date": 8
+      }
     },
     {
+      "classification_field": "disaster_type",
       "columns": [
         "disno.",
         "historic",
@@ -793,12 +1187,24 @@
         "total_damage_'000_us$": "number",
         "total_deaths": "integer"
       },
+      "dataset_file": "storms_cyclones.csv",
       "date_coverage": {
+        "as_of_date": "2026-10-27",
         "end": "2026-11-10",
+        "end_before_start": 2,
+        "future_start_dates": 1,
+        "invalid_end_dates": 0,
         "invalid_start_dates": 0,
-        "rows_with_start_year": 2929,
+        "missing_end_dates": 63,
+        "missing_start_dates": 64,
+        "missing_start_year": 0,
+        "parseable_end_dates": 2866,
         "start": "2000-01-02",
+        "start_year_mismatches": 0,
         "valid_start_dates": 2865
+      },
+      "disaster_type_counts": {
+        "Storm": 2929
       },
       "duplicate_quality": {
         "duplicate_event_id_rows": 0,
@@ -808,14 +1214,58 @@
         "Storm"
       ],
       "geography": {
+        "coordinate_coverage_denominator": 2929,
         "coordinate_coverage_percent": 3.93,
         "invalid_coordinate_rows": 0,
+        "missing_country_rows": 0,
+        "missing_latitude": 2814,
+        "missing_longitude": 2814,
         "rows_with_both_valid_coordinates": 115,
+        "rows_with_partial_coordinates": 0,
         "unique_countries": 190
       },
+      "impact_coverage": {
+        "total_affected": {
+          "coverage_percent": 74.36,
+          "denominator_records": 2929,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total affected",
+          "missing_records": 751,
+          "negative_records": 0,
+          "reported_records": 2178,
+          "sum_of_reported_values": 933875477.0,
+          "unit": "people"
+        },
+        "total_damage_'000_us$": {
+          "coverage_percent": 49.13,
+          "denominator_records": 2929,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total damage",
+          "missing_records": 1490,
+          "negative_records": 0,
+          "reported_records": 1439,
+          "sum_of_reported_values": 1950806125.92,
+          "unit": "thousand source-reported US dollars"
+        },
+        "total_deaths": {
+          "coverage_percent": 74.6,
+          "denominator_records": 2929,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported deaths",
+          "missing_records": 744,
+          "negative_records": 0,
+          "reported_records": 2185,
+          "sum_of_reported_values": 228732.0,
+          "unit": "people"
+        }
+      },
       "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
-      "manifest": "ml\\datasets\\historical_data\\processed\\storms_cyclones.manifest.json",
       "manifest_validation": "VALIDATED",
+      "missing_country_rows": 0,
+      "missing_event_ids": 0,
       "missing_percent": {
         "admin_units": 21.0,
         "aid_contribution_'000_us$": 96.76,
@@ -839,7 +1289,7 @@
         "origin": 97.17,
         "reconstruction_costs,_adjusted_'000_us$": 99.83,
         "reconstruction_costs_'000_us$": 99.83,
-        "river_basin": 97.92,
+        "river_basin": 97.95,
         "start_date": 2.19,
         "start_day": 2.19,
         "total_affected": 25.64,
@@ -847,8 +1297,38 @@
         "total_damage_'000_us$": 50.87,
         "total_deaths": 25.4
       },
+      "missing_value_counts": {
+        "admin_units": 615,
+        "aid_contribution_'000_us$": 2834,
+        "associated_types": 1353,
+        "cpi": 74,
+        "end_date": 63,
+        "end_day": 63,
+        "event_date": 64,
+        "event_name": 1212,
+        "external_ids": 1620,
+        "gadm_admin_units": 683,
+        "insured_damage,_adjusted_'000_us$": 2526,
+        "insured_damage_'000_us$": 2524,
+        "latitude": 2814,
+        "location": 178,
+        "longitude": 2814,
+        "magnitude": 2005,
+        "no._affected": 1277,
+        "no._homeless": 2580,
+        "no._injured": 1860,
+        "origin": 2846,
+        "reconstruction_costs,_adjusted_'000_us$": 2924,
+        "reconstruction_costs_'000_us$": 2924,
+        "river_basin": 2869,
+        "start_date": 64,
+        "start_day": 64,
+        "total_affected": 751,
+        "total_damage,_adjusted_'000_us$": 1511,
+        "total_damage_'000_us$": 1490,
+        "total_deaths": 744
+      },
       "name": "storms_cyclones",
-      "path": "ml\\datasets\\historical_data\\processed\\storms_cyclones.csv",
       "processed_input_file": "emdat_cleaned.csv",
       "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
       "rows": 2929,
@@ -858,9 +1338,25 @@
       "source_reference": "https://public.emdat.be/",
       "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
       "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
-      "training_suitable": false
+      "training_suitable": false,
+      "unique_event_count": 2929,
+      "unique_event_ids": 2929,
+      "warnings": [
+        "1 start date(s) occur after the validation date.",
+        "2 end date(s) precede their start date.",
+        "64 row(s) have no start date.",
+        "Coordinates are incomplete for some or all event rows."
+      ],
+      "year_aggregation_exclusions": {
+        "end_before_start": 2,
+        "future_start_date": 1,
+        "invalid_start_date": 0,
+        "missing_event_id": 0,
+        "missing_start_date": 64
+      }
     },
     {
+      "classification_field": "disaster_type",
       "columns": [
         "disno.",
         "historic",
@@ -965,12 +1461,24 @@
         "total_damage_'000_us$": "integer",
         "total_deaths": "integer"
       },
+      "dataset_file": "wildfires.csv",
       "date_coverage": {
+        "as_of_date": "2026-10-27",
         "end": "2026-08-26",
+        "end_before_start": 0,
+        "future_start_dates": 0,
+        "invalid_end_dates": 0,
         "invalid_start_dates": 0,
-        "rows_with_start_year": 356,
+        "missing_end_dates": 88,
+        "missing_start_dates": 87,
+        "missing_start_year": 0,
+        "parseable_end_dates": 268,
         "start": "2000-01-15",
+        "start_year_mismatches": 0,
         "valid_start_dates": 269
+      },
+      "disaster_type_counts": {
+        "Wildfire": 356
       },
       "duplicate_quality": {
         "duplicate_event_id_rows": 0,
@@ -980,14 +1488,58 @@
         "Wildfire"
       ],
       "geography": {
+        "coordinate_coverage_denominator": 356,
         "coordinate_coverage_percent": 0.0,
         "invalid_coordinate_rows": 0,
+        "missing_country_rows": 0,
+        "missing_latitude": 356,
+        "missing_longitude": 356,
         "rows_with_both_valid_coordinates": 0,
+        "rows_with_partial_coordinates": 0,
         "unique_countries": 66
       },
+      "impact_coverage": {
+        "total_affected": {
+          "coverage_percent": 78.09,
+          "denominator_records": 356,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total affected",
+          "missing_records": 78,
+          "negative_records": 0,
+          "reported_records": 278,
+          "sum_of_reported_values": 15266592.0,
+          "unit": "people"
+        },
+        "total_damage_'000_us$": {
+          "coverage_percent": 38.76,
+          "denominator_records": 356,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported total damage",
+          "missing_records": 218,
+          "negative_records": 0,
+          "reported_records": 138,
+          "sum_of_reported_values": 174285169.0,
+          "unit": "thousand source-reported US dollars"
+        },
+        "total_deaths": {
+          "coverage_percent": 51.69,
+          "denominator_records": 356,
+          "explicit_zero_records": 0,
+          "invalid_records": 0,
+          "label": "Reported deaths",
+          "missing_records": 172,
+          "negative_records": 0,
+          "reported_records": 184,
+          "sum_of_reported_values": 2382.0,
+          "unit": "people"
+        }
+      },
       "license": "Subject to the access terms for the supplied EM-DAT academic/research request; this pipeline does not grant or confirm redistribution rights.",
-      "manifest": "ml\\datasets\\historical_data\\processed\\wildfires.manifest.json",
       "manifest_validation": "VALIDATED",
+      "missing_country_rows": 0,
+      "missing_event_ids": 0,
       "missing_percent": {
         "admin_units": 21.35,
         "aid_contribution_'000_us$": 98.88,
@@ -1021,8 +1573,40 @@
         "total_damage_'000_us$": 61.24,
         "total_deaths": 48.31
       },
+      "missing_value_counts": {
+        "admin_units": 76,
+        "aid_contribution_'000_us$": 352,
+        "associated_types": 305,
+        "cpi": 12,
+        "end_date": 88,
+        "end_day": 88,
+        "end_month": 2,
+        "event_date": 87,
+        "event_name": 304,
+        "external_ids": 295,
+        "gadm_admin_units": 76,
+        "insured_damage,_adjusted_'000_us$": 309,
+        "insured_damage_'000_us$": 308,
+        "latitude": 356,
+        "location": 1,
+        "longitude": 356,
+        "magnitude": 268,
+        "no._affected": 176,
+        "no._homeless": 240,
+        "no._injured": 226,
+        "origin": 259,
+        "reconstruction_costs,_adjusted_'000_us$": 354,
+        "reconstruction_costs_'000_us$": 354,
+        "river_basin": 356,
+        "start_date": 87,
+        "start_day": 87,
+        "start_month": 1,
+        "total_affected": 78,
+        "total_damage,_adjusted_'000_us$": 220,
+        "total_damage_'000_us$": 218,
+        "total_deaths": 172
+      },
       "name": "wildfires",
-      "path": "ml\\datasets\\historical_data\\processed\\wildfires.csv",
       "processed_input_file": "emdat_cleaned.csv",
       "processed_input_sha256": "6b1a76e5893645870dfca143dda161a76139b61d4e9e90ab694dc38f6a602b32",
       "rows": 356,
@@ -1032,7 +1616,20 @@
       "source_reference": "https://public.emdat.be/",
       "source_sha256": "24f511cdf8dd1900c4124a2244e643f9940ce6c5a4c56f02c9630f6473992587",
       "target_definition": "Historical event classification only. This is not a local inundation label, river threshold exceedance, or continuous flood probability.",
-      "training_suitable": false
+      "training_suitable": false,
+      "unique_event_count": 356,
+      "unique_event_ids": 356,
+      "warnings": [
+        "87 row(s) have no start date.",
+        "Coordinates are incomplete for some or all event rows."
+      ],
+      "year_aggregation_exclusions": {
+        "end_before_start": 0,
+        "future_start_date": 0,
+        "invalid_start_date": 0,
+        "missing_event_id": 0,
+        "missing_start_date": 87
+      }
     }
   ],
   "limitations": [
@@ -1040,7 +1637,8 @@
     "Missing event coordinates prevent site-level joins for many records; unlocated rows remain in country/year analytics only.",
     "Missing impact fields mean reported-impact sums are not complete totals.",
     "Flood event records do not provide a continuous flood-risk or calibrated probability target.",
-    "EM-DAT redistribution is subject to the access terms of the supplied academic/research request."
+    "EM-DAT redistribution is subject to the access terms of the supplied academic/research request.",
+    "Year counts include only unique events with valid, non-future start dates and no start/end chronology conflict."
   ],
   "source": "EM-DAT event and impact records; not environmental measurements or forecasts.",
   "status": "READY",
@@ -1050,6 +1648,8 @@
       "event_ids_shared_between_extracts": 0,
       "event_ids_shared_between_extracts_sample": {},
       "exact_duplicate_rows": 0,
+      "missing_country_rows": 0,
+      "missing_event_id_rows": 0,
       "rows_missing_or_without_a_valid_coordinate_pair": 6994,
       "rows_with_valid_coordinates": 1816
     },
@@ -1930,55 +2530,88 @@
       "Wildfire": 356
     },
     "events_by_year": {
-      "2000": 330,
-      "2001": 316,
-      "2002": 362,
-      "2003": 320,
-      "2004": 318,
-      "2005": 372,
-      "2006": 356,
-      "2007": 369,
-      "2008": 315,
-      "2009": 298,
-      "2010": 341,
-      "2011": 290,
-      "2012": 275,
-      "2013": 309,
-      "2014": 279,
-      "2015": 334,
-      "2016": 299,
-      "2017": 323,
-      "2018": 268,
-      "2019": 358,
-      "2020": 379,
-      "2021": 401,
-      "2022": 350,
-      "2023": 377,
-      "2024": 364,
-      "2025": 351,
-      "2026": 156
+      "2000": 282,
+      "2001": 279,
+      "2002": 330,
+      "2003": 302,
+      "2004": 311,
+      "2005": 350,
+      "2006": 331,
+      "2007": 353,
+      "2008": 296,
+      "2009": 283,
+      "2010": 323,
+      "2011": 264,
+      "2012": 265,
+      "2013": 296,
+      "2014": 267,
+      "2015": 328,
+      "2016": 292,
+      "2017": 314,
+      "2018": 266,
+      "2019": 342,
+      "2020": 368,
+      "2021": 396,
+      "2022": 334,
+      "2023": 365,
+      "2024": 345,
+      "2025": 331,
+      "2026": 150
     },
     "reported_impacts": {
       "total_affected": {
-        "interpretation": "Descriptive sum of non-missing source reports; coverage is incomplete.",
+        "coverage_percent": 83.64,
+        "explicit_zero_records": 0,
+        "interpretation": "Descriptive sum of valid non-negative source reports across unique event IDs; missing or invalid values are not interpreted as zero.",
+        "invalid_records": 0,
+        "label": "Reported total affected",
+        "missing_records": 1441,
+        "negative_records": 0,
         "reported_records": 7369,
+        "source_field": "total_affected",
         "sum_of_reported_values": 3021353903.0,
         "unit": "people"
       },
       "total_damage_'000_us$": {
-        "interpretation": "Descriptive sum of non-missing source reports; coverage is incomplete.",
+        "coverage_percent": 35.83,
+        "explicit_zero_records": 0,
+        "interpretation": "Descriptive sum of valid non-negative source reports across unique event IDs; missing or invalid values are not interpreted as zero.",
+        "invalid_records": 0,
+        "label": "Reported total damage",
+        "missing_records": 5653,
+        "negative_records": 0,
         "reported_records": 3157,
+        "source_field": "total_damage_'000_us$",
         "sum_of_reported_values": 3673624250.92,
         "unit": "thousand source-reported US dollars"
       },
       "total_deaths": {
-        "interpretation": "Descriptive sum of non-missing source reports; coverage is incomplete.",
+        "coverage_percent": 73.69,
+        "explicit_zero_records": 0,
+        "interpretation": "Descriptive sum of valid non-negative source reports across unique event IDs; missing or invalid values are not interpreted as zero.",
+        "invalid_records": 0,
+        "label": "Reported deaths",
+        "missing_records": 2318,
+        "negative_records": 0,
         "reported_records": 6492,
+        "source_field": "total_deaths",
         "sum_of_reported_values": 1210351.0,
         "unit": "people"
       }
     },
     "source_rows_across_extracts": 8810,
-    "unique_event_ids": 8810
-  }
+    "unique_event_ids": 8810,
+    "year_aggregation": {
+      "date_field": "start_date",
+      "description": "Unique event IDs grouped by valid start_date year.",
+      "excluded_end_before_start": 3,
+      "excluded_events_total": 447,
+      "excluded_future_start_date": 1,
+      "excluded_invalid_start_date": 0,
+      "excluded_missing_event_id": 0,
+      "excluded_missing_start_date": 444,
+      "included_events": 8363
+    }
+  },
+  "validation_errors": []
 }

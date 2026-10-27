@@ -1,18 +1,32 @@
 {
+  "as_of_date": "2026-10-27",
   "deterministic_output": true,
+  "failed_datasets": 0,
   "manifest_version": "1.0",
   "output_file": "historical_analytics.json",
-  "output_sha256": "24f1d441122dd96e0257a029321a8c297b4af68dae506a33232207c475a6e012",
+  "output_sha256": "8990fdea486b7653328a2100c28b2947851fe1e68aaf6cbfe785aa07d4b43fca",
   "rejected_rows": 0,
   "source_files": {
-    "ml\\datasets\\historical_data\\processed\\earthquakes.csv": "890fa425f8b750bc4413db6fd43a8f4902f3078920ae32d00d679c7dbc6cf475",
-    "ml\\datasets\\historical_data\\processed\\floods.csv": "2d402e10fb087c44fd6def03117a81487fbd927cac8f0f1a88cf2e4c554c6998",
-    "ml\\datasets\\historical_data\\processed\\glacial_lake_outburst_floods.csv": "ba89f662ed07921b870f28e88f1a47954165c95bf60700166127d786a24d9e17",
-    "ml\\datasets\\historical_data\\processed\\landslides.csv": "ec3eb4103a492add99a814cd21f11f1c0a28bd81613d5295fcdb806acfc5bd1a",
-    "ml\\datasets\\historical_data\\processed\\storms_cyclones.csv": "867bdd88ba4d94b75afe2d56ec605315413a051869b51c2daed73c36d844fa19",
-    "ml\\datasets\\historical_data\\processed\\wildfires.csv": "188cea5bd5b2a4a64e6e5d4d55d24a73517bd46464bdb7215aa2582505eeb5ab"
+    "earthquakes.csv": "890fa425f8b750bc4413db6fd43a8f4902f3078920ae32d00d679c7dbc6cf475",
+    "floods.csv": "2d402e10fb087c44fd6def03117a81487fbd927cac8f0f1a88cf2e4c554c6998",
+    "glacial_lake_outburst_floods.csv": "ba89f662ed07921b870f28e88f1a47954165c95bf60700166127d786a24d9e17",
+    "landslides.csv": "ec3eb4103a492add99a814cd21f11f1c0a28bd81613d5295fcdb806acfc5bd1a",
+    "storms_cyclones.csv": "867bdd88ba4d94b75afe2d56ec605315413a051869b51c2daed73c36d844fa19",
+    "wildfires.csv": "188cea5bd5b2a4a64e6e5d4d55d24a73517bd46464bdb7215aa2582505eeb5ab"
   },
   "source_rows_scanned": 8810,
-  "transformation_version": "emdat-historical-analytics-v1",
-  "unique_event_ids": 8810
+  "transformation_version": "emdat-historical-analytics-v2",
+  "unique_event_ids": 8810,
+  "year_aggregation_excluded_events": 447,
+  "year_aggregation_exclusions": {
+    "date_field": "start_date",
+    "description": "Unique event IDs grouped by valid start_date year.",
+    "excluded_end_before_start": 3,
+    "excluded_events_total": 447,
+    "excluded_future_start_date": 1,
+    "excluded_invalid_start_date": 0,
+    "excluded_missing_event_id": 0,
+    "excluded_missing_start_date": 444,
+    "included_events": 8363
+  }
 }

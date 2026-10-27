@@ -115,8 +115,7 @@ def get_historical_data_readiness(project_root: Path) -> dict[str, Any]:
                 event_datasets.append(
                     {
                         "name": manifest.get("dataset_name", manifest_path.stem),
-                        "path": str(dataset_path.relative_to(project_root)),
-                        "manifest": str(manifest_path.relative_to(project_root)),
+                        "dataset_file": dataset_path.name,
                         "status": "VALIDATED" if passed else "ERROR",
                         "rows": row_count,
                         "sha256": content_hash,
@@ -124,44 +123,56 @@ def get_historical_data_readiness(project_root: Path) -> dict[str, Any]:
                     }
                 )
             except (OSError, ValueError, TypeError, AttributeError, json.JSONDecodeError) as error:
+                error_message = str(error).replace(str(root), "<project>")
                 event_datasets.append(
                     {
                         "name": manifest_path.stem,
-                        "path": None,
-                        "manifest": str(manifest_path.relative_to(project_root)),
+                        "dataset_file": None,
                         "status": "ERROR",
                         "rows": None,
-                        "error": str(error),
+                        "error": error_message,
                     }
                 )
 
         validated_count = sum(dataset["status"] == "VALIDATED" for dataset in event_datasets)
         analytics: dict[str, Any] | None = None
         analytics_error: str | None = None
-        if event_datasets and validated_count == len(event_datasets):
+        if event_datasets and validated_count:
             try:
                 analytics = get_historical_analytics(root)
             except (OSError, ValueError) as error:
-                analytics_error = str(error)
+                analytics_error = str(error).replace(str(root), "<project>")
         analytics_status = (
-            "READY"
-            if analytics is not None
+            analytics["status"]
+            if analytics is not None and analytics.get("status") in {"READY", "PARTIAL", "ERROR"}
             else "ERROR"
             if analytics_error
             else "NOT_READY"
         )
+        all_datasets_validated = bool(event_datasets) and validated_count == len(event_datasets)
+        analytics_ready = analytics_status == "READY" and all_datasets_validated
+        validation_message = (
+            f"{validated_count} of {len(event_datasets)} historical event datasets passed manifest validation. "
+            "Available datasets are shown as partial descriptive analytics; failed datasets are listed."
+            if analytics_status == "PARTIAL"
+            else f"{validated_count} historical event datasets passed manifest validation and are usable for "
+            "descriptive analytics. They do not provide validated flood-prediction labels or aligned "
+            "environmental predictors; supervised flood training remains blocked."
+            if analytics_ready
+            else "Historical analytics require validated dataset manifests and source hashes."
+        )
         return {
-            "status": "READY" if analytics_status == "READY" else "NOT_READY",
+            "status": "READY" if analytics_ready else "NOT_READY",
             "analytics_status": analytics_status,
             "training_status": "NOT_READY",
-            "source_status": "VALIDATED" if validated_count else "UNVALIDATED",
-            "message": analytics_error or (
-                f"{validated_count} historical event datasets passed manifest validation and are usable for "
-                "descriptive analytics. They do not provide validated flood-prediction labels or aligned "
-                "environmental predictors; supervised flood training remains blocked."
-                if analytics_status == "READY"
-                else "Historical analytics require all dataset manifests and source hashes to validate."
+            "source_status": (
+                "VALIDATED"
+                if all_datasets_validated
+                else "PARTIAL"
+                if validated_count
+                else "UNVALIDATED"
             ),
+            "message": analytics_error or validation_message,
             "analytics_summary": (
                 {
                     "source_rows_across_extracts": analytics["summary"]["source_rows_across_extracts"],
@@ -173,7 +184,8 @@ def get_historical_data_readiness(project_root: Path) -> dict[str, Any]:
                 else None
             ),
             "analytics_error": analytics_error,
-            "source_workbook": str(workbooks[0].relative_to(project_root)),
+            "failed_dataset_count": len(event_datasets) - validated_count,
+            "source_workbook": workbooks[0].name,
             "validated_event_datasets": event_datasets,
             "training_blockers": [
                 "No verified site-level flood target definition or continuous training label.",

@@ -1,5 +1,7 @@
 # Historical dataset assessment
 
+> **Current audit:** This assessment's initial snapshot is superseded by the Stage 2 audit dated 2026-10-27. The source rows and impact totals remain unchanged, but date-based yearly counts now exclude missing/invalid/future dates and source chronology conflicts. See [HISTORICAL_ANALYTICS_STATUS.md](./HISTORICAL_ANALYTICS_STATUS.md) and [EMDAT_DATA_QUALITY_REPORT.md](./EMDAT_DATA_QUALITY_REPORT.md) for reconciled values and source-level anomalies.
+
 ## Scope and provenance
 
 The six processed extracts under `ml/datasets/historical_data/processed/` are derived from the supplied EM-DAT workbook:
@@ -43,13 +45,14 @@ EM-DAT records are event and impact reports. They do not provide complete survei
 
 ## Reproducibility snapshot
 
-The current generated analytics manifest reports:
+The generated analytics manifest was refreshed for transformation v2:
 
-- Transformation: `emdat-historical-analytics-v1`
+- Transformation: `emdat-historical-analytics-v2`
+- As-of date: `2026-10-27`
 - Source rows scanned: 8,810
 - Distinct event IDs: 8,810
 - Rejected rows: 0
-- Output SHA-256: `24f1d441122dd96e0257a029321a8c297b4af68dae506a33232207c475a6e012`
+- Output SHA-256: `8990fdea486b7653328a2100c28b2947851fe1e68aaf6cbfe785aa07d4b43fca`
 
 Rebuild and verify the manifest with:
 

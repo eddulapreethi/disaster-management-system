@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Dashboard from '../components/Dashboard'
 import WeatherCard from '../components/WeatherCard'
+import { CountryRanking } from '../components/CountryRanking'
 import { apiGet } from '../services/api'
 
 export default function DashboardPage() {
@@ -100,6 +101,8 @@ export default function DashboardPage() {
         ['Prediction', readiness.prediction],
       ]
     : []
+  const yearAggregation = historicalAnalytics?.summary?.year_aggregation || {}
+  const yearlyExcluded = yearAggregation.excluded_events_total || 0
 
   return (
     <div>
@@ -161,6 +164,14 @@ export default function DashboardPage() {
         {historicalAnalyticsError && <p className="error" role="alert">{historicalAnalyticsError}</p>}
         {!historicalAnalytics && !historicalAnalyticsError && <p>Validating historical dataset manifests and computing event summaries...</p>}
         {historicalAnalytics && <>
+          {historicalAnalytics.status === 'PARTIAL' && <p className="error" role="alert">Some historical datasets failed validation. The figures below include only validated extracts; failed datasets are listed in the quality section.</p>}
+          {historicalAnalytics.status === 'ERROR' && <div role="alert">
+            <p className="error">No historical dataset passed validation, so aggregate analytics are unavailable.</p>
+            {(historicalAnalytics.validation_errors || []).map(item => (
+              <p className="error" key={item.dataset}>{item.dataset}: {item.error}</p>
+            ))}
+          </div>}
+          {historicalAnalytics.status !== 'ERROR' && <>
           <p className="explain">Descriptive counts from the verified EM-DAT extracts. They summarize reported past events and impacts; they are not future probabilities, complete surveillance, or flood forecasts.</p>
           <div className="formgrid">
             <div className="detailbox">
@@ -172,6 +183,7 @@ export default function DashboardPage() {
             </div>
             <div className="detailbox">
               <div className="sectitle">Events by disaster type</div>
+              {Object.entries(historicalAnalytics.summary.events_by_disaster_type).length === 0 && <p className="explain">No validated hazard event counts are available.</p>}
               {Object.entries(historicalAnalytics.summary.events_by_disaster_type).map(([type, count]) => (
                 <div className="kv" key={type}><span>{type}</span><span>{count.toLocaleString()}</span></div>
               ))}
@@ -179,17 +191,22 @@ export default function DashboardPage() {
           </div>
           <div className="formgrid">
             <div className="detailbox">
-              <div className="sectitle">Recent event counts by start year</div>
+              <div className="sectitle">Event counts by valid start-date year</div>
+              {Object.entries(historicalAnalytics.summary.events_by_year).length === 0 && <p className="explain">No events have valid dates eligible for yearly aggregation.</p>}
               {Object.entries(historicalAnalytics.summary.events_by_year).slice(-10).map(([year, count]) => (
                 <div className="kv" key={year}><span>{year}</span><span>{count.toLocaleString()}</span></div>
               ))}
+              <p className="explain">
+                Counts use valid, non-future EM-DAT start dates. Records excluded for missing/invalid/future dates, reversed date ranges, or missing event IDs: {yearlyExcluded.toLocaleString()}.
+                Reasons (categories can overlap): missing {yearAggregation.excluded_missing_start_date || 0}, invalid {yearAggregation.excluded_invalid_start_date || 0}, future {yearAggregation.excluded_future_start_date || 0}, end before start {yearAggregation.excluded_end_before_start || 0}, missing IDs {yearAggregation.excluded_missing_event_id || 0}.
+              </p>
             </div>
             <div className="detailbox">
               <div className="sectitle">Reported impacts (incomplete coverage)</div>
               {Object.entries(historicalAnalytics.summary.reported_impacts).map(([impact, values]) => (
                 <div className="kv" key={impact}>
-                  <span>{impact.replaceAll('_', ' ')}</span>
-                  <span>{values.sum_of_reported_values.toLocaleString()} {values.unit} ({values.reported_records.toLocaleString()} reports)</span>
+                  <span>{values.label || impact.replaceAll('_', ' ')}</span>
+                  <span>{values.sum_of_reported_values.toLocaleString()} {values.unit} ({values.reported_records.toLocaleString()} / {historicalAnalytics.summary.unique_event_ids.toLocaleString()} events, {values.coverage_percent}% reported)</span>
                 </div>
               ))}
             </div>
@@ -197,21 +214,33 @@ export default function DashboardPage() {
           <div className="sectitle" style={{ marginTop: '1rem' }}>Dataset coverage and quality</div>
           {historicalAnalytics.dataset_inventory.map(dataset => (
             <div className="detailbox" key={dataset.name}>
-              <div className="kv"><span>{dataset.name}</span><span>{dataset.rows.toLocaleString()} events</span></div>
-              <div className="kv"><span>Start-date coverage</span><span>{dataset.date_coverage.start || 'Unavailable'} – {dataset.date_coverage.end || 'Unavailable'}</span></div>
-              <div className="kv"><span>Countries represented</span><span>{dataset.geography.unique_countries}</span></div>
-              <div className="kv"><span>Rows with valid coordinates</span><span>{dataset.geography.rows_with_both_valid_coordinates} ({dataset.geography.coordinate_coverage_percent}%)</span></div>
-              <div className="kv"><span>Duplicate event IDs / exact rows</span><span>{dataset.duplicate_quality.duplicate_event_id_rows} / {dataset.duplicate_quality.exact_duplicate_rows}</span></div>
-              <div className="kv"><span>Source license</span><span>{dataset.license}</span></div>
+              <div className="kv"><span>{dataset.name}</span><span>{dataset.rows == null ? 'Row count unavailable' : `${dataset.rows.toLocaleString()} rows`} / {dataset.manifest_validation}</span></div>
+              {dataset.error && <p className="error" role="alert">{dataset.error}</p>}
+              {dataset.date_coverage && <>
+                <div className="kv"><span>Parsed source start-date range</span><span>{dataset.date_coverage.start || 'Unavailable'} – {dataset.date_coverage.end || 'Unavailable'}</span></div>
+                <div className="kv"><span>Valid start dates / rows</span><span>{dataset.date_coverage.valid_start_dates} / {dataset.rows}</span></div>
+                <div className="kv"><span>Missing / invalid / future start dates; end-before-start</span><span>{dataset.date_coverage.missing_start_dates} / {dataset.date_coverage.invalid_start_dates} / {dataset.date_coverage.future_start_dates}; {dataset.date_coverage.end_before_start}</span></div>
+              </>}
+              {dataset.geography && <>
+                <div className="kv"><span>Countries represented</span><span>{dataset.geography.unique_countries}</span></div>
+                <div className="kv"><span>Rows with missing country</span><span>{dataset.geography.missing_country_rows}</span></div>
+                <div className="kv"><span>Valid coordinate pairs / rows</span><span>{dataset.geography.rows_with_both_valid_coordinates.toLocaleString()} / {dataset.rows.toLocaleString()} ({dataset.geography.coordinate_coverage_percent}%)</span></div>
+                <div className="kv"><span>Missing latitude / longitude; partial / invalid coordinate rows</span><span>{dataset.geography.missing_latitude} / {dataset.geography.missing_longitude}; {dataset.geography.rows_with_partial_coordinates} / {dataset.geography.invalid_coordinate_rows}</span></div>
+              </>}
+              {dataset.impact_coverage && Object.entries(dataset.impact_coverage).map(([field, values]) => (
+                <div className="kv" key={field}>
+                  <span>{values.label || field}</span>
+                  <span>{values.reported_records} / {dataset.rows} reported ({values.coverage_percent}%); {values.missing_records} missing, {values.invalid_records} invalid, {values.negative_records} negative, {values.explicit_zero_records} explicit zero; {values.unit}</span>
+                </div>
+              ))}
+              {dataset.duplicate_quality && <div className="kv"><span>Duplicate event IDs / exact duplicate rows / missing IDs</span><span>{dataset.duplicate_quality.duplicate_event_id_rows} / {dataset.duplicate_quality.exact_duplicate_rows} / {dataset.missing_event_ids}</span></div>}
+              {dataset.warnings?.map(warning => <p className="explain" key={warning}>{warning}</p>)}
+              {dataset.license && <div className="kv"><span>Source license</span><span>{dataset.license}</span></div>}
             </div>
           ))}
-          <div className="detailbox">
-            <div className="sectitle">Most-recorded countries</div>
-            {Object.entries(historicalAnalytics.summary.events_by_country).slice(0, 10).map(([country, count]) => (
-              <div className="kv" key={country}><span>{country}</span><span>{count.toLocaleString()}</span></div>
-            ))}
-          </div>
+          <CountryRanking eventsByCountry={historicalAnalytics.summary.events_by_country} />
           <p className="explain">Impact totals include only source records with reported values. Missing coordinates and impacts are retained as missing—not inferred. Historical event records do not supply verified no-flood examples or continuous flood-risk targets.</p>
+          </>}
         </>}
       </section>
       {loading && <div className="card">Loading prediction history...</div>}

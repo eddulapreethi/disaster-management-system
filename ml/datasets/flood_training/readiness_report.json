@@ -1,0 +1,292 @@
+{
+  "status": "NOT_READY",
+  "target_id": "cwc_gauge_danger_level_exceedance_24h_v1",
+  "target_status": "PROPOSED_REQUIRES_DOMAIN_APPROVAL",
+  "target_definition": "For an identified monitored CWC/NWDP river gauge, predict whether the measured river stage will reach or exceed that gauge's documented official danger level at any time during the half-open 24-hour UTC window [prediction issue time, prediction issue time + 24 hours).",
+  "prediction_horizon_hours": 24,
+  "files": {
+    "approved_target_review": {
+      "path": "ml\\datasets\\flood_training\\target_approval.json",
+      "available": false
+    },
+    "historical_gauge_observations": {
+      "path": "ml\\datasets\\hydrological\\raw\\gauge_water_level_observations.csv",
+      "available": false
+    },
+    "gauge_danger_levels": {
+      "path": "ml\\datasets\\hydrological\\raw\\official_gauge_danger_levels.csv",
+      "available": false
+    },
+    "gauge_grid_crosswalk": {
+      "path": "ml\\datasets\\flood_training\\gauge_grid_crosswalk.csv",
+      "available": false
+    },
+    "gauge_coverage_evidence": {
+      "path": "ml\\datasets\\flood_training\\gauge_coverage_evidence.csv",
+      "available": false
+    },
+    "verified_window_labels": {
+      "path": "ml\\datasets\\flood_training\\gauge_danger_level_labels.csv",
+      "available": false
+    },
+    "window_assessments": {
+      "path": "ml\\datasets\\flood_training\\window_assessments.csv",
+      "available": false
+    },
+    "historical_weather_archive": {
+      "path": "ml\\datasets\\raw_sources\\open_meteo\\archive.json",
+      "available": false
+    },
+    "weather_archive_manifest": {
+      "path": "ml\\datasets\\raw_sources\\open_meteo\\archive.manifest.json",
+      "available": false
+    },
+    "source_metadata": {
+      "path": "ml\\datasets\\flood_training\\source_metadata.json",
+      "available": false
+    },
+    "licensing_evidence": {
+      "path": "ml\\datasets\\flood_training\\licensing_evidence.json",
+      "available": false
+    },
+    "prepared_predictors": {
+      "path": "ml\\datasets\\flood_training\\prepared_predictors.csv",
+      "available": false
+    }
+  },
+  "missing_evidence": [
+    "approved_target_review",
+    "historical_gauge_observations",
+    "gauge_danger_levels",
+    "gauge_grid_crosswalk",
+    "gauge_coverage_evidence",
+    "verified_window_labels",
+    "window_assessments",
+    "historical_weather_archive",
+    "weather_archive_manifest",
+    "source_metadata",
+    "licensing_evidence",
+    "prepared_predictors"
+  ],
+  "requirements": {
+    "official_danger_levels": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\hydrological\\raw\\official_gauge_danger_levels.csv",
+      "details": "Requires an authoritative per-gauge threshold register, effective dates, units, datum, source authority, and reuse permission.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "matching_vertical_datums": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\hydrological\\raw\\official_gauge_danger_levels.csv",
+      "details": "No declared datum comparison is possible until observations and danger-level files are present.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "complete_observation_coverage": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\flood_training\\gauge_coverage_evidence.csv",
+      "details": "Coverage rows and cadence declarations are not provider-authenticated; complete windows require source evidence.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "verified_negative_windows": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\flood_training\\window_assessments.csv",
+      "details": "Importer assessments are candidate checks only; no assessment output can authenticate negative-window evidence or create labels.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "reviewed_gauge_to_weather_mapping": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\flood_training\\gauge_grid_crosswalk.csv",
+      "details": "A declared review does not establish catchment representativeness, hydrologic connectivity, or scientific approval.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "historical_weather_coverage": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\raw_sources\\open_meteo\\archive.json",
+      "details": "Archive presence does not establish dates, gauge/grid alignment, adequate multi-site coverage, or acceptable source terms.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "licensing_evidence": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\flood_training\\licensing_evidence.json",
+      "details": "Retain source-specific license or written authorization evidence; a URL or operator declaration alone is not permission.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "domain_target_approval": {
+      "status": "MISSING",
+      "path": "ml\\datasets\\flood_training\\target_approval.json",
+      "details": "The proposed 24-hour gauge-threshold target requires documented domain approval.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    },
+    "model_evaluation": {
+      "status": "NOT_AVAILABLE",
+      "path": null,
+      "details": "No model may be trained until source evidence, labels, and target approval pass review; no valid evaluation is recorded.",
+      "syntax_status": "NOT_CHECKED",
+      "source_verification_status": "NOT_VERIFIED",
+      "scientific_review_status": "NOT_REVIEWED"
+    }
+  },
+  "blocking_requirements": [
+    "official_danger_levels",
+    "matching_vertical_datums",
+    "complete_observation_coverage",
+    "verified_negative_windows",
+    "reviewed_gauge_to_weather_mapping",
+    "historical_weather_coverage",
+    "licensing_evidence",
+    "domain_target_approval",
+    "model_evaluation"
+  ],
+  "gauge_package_preflight": {
+    "preflight_status": "BLOCKED",
+    "training_readiness": "NOT_READY",
+    "test_only_package_detected": false,
+    "requirements": {
+      "gauge_identity_and_coordinates": {
+        "status": "MISSING",
+        "path": "ml\\datasets\\flood_training\\nwdp_site_mapping.csv",
+        "details": "Required source files are absent.",
+        "missing_files": [
+          "ml\\datasets\\flood_training\\nwdp_site_mapping.csv"
+        ],
+        "invalid_fields": [],
+        "evidence_needed": [
+          "Official gauge registry or provider document confirming stable gauge ID, station identity, and WGS 84 coordinates."
+        ],
+        "source_verification_status": "NOT_VERIFIED",
+        "scientific_review_status": "NOT_REVIEWED"
+      },
+      "water_level_units_and_vertical_datum": {
+        "status": "MISSING",
+        "path": "ml\\datasets\\hydrological\\raw\\gauge_water_level_observations.csv",
+        "details": "Required source files are absent.",
+        "missing_files": [
+          "ml\\datasets\\hydrological\\raw\\gauge_water_level_observations.csv"
+        ],
+        "invalid_fields": [],
+        "evidence_needed": [
+          "Provider data dictionary confirming metre units, gauge vertical datum, and quality-flag semantics."
+        ],
+        "source_verification_status": "NOT_VERIFIED",
+        "scientific_review_status": "NOT_REVIEWED"
+      },
+      "source_provenance_and_timestamp_timezone": {
+        "status": "MISSING",
+        "path": "ml\\datasets\\flood_training\\source_metadata.json",
+        "details": "Required source files are absent.",
+        "missing_files": [
+          "ml\\datasets\\flood_training\\source_metadata.json",
+          "ml\\datasets\\hydrological\\raw\\gauge_water_level_observations.manifest.json",
+          "ml\\datasets\\raw_sources\\nwdp\\cwc_export.csv",
+          "ml\\datasets\\raw_sources\\nwdp\\resource_metadata.json",
+          "ml\\datasets\\raw_sources\\open_meteo\\archive.json",
+          "ml\\datasets\\raw_sources\\open_meteo\\archive.manifest.json"
+        ],
+        "invalid_fields": [],
+        "evidence_needed": [
+          "Unchanged raw export, source/resource metadata, retrieval time, source timezone, field mapping, and matching verified hashes."
+        ],
+        "source_verification_status": "NOT_VERIFIED",
+        "scientific_review_status": "NOT_REVIEWED"
+      },
+      "effective_danger_levels": {
+        "status": "MISSING",
+        "path": "ml\\datasets\\hydrological\\raw\\official_gauge_danger_levels.csv",
+        "details": "Required source files are absent.",
+        "missing_files": [
+          "ml\\datasets\\hydrological\\raw\\official_gauge_danger_levels.csv"
+        ],
+        "invalid_fields": [],
+        "evidence_needed": [
+          "Official gauge danger-level records with source IDs, units, vertical datum, and valid effective intervals."
+        ],
+        "source_verification_status": "NOT_VERIFIED",
+        "scientific_review_status": "NOT_REVIEWED"
+      },
+      "monitoring_completeness_and_gaps": {
+        "status": "MISSING",
+        "path": "ml\\datasets\\flood_training\\gauge_coverage_evidence.csv",
+        "details": "Required source files are absent.",
+        "missing_files": [
+          "ml\\datasets\\flood_training\\gauge_coverage_evidence.csv"
+        ],
+        "invalid_fields": [],
+        "evidence_needed": [
+          "Provider/operator cadence and completeness evidence for every claimed interval; record each gap and reason."
+        ],
+        "source_verification_status": "NOT_VERIFIED",
+        "scientific_review_status": "NOT_REVIEWED"
+      },
+      "data_use_and_model_training_permissions": {
+        "status": "MISSING",
+        "path": "ml\\datasets\\flood_training\\licensing_evidence.json",
+        "details": "Required source files are absent.",
+        "missing_files": [
+          "ml\\datasets\\flood_training\\licensing_evidence.json"
+        ],
+        "invalid_fields": [],
+        "evidence_needed": [
+          "Applicable written license/permission evidence explicitly covering the intended model-training and redistribution uses."
+        ],
+        "source_verification_status": "NOT_VERIFIED",
+        "scientific_review_status": "NOT_REVIEWED"
+      },
+      "weather_gauge_or_catchment_relevance": {
+        "status": "MISSING",
+        "path": "ml\\datasets\\flood_training\\gauge_grid_crosswalk.csv",
+        "details": "Required source files are absent.",
+        "missing_files": [
+          "ml\\datasets\\flood_training\\gauge_grid_crosswalk.csv"
+        ],
+        "invalid_fields": [],
+        "evidence_needed": [
+          "Independent scientific review connecting the returned weather grid to the gauge/catchment; coordinate proximity alone is insufficient."
+        ],
+        "source_verification_status": "NOT_VERIFIED",
+        "scientific_review_status": "NOT_REVIEWED"
+      }
+    },
+    "missing_files": [
+      "ml\\datasets\\flood_training\\gauge_coverage_evidence.csv",
+      "ml\\datasets\\flood_training\\gauge_grid_crosswalk.csv",
+      "ml\\datasets\\flood_training\\licensing_evidence.json",
+      "ml\\datasets\\flood_training\\nwdp_site_mapping.csv",
+      "ml\\datasets\\flood_training\\source_metadata.json",
+      "ml\\datasets\\hydrological\\raw\\gauge_water_level_observations.csv",
+      "ml\\datasets\\hydrological\\raw\\gauge_water_level_observations.manifest.json",
+      "ml\\datasets\\hydrological\\raw\\official_gauge_danger_levels.csv",
+      "ml\\datasets\\raw_sources\\nwdp\\cwc_export.csv",
+      "ml\\datasets\\raw_sources\\nwdp\\resource_metadata.json",
+      "ml\\datasets\\raw_sources\\open_meteo\\archive.json",
+      "ml\\datasets\\raw_sources\\open_meteo\\archive.manifest.json"
+    ],
+    "blocking_requirements": [
+      "gauge_identity_and_coordinates",
+      "water_level_units_and_vertical_datum",
+      "source_provenance_and_timestamp_timezone",
+      "effective_danger_levels",
+      "monitoring_completeness_and_gaps",
+      "data_use_and_model_training_permissions",
+      "weather_gauge_or_catchment_relevance"
+    ],
+    "evidence_boundary": "READY means only that package structure and declared values passed local preflight. This tool cannot authenticate official sources, permission, provider completeness, or scientific review; prediction readiness remains NOT_READY."
+  },
+  "evidence_boundary": "File presence, parsing, declared approvals, and importer checks are not proof of source authority, licensing, scientific suitability, or verified labels. This service does not promote readiness to READY.",
+  "message": "Flood prediction remains NOT_READY. Review each requirement independently; files and syntactic checks do not establish external evidence or scientific approval."
+}
