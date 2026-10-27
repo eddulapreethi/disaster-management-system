@@ -15,7 +15,6 @@ export async function predictRisk(station) {
     disaster_type: 'flood',
     latitude: station.lat,
     longitude: station.lng,
-    weather_observation_id: weather.observationId,
     rainfall_mm: rainfall,
     temperature_c: weather.temperatureC,
     wind_speed_kmh: weather.windKmh,

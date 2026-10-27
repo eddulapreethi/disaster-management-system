@@ -1,0 +1,2 @@
+gauge_id,window_start_utc,window_end_utc,expected_interval_minutes,complete_status,evidence_reference,source_record_id
+ILLUSTRATIVE_ONLY,2000-01-01T00:00:00Z,2000-01-02T00:00:00Z,60,ILLUSTRATIVE_ONLY,ILLUSTRATIVE_ONLY,ILLUSTRATIVE_ONLY

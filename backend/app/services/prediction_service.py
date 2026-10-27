@@ -54,10 +54,10 @@ def create_prediction(db: Session, user: User, data: PredictionCreate) -> tuple[
     score, level = assess_risk(prediction_inputs)
     details = {
         "model_source": "weather_heuristic",
-        "risk_band": "low" if score < 45 else "medium" if score < 65 else "high",
+        "risk_band": "low" if score < 30 else "medium" if score < 60 else "high",
         "explanation": (
-            "No compatible trained flood model and validated input pipeline are available; this result uses an "
-            "unvalidated demonstrator weather heuristic, not a forecast or probability, and has no SHAP explanation."
+            "This result uses an unvalidated demonstrator weather heuristic, not a forecast or probability; "
+            "it has no SHAP explanation."
         ),
         "top_contributions": [],
         "model_version": None,

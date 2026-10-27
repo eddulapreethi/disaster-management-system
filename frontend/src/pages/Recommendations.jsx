@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { apiGet, apiPost } from '../services/api'
 
 export default function Recommendations() {
   const [recommendation, setRecommendation] = useState(null)
   const [hasPrediction, setHasPrediction] = useState(false)
+  const [hasSimulation, setHasSimulation] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -33,8 +33,8 @@ export default function Recommendations() {
         }
         if (!active) return
         setHasPrediction(Boolean(prediction))
-        if (!prediction) return
         const simulation = JSON.parse(sessionStorage.getItem('disasterguard_last_simulation') || 'null')
+        setHasSimulation(Boolean(simulation))
         const result = await apiPost('/recommendations', { prediction, simulation })
         if (active) setRecommendation(result)
       } catch (requestError) {
@@ -54,7 +54,7 @@ export default function Recommendations() {
       {hasPrediction && <div className="card explain" role="note">The flood model is not ready. These recommendations are general precautionary guidance and must not be interpreted as confirmation that a flood will occur. Follow official local alerts and instructions.</div>}
       {loading && <div className="card">Generating recommendations...</div>}
       {error && <div className="card" role="alert">{error}</div>}
-      {!loading && !error && !hasPrediction && <div className="card">Run a prediction before requesting recommendations. <Link to="/risk-prediction">Open risk prediction</Link></div>}
+      {!loading && !error && !hasPrediction && <div className="card explain" role="note">{hasSimulation ? 'Scenario guidance reflects a hypothetical Digital Twin estimate, not a forecast or confirmed local hazard.' : 'These are general preparedness steps, not guidance based on a confirmed local hazard or validated prediction.'}</div>}
       {recommendation && (
         <div className="card">
           <div className="sectitle">{recommendation.summary}</div>

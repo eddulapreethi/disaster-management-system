@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from ml.preprocessing.file_integrity import sha256_file
 from ml.preprocessing.historical_analytics import (
     build_historical_analytics,
     write_historical_analytics,
@@ -36,9 +37,9 @@ def _write_dataset(root, rows, *, columns=None):
         writer = csv.DictWriter(output, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
-    digest = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+    digest = sha256_file(dataset_path, normalize_csv_line_endings=True)
     source_digest = hashlib.sha256(source_path.read_bytes()).hexdigest()
-    input_digest = hashlib.sha256(input_path.read_bytes()).hexdigest()
+    input_digest = sha256_file(input_path)
     manifest = {
         "dataset_name": "floods",
         "source_name": "EM-DAT test fixture",
@@ -108,6 +109,21 @@ def test_analytics_identify_exact_and_duplicate_event_rows_without_silent_deleti
     assert quality["duplicate_event_id_rows"] == 1
     assert result["summary"]["source_rows_across_extracts"] == 2
     assert result["summary"]["unique_event_ids"] == 1
+
+
+def test_analytics_validates_canonical_csv_hash_after_crlf_checkout(tmp_path):
+    dataset_dir = _write_dataset(tmp_path, [_event("A", 2020, event_date="2020-01-02")])
+    dataset_path = dataset_dir / "floods.csv"
+    original = dataset_path.read_bytes()
+    dataset_path.write_bytes(original.replace(b"\n", b"\r\n"))
+
+    result = build_historical_analytics(tmp_path)
+
+    assert result["summary"]["unique_event_ids"] == 1
+    assert result["dataset_inventory"][0]["sha256"] == sha256_file(
+        dataset_path,
+        normalize_csv_line_endings=True,
+    )
 
 
 def test_analytics_reject_missing_required_columns_and_corrupt_manifest(tmp_path):

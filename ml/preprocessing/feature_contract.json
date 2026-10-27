@@ -2,8 +2,41 @@
   "schema_version": "flood-environmental-predictors-v1",
   "feature_schema_version": "flood-environmental-predictors-v1",
   "status": "CANDIDATE_NOT_READY_FOR_TRAINING_OR_INFERENCE",
-  "target_definition": null,
-  "prediction_horizon": null,
+  "target": {
+    "target_id": "cwc_gauge_danger_level_exceedance_24h_v1",
+    "status": "PROPOSED_REQUIRES_DOMAIN_APPROVAL",
+    "definition": "For an identified monitored CWC/NWDP river gauge, predict whether the measured river stage will reach or exceed that gauge's documented official danger level at any time during the half-open 24-hour UTC window [prediction issue time, prediction issue time + 24 hours).",
+    "geographic_unit": "One uniquely identified CWC/NWDP gauge, linked to one Open-Meteo grid point by a documented and reviewed location crosswalk.",
+    "prediction_horizon_hours": 24,
+    "positive_label_definition": "At least one valid gauge stage measurement in the target window is greater than or equal to the official danger level effective for that gauge and period.",
+    "negative_label_definition": "The gauge's valid measurement coverage is documented complete for the entire target window, and every valid stage measurement remains below the official danger level.",
+    "measurement_comparability": "Observed stage and official danger level must use the same verified vertical datum and unit, effective throughout the full target window.",
+    "label_source": "CWC/NWDP gauge stage observations joined to a dated, authoritative gauge danger-level register.",
+    "negative_label_policy": "Never infer a negative from a missing flood report. Require complete, quality-controlled gauge observation coverage for the full target window.",
+    "label_join": "Exact gauge/grid crosswalk identifier and exact 24-hour UTC target-window boundaries; no nearest-coordinate or approximate-date joins.",
+    "approval_requirements": [
+      "Domain-approved target semantics, gauge danger-level source, and effective dates.",
+      "Reviewed gauge-to-weather-grid crosswalk with source coordinates and matching tolerance.",
+      "Quality-controlled gauge cadence and complete-window coverage rule for negatives.",
+      "Source authorization, licensing, and manifest provenance."
+    ]
+  },
+  "data_import": {
+    "implementation": "ml/preprocessing/flood_training_data_import.py",
+    "input_format": "UTF-8 CSV using the documented canonical column names; preserve source exports unchanged and map fields only with a documented source-specific review.",
+    "required_inputs": [
+      "Gauge observations with stable gauge ID, source record ID, timezone-aware observation time or declared source timezone, water level in metres, verified vertical datum, and source-mapped quality flag.",
+      "Per-gauge danger-level history with source record ID, half-open effective interval, danger level in metres, and verified vertical datum.",
+      "Reviewed crosswalk with gauge and exact weather-grid IDs, both coordinates, reviewer/reference, matching method, and explicitly approved distance bound.",
+      "Separate complete-coverage evidence with gauge, half-open time interval, confirmed status, source cadence, evidence reference, and source record ID.",
+      "Candidate predictor rows with exact grid ID/coordinates, issue time, matching 24-hour boundaries, and all six versioned features.",
+      "Source metadata with source URLs, access/license declarations, references, and retrieval timestamps; metadata is provenance, not independent authorization."
+    ],
+    "negative_policy": "NEGATIVE_VERIFIED only when danger level covers the full window, the reviewed coverage evidence confirms completeness, every expected cadence timestamp has one valid observation, there are no invalid observations, vertical datums match, and all observed levels are below threshold. Otherwise label is null and assessment is indeterminate.",
+    "readiness_effect": "The importer emits a source-hashed window assessment only. It never trains a model or changes API readiness."
+  },
+  "target_definition": "Proposed CWC/NWDP gauge danger-level exceedance within 24 hours; requires domain approval and verified labels.",
+  "prediction_horizon": "24 hours after issue time; target window is [issue_time_utc, issue_time_utc + 24 hours).",
   "runtime_feature_builder": "NOT_AVAILABLE",
   "legacy_schema": {
     "version": "flood-risk-factors-v1",

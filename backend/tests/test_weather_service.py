@@ -10,8 +10,9 @@ from sqlalchemy.orm import sessionmaker
 
 from app.database.connection import Base
 from app.database.database import _upgrade_sqlite_weather_schema
+from app.models.user import User
 from app.models.weather_observation import WeatherObservation
-from app.api.weather import WeatherObservationRead
+from app.api.weather import WeatherObservationRead, current_weather
 from app.services import weather_service as service
 
 
@@ -86,6 +87,74 @@ class WeatherServiceTests(unittest.TestCase):
                 {"name": "Kochi", "latitude": 9.9312, "longitude": 76.2673},
                 {"current": {"time": "2026-10-06T12:00", "temperature_2m": 28}},
             )
+
+    def test_on_demand_weather_fetches_selected_coordinates_and_checks_freshness(self) -> None:
+        observation_time = datetime.now(timezone.utc)
+        record = {
+            "station_id": "selected-location",
+            "station_name": "Selected location",
+            "source": "open-meteo",
+            "latitude": 51.5072,
+            "longitude": -0.1276,
+            "temperature_c": 14.0,
+            "humidity_percent": 70.0,
+            "precipitation_mm": 0.0,
+            "rain_mm": 0.0,
+            "wind_speed_kmh": 8.0,
+            "pressure_hpa": 1012.0,
+            "observation_time": observation_time,
+            "fetched_at": observation_time,
+        }
+        with patch.object(service, "_fetch_batch", return_value=[record]) as fetch_batch:
+            result = service.fetch_location_weather(51.5072, -0.1276)
+
+        self.assertEqual(result["latitude"], 51.5072)
+        self.assertEqual(result["longitude"], -0.1276)
+        fetch_batch.assert_called_once_with(
+            [{"name": "Selected location (51.50720, -0.12760)", "latitude": 51.5072, "longitude": -0.1276}]
+        )
+
+    def test_on_demand_weather_rejects_invalid_coordinates_and_stale_observations(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Latitude"):
+            service.fetch_location_weather(float("nan"), 0)
+        with self.assertRaisesRegex(ValueError, "Longitude"):
+            service.fetch_location_weather(0, 180.1)
+        with self.assertRaisesRegex(ValueError, "booleans"):
+            service.fetch_location_weather(True, 0)
+
+        stale = {
+            "observation_time": datetime.now(timezone.utc) - timedelta(hours=3),
+            "fetched_at": datetime.now(timezone.utc),
+        }
+        with patch.object(service, "_fetch_batch", return_value=[stale]):
+            with self.assertRaisesRegex(RuntimeError, "freshness window"):
+                service.fetch_location_weather(0, 0)
+
+    def test_on_demand_weather_endpoint_returns_selected_location_or_provider_error(self) -> None:
+        from fastapi import HTTPException
+
+        user = User(name="Weather test", email="weather@example.test", hashed_password="unused")
+        reading = {
+            "latitude": 51.5072,
+            "longitude": -0.1276,
+            "source": "open-meteo",
+            "observation_time": datetime.now(timezone.utc),
+            "fetched_at": datetime.now(timezone.utc),
+            "temperature_c": 14.0,
+            "precipitation_mm": 0.0,
+            "wind_speed_kmh": 8.0,
+        }
+        with patch("app.api.weather.fetch_location_weather", return_value=reading):
+            self.assertEqual(current_weather(51.5072, -0.1276, user), reading)
+
+        with patch(
+            "app.api.weather.fetch_location_weather",
+            side_effect=RuntimeError("provider unavailable"),
+        ):
+            with self.assertRaises(HTTPException) as raised:
+                current_weather(51.5072, -0.1276, user)
+        self.assertEqual(raised.exception.status_code, 502)
+        self.assertEqual(raised.exception.detail, "provider unavailable")
 
     def test_configured_locations_uses_environment_coordinates(self) -> None:
         with patch.dict(

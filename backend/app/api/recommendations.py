@@ -22,14 +22,13 @@ def create_recommendations(
     data: RecommendationRequest,
     _user: User = Depends(get_current_user),
 ):
-    if data.prediction is None and data.simulation is None:
-        raise HTTPException(status_code=422, detail="Provide a prediction or simulation result.")
-
     project_root = str(Path(__file__).resolve().parents[3])
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
     try:
         response_module = importlib.import_module("ai-assistant.response_generator")
+        if data.prediction is None and data.simulation is None:
+            return response_module.generate_general_preparedness_response()
         if data.prediction is not None:
             return response_module.generate_response(
                 data.prediction,

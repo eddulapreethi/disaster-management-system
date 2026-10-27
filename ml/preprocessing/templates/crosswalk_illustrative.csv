@@ -1,0 +1,2 @@
+gauge_id,grid_location_id,gauge_latitude,gauge_longitude,grid_latitude,grid_longitude,approved_max_distance_km,review_status,reviewer,reviewed_at_utc,reference,matching_method
+ILLUSTRATIVE_ONLY,ILLUSTRATIVE_ONLY,0.0,0.0,0.0,0.0,0.0,ILLUSTRATIVE_ONLY,ILLUSTRATIVE_ONLY,2000-01-01T00:00:00Z,ILLUSTRATIVE_ONLY,ILLUSTRATIVE_ONLY

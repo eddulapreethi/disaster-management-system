@@ -1,0 +1,2 @@
+gauge_id,threshold_record_id,effective_from,effective_to,danger_level_m,vertical_datum,unit
+ILLUSTRATIVE_ONLY,ILLUSTRATIVE_ONLY,2000-01-01T00:00:00Z,2001-01-01T00:00:00Z,0.0,UNVERIFIED,m

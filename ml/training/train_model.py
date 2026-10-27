@@ -15,6 +15,7 @@ from ml.models.disaster_prediction import build_disaster_prediction_model
 from ml.preprocessing.data_cleaning import clean_dataframe
 from ml.preprocessing.data_validation import validate_training_data
 from ml.preprocessing.dataset_manifest import default_manifest_path, load_dataset_manifest
+from ml.preprocessing.file_integrity import sha256_file
 from ml.preprocessing.feature_engineering import (
     FLOOD_FEATURES,
     FLOOD_FEATURE_SCHEMA_VERSION,
@@ -123,7 +124,7 @@ def train_from_csv(
     final_model.fit(features, labels)
 
     trained_at = datetime.now(timezone.utc)
-    dataset_hash = hashlib.sha256(dataset.read_bytes()).hexdigest()
+    dataset_hash = sha256_file(dataset, normalize_csv_line_endings=True)
     manifest_hash = hashlib.sha256(
         json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()

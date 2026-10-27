@@ -1,11 +1,16 @@
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, field_serializer
 
 from app.models.user import User
-from app.services.weather_service import get_collector_status, get_latest_observations, get_weather_status
+from app.services.weather_service import (
+    fetch_location_weather,
+    get_collector_status,
+    get_latest_observations,
+    get_weather_status,
+)
 from app.utils.authentication import get_current_user
 from app.utils.utc_timestamps import utc_isoformat
 
@@ -47,6 +52,21 @@ def latest_weather(_user: User = Depends(get_current_user)):
         "collector": get_collector_status(),
         "observations": get_latest_observations(),
     }
+
+
+@router.get("/current")
+def current_weather(
+    latitude: float = Query(ge=-90, le=90, allow_inf_nan=False),
+    longitude: float = Query(ge=-180, le=180, allow_inf_nan=False),
+    _user: User = Depends(get_current_user),
+):
+    try:
+        observation = fetch_location_weather(latitude, longitude)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except RuntimeError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    return observation
 
 
 @router.get("/status")

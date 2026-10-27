@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 from fastapi import HTTPException
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database.connection import Base
@@ -139,3 +140,80 @@ def test_resource_update_resets_status_and_delete_removes_record(db: Session) ->
     resource_service.delete_resource(db, resource.id)
     assert db.scalar(select(Resource.id).where(Resource.id == resource.id)) is None
 
+
+@pytest.mark.parametrize(
+    ("latitude", "longitude"),
+    [(-90, -180), (90, 180), (0, 0)],
+)
+def test_resource_coordinate_boundaries_are_valid(latitude: float, longitude: float) -> None:
+    data = ResourceCreate(
+        name="Boundary depot",
+        resource_type="water",
+        quantity=1,
+        latitude=latitude,
+        longitude=longitude,
+    )
+    assert data.latitude == latitude
+    assert data.longitude == longitude
+
+
+@pytest.mark.parametrize(
+    ("latitude", "longitude"),
+    [(90.001, 0), (-90.001, 0), (0, 180.001), (0, -180.001), (float("nan"), 0), (0, float("inf"))],
+)
+def test_resource_create_rejects_invalid_coordinates(latitude: float, longitude: float) -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        ResourceCreate(
+            name="Invalid depot",
+            resource_type="water",
+            quantity=1,
+            latitude=latitude,
+            longitude=longitude,
+        )
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        {"id": " ", "resource_type": "water", "quantity": 1, "latitude": 0, "longitude": 0},
+        {"id": "demand", "resource_type": " ", "quantity": 1, "latitude": 0, "longitude": 0},
+        {"id": "demand", "resource_type": "water", "unit": " ", "quantity": 1, "latitude": 0, "longitude": 0},
+    ],
+)
+def test_resource_demand_rejects_blank_identifiers_and_labels(values: dict) -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        ResourcePlanRequest(demands=[values])
+
+
+def test_resource_database_constraints_reject_invalid_orm_writes(db: Session) -> None:
+    db.add(Resource(
+        name="Invalid depot",
+        resource_type="water",
+        quantity=-1,
+        unit="litres",
+        latitude=91,
+        longitude=0,
+        status="available",
+    ))
+    with pytest.raises(IntegrityError):
+        db.commit()
+    db.rollback()
+
+
+def test_zero_demand_is_rejected_before_inventory_changes(db: Session) -> None:
+    resource = add_resource(db, "Depot", 5)
+    demand = {
+        "id": "shelter-a",
+        "resource_type": "water",
+        "quantity": 0,
+        "latitude": 10.0,
+        "longitude": 76.0,
+    }
+
+    with pytest.raises(ValueError, match="greater than zero"):
+        resource_service.plan_resource_allocation(db, [demand])
+    assert db.get(Resource, resource.id).quantity == 5

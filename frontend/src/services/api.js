@@ -3,12 +3,16 @@ export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 const TOKEN_KEY = 'disasterguard_access_token'
 const USER_KEY = 'disasterguard_user'
+const ASSISTANT_HISTORY_KEY = 'disasterguard_assistant_messages'
+const ASSISTANT_DRAFT_KEY = 'disasterguard_assistant_draft'
 
 function clearSession() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
   sessionStorage.removeItem('disasterguard_latest_prediction')
   sessionStorage.removeItem('disasterguard_last_simulation')
+  sessionStorage.removeItem(ASSISTANT_HISTORY_KEY)
+  sessionStorage.removeItem(ASSISTANT_DRAFT_KEY)
 }
 
 function endpointUrl(path) {

@@ -62,7 +62,10 @@ class SimulationResult:
     scenario_risk_score: float
     scenario_risk_level: str
     score_change: float
-    note: str = "Scenario estimate only; not an official warning or operational forecast."
+    note: str = (
+        "Hypothetical weather-only scenario estimate, not an official warning or operational forecast. "
+        "It does not include hydrology, terrain, drainage, or exposure; a zero score does not establish zero disaster risk."
+    )
 
     def to_dict(self) -> dict[str, str | float | dict[str, float]]:
         return asdict(self)

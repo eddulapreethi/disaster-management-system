@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 from pathlib import Path
@@ -8,6 +7,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
+from ml.preprocessing.file_integrity import sha256_file
 from .inspect_emdat import resolve_emdat_path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -32,7 +32,7 @@ def _write_manifest(
     disaster_types: list[str],
     excluded_rows: int,
 ) -> dict[str, object]:
-    dataset_hash = hashlib.sha256(output_path.read_bytes()).hexdigest()
+    dataset_hash = sha256_file(output_path, normalize_csv_line_endings=True)
     raw_source = raw_source_path or source_path
     source_match = re.search(r"(20\d{2}-\d{2}-\d{2})", raw_source.name)
     start_dates = pd.to_datetime(frame.get("start_date"), errors="coerce")
@@ -44,9 +44,9 @@ def _write_manifest(
         "source_name": "EM-DAT International Disaster Database",
         "source_reference": "https://public.emdat.be/",
         "source_file": str(raw_source.name),
-        "source_sha256": hashlib.sha256(raw_source.read_bytes()).hexdigest(),
+        "source_sha256": sha256_file(raw_source),
         "processed_input_file": source_path.name,
-        "processed_input_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+        "processed_input_sha256": sha256_file(source_path),
         "retrieval_date": None,
         "retrieval_date_note": (
             "The supplied source file does not record its actual retrieval date. "

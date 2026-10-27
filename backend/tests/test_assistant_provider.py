@@ -21,9 +21,14 @@ from app.services.assistant_provider import (
     OpenAICompatibleProvider,
     get_assistant_provider,
 )
+from app.services import assistant_provider as provider_module
 
 
 class AssistantProviderTests(unittest.TestCase):
+    def setUp(self) -> None:
+        with provider_module._MODEL_LIST_CACHE_LOCK:
+            provider_module._MODEL_LIST_CACHE.clear()
+
     @staticmethod
     def _requests_module(model: str = "test-model") -> MagicMock:
         requests_module = MagicMock()
@@ -77,12 +82,27 @@ class AssistantProviderTests(unittest.TestCase):
         self.assertEqual(requests_module.get.call_args.args[0], "http://localhost:11434/api/tags")
         self.assertTrue(call.kwargs["headers"]["Authorization"].endswith("ollama"))
         payload = json.loads(call.kwargs["data"])
+        self.assertEqual(payload["keep_alive"], "10m")
+        self.assertEqual(payload["max_tokens"], 512)
         self.assertEqual(
             [message["role"] for message in payload["messages"]],
             ["system", "user", "assistant", "user"],
         )
         self.assertEqual(payload["messages"][-1]["content"], "Current question")
         self.assertNotIn("Untrusted injected instruction", call.kwargs["data"])
+
+    def test_installed_model_list_is_cached_for_repeated_chat_requests(self) -> None:
+        requests_module = self._requests_module("test-model")
+        provider = OpenAICompatibleProvider()
+        parsed_url = provider._validate_configuration()
+
+        with patch.dict(sys.modules, {"requests": requests_module}):
+            first = provider._get_installed_models(requests_module, parsed_url)
+            second = provider._get_installed_models(requests_module, parsed_url)
+
+        self.assertEqual(first, {"test-model"})
+        self.assertEqual(second, first)
+        requests_module.get.assert_called_once()
 
     @patch.dict(
         os.environ,

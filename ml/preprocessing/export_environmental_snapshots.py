@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import csv
-import hashlib
 import json
 import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from ml.preprocessing.file_integrity import sha256_file
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_DIR = PROJECT_ROOT / "backend"
@@ -163,7 +164,6 @@ def write_snapshot(
                 retrieval_times.append(normalized["fetched_at"])
             writer.writerow({column: normalized.get(column) for column in columns})
 
-    output_bytes = output_path.read_bytes()
     bounds = (
         {
             "west": min(point[0] for point in valid_coordinates),
@@ -209,7 +209,7 @@ def write_snapshot(
             ),
         },
         "processing_version": "environmental-snapshot-export-v1",
-        "dataset_sha256": hashlib.sha256(output_bytes).hexdigest(),
+        "dataset_sha256": sha256_file(output_path, normalize_csv_line_endings=True),
         "training_suitable": False,
         "training_limitation": (
             "Observations have no verified event labels or validated mapping to the legacy 20-index flood feature schema."

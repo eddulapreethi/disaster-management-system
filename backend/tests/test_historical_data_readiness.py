@@ -2,6 +2,7 @@ import hashlib
 import json
 
 from app.services.historical_data_readiness import get_historical_analytics, get_historical_data_readiness
+from ml.preprocessing.file_integrity import sha256_file
 
 
 def test_historical_data_manifest_validation_never_marks_events_trainable(tmp_path) -> None:
@@ -13,7 +14,7 @@ def test_historical_data_manifest_validation_never_marks_events_trainable(tmp_pa
     (source_dir / "emdat.xlsx").write_bytes(b"source workbook fixture")
     dataset = processed_dir / "floods.csv"
     dataset.write_text("event_id,disaster_type\n1,Flood\n", encoding="utf-8")
-    digest = hashlib.sha256(dataset.read_bytes()).hexdigest()
+    digest = sha256_file(dataset, normalize_csv_line_endings=True)
     manifest = {
         "dataset_name": "floods",
         "row_count": 1,
@@ -79,12 +80,11 @@ def test_valid_historical_events_are_ready_for_analytics_not_supervised_training
     processed_input = processed_dir / "emdat_cleaned.csv"
     processed_input.write_text("test input\n", encoding="utf-8")
     dataset = processed_dir / "floods.csv"
-    dataset.write_text(
-        "disno.,disaster_type,country,start_year,start_date,latitude,longitude,total_deaths,total_affected,total_damage_'000_us$\n"
-        "2020-0001,Flood,Testland,2020,2020-01-01,10,20,1,4,5\n",
-        encoding="utf-8",
+    dataset.write_bytes(
+        b"disno.,disaster_type,country,start_year,start_date,latitude,longitude,total_deaths,total_affected,total_damage_'000_us$\n"
+        b"2020-0001,Flood,Testland,2020,2020-01-01,10,20,1,4,5\n"
     )
-    digest = hashlib.sha256(dataset.read_bytes()).hexdigest()
+    digest = sha256_file(dataset, normalize_csv_line_endings=True)
     manifest = {
         "dataset_name": "floods",
         "row_count": 1,
@@ -92,12 +92,13 @@ def test_valid_historical_events_are_ready_for_analytics_not_supervised_training
         "source_file": source.name,
         "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "processed_input_file": processed_input.name,
-        "processed_input_sha256": hashlib.sha256(processed_input.read_bytes()).hexdigest(),
+        "processed_input_sha256": sha256_file(processed_input),
         "event_categories": ["Flood"],
         "target_definition": "Historical event classification only.",
         "validation": {"sha256": digest, "non_empty": True},
     }
     (processed_dir / "floods.manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    dataset.write_bytes(dataset.read_bytes().replace(b"\n", b"\r\n"))
 
     result = get_historical_data_readiness(tmp_path)
 
@@ -123,7 +124,7 @@ def test_historical_analytics_cache_is_invalidated_when_dataset_changes(tmp_path
         "2020-0001,Flood,Testland,2020,2020-01-01,10,20,1,4,5\n",
         encoding="utf-8",
     )
-    digest = hashlib.sha256(dataset.read_bytes()).hexdigest()
+    digest = sha256_file(dataset, normalize_csv_line_endings=True)
     manifest = {
         "dataset_name": "floods",
         "row_count": 1,
@@ -131,7 +132,7 @@ def test_historical_analytics_cache_is_invalidated_when_dataset_changes(tmp_path
         "source_file": source.name,
         "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "processed_input_file": processed_input.name,
-        "processed_input_sha256": hashlib.sha256(processed_input.read_bytes()).hexdigest(),
+        "processed_input_sha256": sha256_file(processed_input),
         "event_categories": ["Flood"],
         "target_definition": "Historical event classification only.",
         "validation": {"sha256": digest, "non_empty": True},
@@ -151,7 +152,7 @@ def test_historical_analytics_cache_is_invalidated_when_dataset_changes(tmp_path
         encoding="utf-8",
     )
     manifest["row_count"] = 2
-    manifest["dataset_sha256"] = hashlib.sha256(dataset.read_bytes()).hexdigest()
+    manifest["dataset_sha256"] = sha256_file(dataset, normalize_csv_line_endings=True)
     manifest["validation"]["sha256"] = manifest["dataset_sha256"]
     (processed_dir / "floods.manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
 

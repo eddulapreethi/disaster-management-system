@@ -9,12 +9,12 @@ from app.utils.utc_timestamps import utc_isoformat
 
 class PredictionCreate(BaseModel):
     disaster_type: Literal["flood", "wildfire", "storm"]
-    latitude: float = Field(ge=-90, le=90)
-    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False, strict=True)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False, strict=True)
     weather_observation_id: int | None = Field(default=None, gt=0)
-    rainfall_mm: float = Field(ge=0, le=2000)
-    temperature_c: float = Field(ge=-100, le=100)
-    wind_speed_kmh: float = Field(ge=0, le=500)
+    rainfall_mm: float = Field(ge=0, le=2000, allow_inf_nan=False, strict=True)
+    temperature_c: float = Field(ge=-100, le=100, allow_inf_nan=False, strict=True)
+    wind_speed_kmh: float = Field(ge=0, le=500, allow_inf_nan=False, strict=True)
     features: dict[str, float] | None = None
 
     @field_validator("features")

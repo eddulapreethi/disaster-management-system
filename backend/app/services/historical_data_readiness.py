@@ -15,6 +15,7 @@ if PROJECT_ROOT_STRING not in sys.path:
     sys.path.insert(0, PROJECT_ROOT_STRING)
 
 from ml.preprocessing.historical_analytics import build_historical_analytics
+from ml.preprocessing.file_integrity import sha256_file
 
 _CACHE_TTL_SECONDS = 30.0
 _CACHE_LOCK = threading.RLock()
@@ -54,11 +55,7 @@ def _get_cached_value(cache_key: tuple[str, str], factory):
 
 
 def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return sha256_file(path)
 
 
 def get_historical_data_readiness(project_root: Path) -> dict[str, Any]:
@@ -84,7 +81,7 @@ def get_historical_data_readiness(project_root: Path) -> dict[str, Any]:
             try:
                 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
                 dataset_path = manifest_path.with_suffix("").with_suffix(".csv")
-                content_hash = _sha256(dataset_path)
+                content_hash = sha256_file(dataset_path, normalize_csv_line_endings=True)
                 with dataset_path.open(encoding="utf-8") as dataset_file:
                     row_count = max(0, sum(1 for _ in dataset_file) - 1)
                 validation_errors = []

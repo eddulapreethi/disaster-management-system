@@ -72,3 +72,27 @@ def generate_scenario_response(
         "disclaimer": ESTIMATE_DISCLAIMER,
         "response": response,
     }
+
+
+def generate_general_preparedness_response() -> dict[str, Any]:
+    """Provide preparedness guidance without implying a location-specific prediction."""
+    recommendations = [
+        "Follow official local emergency alerts and instructions.",
+        "Keep essential medicines, water, identification, and a charged phone accessible.",
+        "Know how to contact local emergency services and where official shelters are located.",
+        "Do not enter floodwater, fire, or unsafe structures; leave danger areas when authorities advise.",
+    ]
+    summary = "General preparedness guidance — no validated location-specific prediction is available."
+    return {
+        "disaster_type": None,
+        "risk_score": None,
+        "risk_band": "unknown",
+        "summary": summary,
+        "simulation_summary": None,
+        "top_factors": [],
+        "recommendations": recommendations,
+        "disclaimer": (
+            "General preparedness information only; not a forecast, official warning, or guidance based on a confirmed local hazard."
+        ),
+        "response": " ".join([summary, *recommendations]),
+    }
