@@ -12,6 +12,8 @@ def test_target_readiness_lists_missing_evidence_and_never_promotes_file_presenc
     assert readiness["status"] == "NOT_READY"
     assert readiness["target_status"] == "PROPOSED_REQUIRES_DOMAIN_APPROVAL"
     assert readiness["missing_evidence"] == list(readiness["files"])
+    assert readiness["gauge_package_preflight"]["training_readiness"] == "NOT_READY"
+    assert readiness["gauge_package_preflight"]["preflight_status"] == "BLOCKED"
 
     for item in readiness["files"].values():
         path = tmp_path / item["path"]
@@ -24,6 +26,7 @@ def test_target_readiness_lists_missing_evidence_and_never_promotes_file_presenc
     assert readiness_with_files["status"] == "NOT_READY"
     assert readiness_with_files["target_status"] == "PROPOSED_REQUIRES_DOMAIN_APPROVAL"
     assert readiness_with_files["blocking_requirements"]
+    assert readiness_with_files["gauge_package_preflight"]["training_readiness"] == "NOT_READY"
     assert all(
         item["source_verification_status"] != "VERIFIED"
         for item in readiness_with_files["requirements"].values()

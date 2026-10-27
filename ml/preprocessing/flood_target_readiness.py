@@ -506,6 +506,11 @@ def get_flood_target_readiness(project_root: str | Path) -> dict[str, Any]:
         for name, item in requirements.items()
         if item["status"] not in {"VERIFIED", "APPROVED"}
     ]
+    from ml.preprocessing.flood_gauge_package_preflight import (
+        get_gauge_package_preflight,
+    )
+
+    gauge_package_preflight = get_gauge_package_preflight(root)
     return {
         "status": "NOT_READY",
         "target_id": TARGET_ID,
@@ -516,6 +521,7 @@ def get_flood_target_readiness(project_root: str | Path) -> dict[str, Any]:
         "missing_evidence": missing,
         "requirements": requirements,
         "blocking_requirements": blocking,
+        "gauge_package_preflight": gauge_package_preflight,
         "evidence_boundary": (
             "File presence, parsing, declared approvals, and importer checks are not proof of source "
             "authority, licensing, scientific suitability, or verified labels. This service does not "
