@@ -1,0 +1,60 @@
+{
+  "configuration_version": "1.0",
+  "execution_enabled": false,
+  "model": {
+    "name": null,
+    "version": null,
+    "solver_family": "UNSELECTED",
+    "horizontal_crs": null,
+    "vertical_datum": null,
+    "units": {
+      "horizontal": null,
+      "vertical": null,
+      "flow": null,
+      "rainfall": null
+    },
+    "solver_settings": null
+  },
+  "study_area": {
+    "name": "UNCONFIRMED",
+    "region": null,
+    "bounds_wgs84": null,
+    "crs": "EPSG:4326",
+    "catchment_reference": null,
+    "approval_reference": null
+  },
+  "time_window": {
+    "start_utc": null,
+    "end_utc": null,
+    "time_step_seconds": null
+  },
+  "inputs": {
+    "terrain": null,
+    "channel_geometry": null,
+    "gauge_metadata": null,
+    "water_level_observations": null,
+    "official_danger_levels": null,
+    "rainfall_forcing": null,
+    "initial_conditions": null,
+    "upstream_boundary_conditions": null,
+    "downstream_boundary_conditions": null,
+    "calibration_observations": null,
+    "validation_observations": null
+  },
+  "output_directory": null,
+  "result_format": null,
+  "reproducibility": {
+    "configuration_sha256": null,
+    "source_revision": null,
+    "created_at_utc": null,
+    "random_seed": null
+  },
+  "reviews": {
+    "licensing": "UNVERIFIED",
+    "source_authenticity": "UNVERIFIED",
+    "domain_approval": "UNVERIFIED",
+    "scientific_suitability": "UNVERIFIED",
+    "calibration": "NOT_AVAILABLE",
+    "independent_validation": "NOT_AVAILABLE"
+  }
+}

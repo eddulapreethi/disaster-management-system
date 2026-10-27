@@ -45,14 +45,15 @@ Generated files:
 - `ml/datasets/historical_data/analytics/historical_analytics.json`
 - `ml/datasets/historical_data/analytics/historical_analytics.manifest.json`
 
-Manifest verification:
+Manifest verification (historical descriptive summary; this does not change model readiness):
 
-- Transformation version: `emdat-historical-analytics-v1`
+- Transformation version: `emdat-historical-analytics-v2`
+- As-of date: `2026-10-27`
 - Source rows scanned: 8,810
 - Unique event IDs: 8,810
 - Rejected rows: 0
-- Deterministic output: true
-- Output SHA-256: `24f1d441122dd96e0257a029321a8c297b4af68dae506a33232207c475a6e012`
+- Deterministic output for the recorded as-of date: true
+- Output SHA-256: `8990fdea486b7653328a2100c28b2947851fe1e68aaf6cbfe785aa07d4b43fca`
 
 The processor checks CSV, processed-input and workbook hashes against manifests before using them. Derived category-extract CSV dataset hashes use canonical LF line endings, which preserves the original manifest evidence across Git's Windows `core.autocrlf` conversion; processed-input and workbook hashes remain byte-for-byte checks. It writes derived analytics only; original source CSVs and workbook are inputs and are not rewritten.
 
