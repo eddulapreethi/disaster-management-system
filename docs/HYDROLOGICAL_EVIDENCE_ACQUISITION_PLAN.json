@@ -1,0 +1,496 @@
+{
+  "schema_version": "1.0",
+  "title": "Stage 2 Part B.6 Hydrological Evidence Acquisition Plan",
+  "created_at": "2026-10-28",
+  "purpose": "Plan traceable evidence collection and review for the 15 metadata readiness fields for the Godavari and Krishna datasets. This document does not change readiness decisions or authorize normalization.",
+  "scope": {
+    "datasets": [
+      {
+        "dataset_id": "godavari_water_level_2021_2025",
+        "input_path": "ml/datasets/hydrological/raw/godavari_water_level_2021_2025.csv",
+        "station_audit_identity_count": 66
+      },
+      {
+        "dataset_id": "krishna_water_level_2021_2025",
+        "input_path": "ml/datasets/hydrological/raw/krishna_water_level_2021_2025.csv",
+        "station_audit_identity_count": 30
+      }
+    ],
+    "readiness_gate": "docs/HYDROLOGICAL_METADATA_READINESS_GATE.json",
+    "provider_request": "docs/CWC_NWIC_PROVIDER_CLARIFICATION_REQUEST_DRAFT.md",
+    "provider_tracker": "docs/CWC_NWIC_PROVIDER_RESPONSE_TRACKER.md",
+    "audit_markdown": "docs/STAGE_2_PART_B_HYDROLOGICAL_AUDIT.md",
+    "audit_json": "docs/STAGE_2_PART_B_HYDROLOGICAL_AUDIT.json",
+    "metadata_review": "docs/STAGE_2_PART_B2_METADATA_PROVENANCE_REVIEW.md",
+    "evidence_states": {
+      "evidence_requested": "PLANNED_NOT_SENT",
+      "evidence_received": "NOT_RECORDED",
+      "evidence_independently_checked": "NOT_CHECKED",
+      "field_accepted": false,
+      "state_separation_rule": "A request being planned or sent is not evidence received. Receipt is not independent verification. Independent verification is not field acceptance until the acceptance criteria are documented in the readiness gate by an authorized reviewer."
+    },
+    "source_authority_review": {
+      "status": "PROPOSED_SOURCES_NOT_INDEPENDENTLY_VERIFIED",
+      "contact_status": "UNVERIFIED",
+      "review_performed": false,
+      "note": "The organizations and document types below are expected authoritative sources based on the unresolved metadata domains. Their current custody, authority for these exact historical exports, availability, and any contact details have not been independently verified. Do not treat this plan as evidence that any source exists or is authoritative.",
+      "expected_authorities_and_artifacts": [
+        {
+          "metadata_domain": "Exact resource provenance, export version, completeness, measurement definitions, timestamps, quality flags, revisions, schedules, and discharge-availability semantics",
+          "expected_responsible_authority": "CWC/NWIC custodian responsible for the exact NWDP resource or source system",
+          "specific_artifact_sought": "Official versioned resource record/export manifest, data dictionary, source-system revision/QC and coverage documentation, or signed/written clarification explicitly linked to each exact resource/version and file",
+          "verification_status": "NOT_VERIFIED"
+        },
+        {
+          "metadata_domain": "Stable gauge identity, station history, coordinates, CRS, river/basin/reach, and station operations",
+          "expected_responsible_authority": "CWC/NWIC station-registry authority or the responsible gauge/station custodian",
+          "specific_artifact_sought": "Versioned, effective-dated station registry/crosswalk and station-specific geospatial, benchmark, hydrological assignment, and operating-period records",
+          "verification_status": "NOT_VERIFIED"
+        },
+        {
+          "metadata_domain": "Administrative codes and historical names/boundaries",
+          "expected_responsible_authority": "Issuing government authority for the code system explicitly used in the dataset, such as LGD only if the provider confirms that code system applies",
+          "specific_artifact_sought": "Official code-system definition and versioned/effective-dated code-to-name or boundary reference applicable to the source records",
+          "verification_status": "NOT_VERIFIED"
+        },
+        {
+          "metadata_domain": "Vertical datum, benchmark, survey epoch, and transformations",
+          "expected_responsible_authority": "Responsible gauge/station survey custodian and the authority responsible for the cited vertical reference or datum",
+          "specific_artifact_sought": "Station-linked benchmark/survey record and authoritative datum realization, validity period, and transformation specification, if applicable",
+          "verification_status": "NOT_VERIFIED"
+        },
+        {
+          "metadata_domain": "License, attribution, retention, derivatives, publication, and redistribution",
+          "expected_responsible_authority": "Rights-holding authority or an authorized CWC/NWIC representative for the exact resource",
+          "specific_artifact_sought": "Applicable license instrument/version or written permission identifying the resource, rights holder, attribution, covered uses, restrictions, and effective period",
+          "verification_status": "NOT_VERIFIED"
+        }
+      ],
+      "proposed_email_status": "The address in the draft and tracker remains UNVERIFIED. Verify it and the appropriate office through an authoritative official source before any human-approved dispatch."
+    },
+    "evidence_preservation_procedure": [
+      "Do not request or accept new evidence automatically. After an approved human request or receipt, preserve the original received files and message/export envelope unchanged, subject to applicable access, confidentiality, and license restrictions.",
+      "For each original item, record its original filename, byte size, SHA-256 where technically appropriate, received date/time and timezone, receipt channel, sender identity/claimed organization and role, recipient, and any independently verified identity/contact evidence. Do not treat sender claims as verified identity.",
+      "Record issuer, title, version/identifier, publication/retrieval/effective date, source URL or repository/reference, and whether the document is signed, official, or otherwise authenticated; record unknowns explicitly.",
+      "Record exact applicability: dataset/resource/version, local-file linkage, station IDs, basin, date/operating period, fields, and permitted use. Mark partial or unassessed scope explicitly; never generalize evidence beyond its supported scope.",
+      "Keep original evidence separate and read-only from working copies. Any extraction, conversion, redaction, translation, annotation, or other transformation must be stored separately with a dated transformation log, tool/method, operator role, output hash where appropriate, and a link to the unchanged original.",
+      "Use an access-controlled project evidence location only if retention and repository access are permitted. Do not commit personal, confidential, restricted, or provider-supplied raw data into a public repository without confirmed permission; record the approved restricted location/reference instead."
+    ],
+    "evidence_assessment_protocol": {
+      "provider_statement": "Record what the provider or document states, with a precise source citation and scope. Attribute it as a statement; do not relabel it as independently verified fact.",
+      "independent_verification": "Record the separate checks performed, sources consulted, comparison results, reviewer role, date, and limits. A provider answer or document receipt alone does not satisfy this state.",
+      "internal_acceptance": "Record the field-specific decision separately in the readiness gate only after the acceptance criteria are met for the documented scope by an authorized reviewer. Acceptance applies only to the supported dataset/stations/period and does not imply other fields are accepted.",
+      "incomplete_evidence": "Mark RECEIVED_PENDING_REVIEW or REVIEWED_INSUFFICIENT as appropriate; list unanswered elements, unsupported scope, and exact remaining request. Keep affected field UNRESOLVED.",
+      "contradictory_evidence": "Preserve each conflicting item and its provenance; compare version, authority, effective date, and scope; record the conflict and escalation/clarification action. Do not select one source silently. Keep affected field UNRESOLVED until reconciled.",
+      "superseded_evidence": "Retain the original and mark it SUPERSEDED, identify the replacing item and reason, and record the supersession date and reviewer. Do not erase history or rely on superseded evidence for acceptance without documenting why it remains applicable. Keep the affected field UNRESOLVED until replacement evidence is independently checked and meets its acceptance criteria.",
+      "limited_scope_evidence": "Record exact dataset/resource, station IDs, basin, field, date range, and conditions covered. Apply a decision only to that scope; all uncovered stations, basins, periods, or datasets remain UNRESOLVED."
+    },
+    "human_pre_send_checklist": [
+      "Confirm project owner approval, sender identity, intended purpose, and permission to disclose the cited examples and local file metadata.",
+      "Independently verify the proposed email/contact through an authoritative official CWC/NWIC source and verify the receiving office is responsible for these historical exports; the current address is UNVERIFIED.",
+      "Confirm both exact filenames, intended dataset scope, and that no raw observations or personal/restricted information are attached unnecessarily.",
+      "Review all 24 numbered questions for clarity, non-duplication, exact resource/station/time scope, and requests for authoritative documents rather than unsupported assurances.",
+      "Confirm the request does not imply that unusual values are erroneous, that the exports are complete/authentic, or that a license permits redistribution.",
+      "Confirm intended project uses to ask about retention, processing, derivative creation, publication, attribution, and redistribution separately.",
+      "Have an authorized human approve the final recipient, wording, attachments, and dispatch method; record any sent copy and dispatch details in the tracker."
+    ],
+    "request_send_gate": {
+      "approval_status": "NOT_APPROVED",
+      "approval_record": {
+        "approver_name_or_role": null,
+        "approval_date": null,
+        "approved_recipient": null,
+        "verified_contact_source": null,
+        "approved_message_version_or_hash": null,
+        "approved_attachments": [],
+        "dispatch_method": null
+      },
+      "required_human_action": "Before sending, the responsible project supervisor or a formally authorized reviewer must personally review the final request and attachments, confirm the intended scope and disclosure are appropriate, verify the recipient address and receiving office from an authoritative official source, explicitly approve that exact message version and dispatch method, and record the approval details above and in the tracker. Only that authorized human may then send it manually. Until all required approval details are recorded, the request must remain unsent.",
+      "no_approval_inferred_from": [
+        "Preparation or review of this plan",
+        "The existence of a proposed email address in repository documentation",
+        "Prior project discussion without an explicit decision on the final message",
+        "Automated tests or validation"
+      ]
+    },
+    "evidence_intake_record_template": {
+      "intake_status": "NOT_RECEIVED",
+      "evidence_item_id": null,
+      "original_filename_or_message_reference": null,
+      "original_byte_size": null,
+      "sha256_if_appropriate": null,
+      "actual_received_date_time": null,
+      "received_timezone_or_unknown": null,
+      "receipt_channel": null,
+      "sender_identity_as_claimed": null,
+      "sender_identity_verification_status": "NOT_VERIFIED",
+      "sender_identity_verification_source_and_result": null,
+      "recipient_or_project_receiver": null,
+      "issuer_organization_and_role_as_stated": null,
+      "evidence_title_version_or_identifier": null,
+      "publication_retrieval_or_effective_date": null,
+      "official_or_authenticated_status": "NOT_ASSESSED",
+      "exact_scope": {
+        "dataset_ids": [],
+        "resource_versions": [],
+        "station_ids": [],
+        "basin_or_geographic_scope": [],
+        "date_or_operating_period": null,
+        "metadata_fields": [],
+        "permitted_uses": []
+      },
+      "linked_tracker_question_numbers": [],
+      "linked_readiness_fields": [],
+      "original_preservation_location_or_restricted_reference": null,
+      "access_or_retention_restrictions": null,
+      "derived_or_transformed_copies": [],
+      "provider_statement_summary_and_citation": null,
+      "independent_verification_checks_and_sources": null,
+      "contradictions_missing_details_or_limitations": null,
+      "supersedes_or_is_superseded_by": null,
+      "reviewer_role_and_review_date": null,
+      "review_decision": "PENDING",
+      "readiness_gate_change_authorized": false
+    },
+    "evidence_intake_instructions": [
+      "Create one intake record per distinct evidence item. Record actual receipt date/time, timezone or that it is unknown, channel, receiver, original filename/reference, and claimed sender identity. Record sender identity as verified only after documenting an independent verification source and result.",
+      "Preserve the original attachment and message/export envelope unchanged in an access-controlled location when permitted. Record original size and SHA-256 where appropriate; do not edit originals. If retention or repository access is restricted or unclear, do not commit the item; record an approved restricted-location reference and restriction.",
+      "Store extracted metadata, redactions, translations, annotations, conversions, and other transformed copies separately. Link each copy to its original evidence item and record transformation date, method/tool, operator role, and output hash where appropriate.",
+      "Link each item to specific tracker question numbers and readiness field names. Record exact dataset, resource/version, station, basin/geographic area, date/operating period, fields, and permitted-use scope. Do not extend an item’s scope to another station, basin, date range, or dataset without evidence.",
+      "Record provider statements as attributed claims with precise citations. Record independent verification separately, including checks, sources, reviewer role/date, and limitations. Record internal acceptance only in the readiness gate after its field-specific criteria are satisfied by an authorized reviewer.",
+      "For missing, incomplete, contradictory, superseded, or scope-limited evidence, retain the source history, describe the unresolved point and next action, and keep affected readiness fields UNRESOLVED. A receipt, provider statement, or tracker status alone never authorizes gate changes."
+    ],
+    "review_policy": [
+      "Use only authoritative, versioned evidence that is demonstrably applicable to the exact local resource, dataset, stations, and relevant time period.",
+      "Record the evidence issuer, document/resource/version, retrieval or effective date, scope, file linkage, reviewer role, review decision, and any limitations in the readiness gate and tracker.",
+      "A provider reply alone, CSV header, plausible value, filename, internal application convention, or agreement between fields is not sufficient for acceptance.",
+      "Where evidence conflicts or is incomplete, keep the corresponding field UNRESOLVED and record the conflict and remaining action.",
+      "Accept fields independently only when their field-specific criteria are satisfied; retain the dataset-level normalization BLOCKED decision until every mandatory requirement and dependency is accepted.",
+      "No named reviewer or provider contact is presumed verified by this plan."
+    ]
+  },
+  "field_mappings": [
+    {
+      "field": "source_resource_identity_and_export_completeness",
+      "dataset_scope": "Both datasets; exact local CSV separately",
+      "evidence_required": "Exact CWC/NWIC package, dataset, resource and version identifiers; official endpoint; export/retrieval time; query and filters; completeness and pagination statement; provider source checksum or other integrity linkage to each local file.",
+      "authoritative_source_expected": "CWC/NWIC data custodian for the exact resource; official versioned resource record, export metadata or written confirmation. A provider response must be independently checked against the exact local files.",
+      "tracker_question_numbers": [1, 2, 3, 4],
+      "validation_procedure": "Compare identifiers and scope in the official resource record to each local file. Reconcile stated coverage/stations and export method with the existing audit summaries; verify any checksum against the unchanged local file. Document discrepancies without modifying source files.",
+      "reviewer_role": "Project data-provenance reviewer independent of the person who obtained the evidence.",
+      "acceptance_criteria": "Each local file is unambiguously linked to an official resource/version and reproducible export scope; completeness or limitations are explicit; integrity linkage is documented; evidence is authoritative, applicable, and independently reviewed.",
+      "unresolved_or_blocked_condition": "Keep UNRESOLVED if any resource/version, source authenticity, export scope/completeness, file linkage, or integrity evidence is missing, ambiguous, conflicting, or unchecked. Dataset normalization remains BLOCKED.",
+      "dependencies": [],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "stable_physical_gauge_id_and_station_crosswalk",
+      "dataset_scope": "Every audit identity: 66 Godavari and 30 Krishna",
+      "evidence_required": "Official stable physical gauge IDs and a complete, effective-dated crosswalk to each supplied station name, codes, coordinates, river/basin and historical name, movement, replacement or reuse record.",
+      "authoritative_source_expected": "CWC/NWIC station registry or station custodian-approved crosswalk and station-history records.",
+      "tracker_question_numbers": [5, 6],
+      "validation_procedure": "Reconcile every audit identity to exactly the provider-supported physical gauge ID and effective period. Check for one-to-many/many-to-one mappings, renamed or relocated gauges, and unmatched/ambiguous identities. Preserve the audit identity as traceability, not as a substitute provider ID.",
+      "reviewer_role": "Project hydrological station-metadata reviewer independent of the crosswalk preparer.",
+      "acceptance_criteria": "Every source identity is mapped or explicitly documented as unresolved/non-applicable with authoritative justification; station history and effective dates resolve identity changes; no merging is based only on similar names.",
+      "unresolved_or_blocked_condition": "Any unmatched, ambiguous, unsupported, or time-inapplicable station mapping keeps this field UNRESOLVED and blocks station aggregation and normalization for the affected scope.",
+      "dependencies": ["source_resource_identity_and_export_completeness"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "coordinates_crs_source_accuracy_and_location_history",
+      "dataset_scope": "Every station in both datasets and each effective location period",
+      "evidence_required": "Coordinate order and CRS/datum; source/survey method, accuracy, represented physical feature, reference date, and effective-dated moves or corrections.",
+      "authoritative_source_expected": "CWC/NWIC station registry or station custodian-approved geospatial metadata/survey record.",
+      "tracker_question_numbers": [5, 6, 7],
+      "validation_procedure": "Link coordinate records to accepted stable station IDs and effective dates. Check coordinate order, declared CRS, completeness, validity, and reported accuracy using documented metadata only; do not infer CRS from numeric ranges.",
+      "reviewer_role": "Project geospatial metadata reviewer with CRS competence, independent of the evidence preparer.",
+      "acceptance_criteria": "Every coordinate used is linked to a stable station and period, has explicit CRS/order and provenance, and has documented accuracy and feature meaning; unresolved moves are excluded from any location-dependent derivative.",
+      "unresolved_or_blocked_condition": "Missing CRS, accuracy/provenance, station linkage, feature meaning, or location history keeps this field UNRESOLVED and blocks location-dependent processing.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "administrative_codes_and_names",
+      "dataset_scope": "Every station and relevant historical period in both datasets",
+      "evidence_required": "Authoritative state/district code and name reference, version/effective dates, applicable boundary history, and a crosswalk from source codes/names to the reference.",
+      "authoritative_source_expected": "Official CWC/NWIC station metadata plus the issuing government authority for the applicable administrative code/boundary reference (including LGD where that is the declared code system).",
+      "tracker_question_numbers": [5, 9],
+      "validation_procedure": "Verify source code system and version from its issuing authority; reconcile each station and applicable date. Record conflicts between supplied labels/codes and authoritative references without silently correcting source values.",
+      "reviewer_role": "Project administrative-geography metadata reviewer.",
+      "acceptance_criteria": "All used administrative identifiers have an authoritative code-system/version and effective-date mapping; unresolved historical or conflicting labels are explicitly excluded from claims requiring that mapping.",
+      "unresolved_or_blocked_condition": "Unknown code system/version, effective dates, or unresolved station-level conflicts keep this field UNRESOLVED.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "river_basin_and_reach_assignment",
+      "dataset_scope": "Every station and relevant period in both datasets",
+      "evidence_required": "Authoritative station-level river, tributary, basin, reach and upstream/downstream context, with effective dates and explanation of missing or conflicting supplied values, including blank Krishna River entries for Halia Vijaywada.",
+      "authoritative_source_expected": "CWC/NWIC station registry or responsible basin/station authority's versioned hydrological station mapping.",
+      "tracker_question_numbers": [5, 8],
+      "validation_procedure": "Join the authoritative mapping through accepted stable gauge IDs; compare the source labels only as reported values. Record unmatched, blank, conflicting, or changed assignments and their valid periods.",
+      "reviewer_role": "Project hydrological metadata reviewer independent of the mapping preparer.",
+      "acceptance_criteria": "Each station-period has a supported basin and relevant river/reach assignment, or a documented unresolved limitation; the supplied basin/filename agreement is not used as sole evidence.",
+      "unresolved_or_blocked_condition": "Any station assignment used downstream that lacks authoritative mapping or has an unexplained conflict keeps this field UNRESOLVED.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "Data_Acquisition_Time_semantics_timezone_and_clock_rules",
+      "dataset_scope": "Both datasets; station/effective periods if conventions differ",
+      "evidence_required": "Definition of the event represented by Data Acquisition Time; timezone/offset; daylight-saving applicability; clock synchronization, precision/rounding, late arrival, correction and conversion rules.",
+      "authoritative_source_expected": "CWC/NWIC product-specific data dictionary and telemetry/timekeeping specification or written confirmation from the responsible data custodian.",
+      "tracker_question_numbers": [10, 11],
+      "validation_procedure": "Confirm the definition and timezone are tied to the exact resource and periods. Check sample records and any documented precision/clock rules; record ambiguity or station-specific exceptions. No timezone is inferred from filenames, location, or application configuration.",
+      "reviewer_role": "Project time-series data reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "The timestamp event, timezone/offset, clock conventions, and applicable exceptions are explicit and reviewed for each dataset and period; conversion policy is documented before any time-series normalization.",
+      "unresolved_or_blocked_condition": "Unknown event semantics, timezone, or relevant clock conventions keep this field UNRESOLVED and block timestamp conversion and time-series normalization.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "water_level_quantity_unit_sign_and_negative_values",
+      "dataset_scope": "Both datasets, exact resource/version and affected station periods",
+      "evidence_required": "Formal definition of the measured quantity, method, unit, sign convention, relation to gauge zero, sentinel/invalid encodings, and interpretation/QC rules for negative and extreme values, including examples cited in Part B.2.",
+      "authoritative_source_expected": "CWC/NWIC exact-resource data dictionary, measurement specification, QC documentation, or written clarification from the responsible measurement/data custodian.",
+      "tracker_question_numbers": [14, 15, 18],
+      "validation_procedure": "Compare authoritative definitions with the source header and audit findings; review the cited negative/extreme source-row references without presuming error. Document value handling and unresolved examples; do not convert units or discard records during evidence review.",
+      "reviewer_role": "Project hydrometry/data-quality reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "Quantity, units, sign, gauge-zero relation, negative/extreme interpretation and sentinel rules are explicit for the exact historical resource, and a record-level treatment policy is documented and reviewed.",
+      "unresolved_or_blocked_condition": "Any unknown unit, quantity, sign, gauge-zero relation, sentinel rule, or unexplained cited value keeps this field UNRESOLVED and blocks level transformation/normalization.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "RL_of_zeroGauge_and_MeanSeaLevel_definitions", "vertical_datum_compatibility", "observation_quality_flags_and_status"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "RL_of_zeroGauge_and_MeanSeaLevel_definitions",
+      "dataset_scope": "Both datasets and each station/effective reference period",
+      "evidence_required": "Formal definitions, units, benchmark/reference elevation, validity/survey epoch, relation between fields and measured values, conversion equation if any, and meaning of zero/default-looking values.",
+      "authoritative_source_expected": "CWC/NWIC exact-resource data dictionary and station-specific gauge benchmark/reference documentation from the responsible station or survey authority.",
+      "tracker_question_numbers": [16, 17, 18],
+      "validation_procedure": "Link definitions and benchmarks to stable station IDs and effective periods. Confirm units, equations, reference realization and zero-value semantics; do not infer that either field is a datum or elevation from its name.",
+      "reviewer_role": "Project hydrometry/geodetic metadata reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "Both fields have explicit provider-supported meanings, units, station/time scope and reference evidence; any calculation using them has an authoritative, reviewed equation and validity period.",
+      "unresolved_or_blocked_condition": "Unexplained definitions, units, zero values, benchmark, validity or relation to measurement keep this field UNRESOLVED and block any use of these fields for level conversion.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "vertical_datum_compatibility",
+      "dataset_scope": "Each station and reference period; any proposed cross-station comparison",
+      "evidence_required": "Gauge-specific vertical datum/reference, benchmark and survey epoch, validity period, and authoritative transformation or compatibility evidence for the water-level and reference fields.",
+      "authoritative_source_expected": "CWC/NWIC station records and responsible survey/geodetic authority documentation for the applicable benchmark and datum.",
+      "tracker_question_numbers": [16, 17],
+      "validation_procedure": "Trace each datum statement to a station ID and period. Check whether a transformation is explicitly documented and applicable; do not derive conversions from field-name similarity or numeric consistency.",
+      "reviewer_role": "Project vertical-reference/geodetic reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "Each datum used is explicitly identified and linked to station/time; cross-station comparison is accepted only where compatibility or a valid transformation is documented and independently reviewed.",
+      "unresolved_or_blocked_condition": "Unknown or incompatible datum/reference, absent survey validity, or unsupported transformation keeps this field UNRESOLVED and blocks vertical normalization or cross-station level comparison.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk", "RL_of_zeroGauge_and_MeanSeaLevel_definitions"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "observation_quality_flags_and_status",
+      "dataset_scope": "Both datasets and all observation/status categories",
+      "evidence_required": "QC/status dictionary, validation and revision status rules, suspect/rejected meanings, sentinel definitions, or authoritative confirmation that no observation-level flag exists plus an approved policy that preserves unknown quality.",
+      "authoritative_source_expected": "CWC/NWIC exact-resource data dictionary, QC specification, revision metadata or responsible data custodian.",
+      "tracker_question_numbers": [15, 19, 20],
+      "validation_procedure": "Inventory documented flags and sentinels against the exact CSV fields. If the provider confirms no flag is supplied, independently verify scope and define a policy that does not label records as valid merely because no flag exists.",
+      "reviewer_role": "Project hydrological data-quality reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "Flag/status semantics and treatment are documented, or absence is explicitly confirmed and a conservative unresolved/suspect mapping policy is reviewed. No source value is silently discarded.",
+      "unresolved_or_blocked_condition": "Unknown QC meanings, sentinel handling, or absence of a defensible policy keeps this field UNRESOLVED.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "water_level_quantity_unit_sign_and_negative_values", "repeated_station_timestamp_and_revision_policy"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "repeated_station_timestamp_and_revision_policy",
+      "dataset_scope": "Both datasets, all repeated station/timestamp groups, exact cited rows",
+      "evidence_required": "Provider classification of repeats, revision/correction identifiers and history, retransmission/parallel-reading rules, authoritative version selection policy, and traceability from each source row to provider records.",
+      "authoritative_source_expected": "CWC/NWIC source-system revision/audit records and written duplicate/revision policy from the responsible data custodian.",
+      "tracker_question_numbers": [2, 20],
+      "validation_procedure": "Reconcile the policy and any revision identifiers against the audit duplicate counts and cited source lines. Verify that every resolution is traceable; do not deduplicate or choose a preferred reading during this plan.",
+      "reviewer_role": "Project data-lineage and hydrological data-quality reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "The meaning of repeated keys and a reproducible, source-traceable resolution/retention policy are documented, including the differing-value examples; no unsupported selection is made.",
+      "unresolved_or_blocked_condition": "Missing revision history, ambiguous duplicate semantics, or no traceable rule keeps this field UNRESOLVED and blocks deduplication and normalized series generation.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk", "Data_Acquisition_Time_semantics_timezone_and_clock_rules", "observation_quality_flags_and_status"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "station_operation_sampling_and_missingness",
+      "dataset_scope": "Every station and effective operating period in both datasets",
+      "evidence_required": "Commissioning/retirement/relocation periods; expected sampling schedules; station-specific outage/coverage records; telemetry/publication delay; and definition of absent timestamps and missing observations.",
+      "authoritative_source_expected": "CWC/NWIC station operations and telemetry/coverage records, or responsible station custodian's versioned schedule/outage documentation.",
+      "tracker_question_numbers": [3, 4, 6, 12, 13],
+      "validation_procedure": "Compare station-period source coverage and expected cadence to the already recorded audit intervals and gaps. Separate observed absence from confirmed station inactivity or no measurement. Do not interpolate or create observations.",
+      "reviewer_role": "Project hydrological time-series coverage reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "Station periods, expected cadence and missing/outage semantics are explicit at the required station/time granularity; reported gaps can be described without treating absence as a non-event.",
+      "unresolved_or_blocked_condition": "Unknown operation periods, schedules, outage semantics, or completeness keep this field UNRESOLVED and block completeness claims and gap filling.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "stable_physical_gauge_id_and_station_crosswalk", "Data_Acquisition_Time_semantics_timezone_and_clock_rules"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "Is_DischargeDataAvailable_semantics",
+      "dataset_scope": "Both datasets and exact field scope/validity period",
+      "evidence_required": "Formal definition, allowed values, whether station-level or time-varying, validity/effective period, and whether it is unrelated to water-level observation validity or QC.",
+      "authoritative_source_expected": "CWC/NWIC exact-resource data dictionary or responsible data custodian.",
+      "tracker_question_numbers": [21],
+      "validation_procedure": "Compare definition and allowed values to the source column and scope. Check whether any station/time interpretation is explicitly supported; do not treat it as an observation quality flag.",
+      "reviewer_role": "Project source-schema and data-quality reviewer.",
+      "acceptance_criteria": "The field's meaning, value domain, scope and relationship (or non-relationship) to water-level quality are explicitly documented and reviewed.",
+      "unresolved_or_blocked_condition": "Unknown meaning, allowed values, scope, or QC relationship keeps this field UNRESOLVED; do not use it to accept/reject water-level observations.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "observation_quality_flags_and_status"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "license_attribution_and_permitted_reuse",
+      "dataset_scope": "Each exact resource/version and intended use",
+      "evidence_required": "Exact license instrument/version or written permission; required attribution; and explicit conditions for retention, processing, derivative creation, academic research, aggregate/station-level publication, redistribution of raw/derived data, commercial use, access, embargo and additional approval.",
+      "authoritative_source_expected": "Official CWC/NWIC resource license/terms and the rights-holding authority; written permission from an authorized rights representative where no applicable license is published.",
+      "tracker_question_numbers": [22, 23, 24],
+      "validation_procedure": "Verify that terms apply to the exact resource/version and intended project uses. Record attribution text and restrictions. Obtain institutional legal/compliance review where terms or redistribution scope are ambiguous; do not infer permission from public access or an 'open' label.",
+      "reviewer_role": "Authorized institutional research-compliance or legal reviewer, with project data steward documenting scope.",
+      "acceptance_criteria": "An authoritative, applicable license or permission covers each intended action and derivative; attribution and restrictions are documented; ambiguous rights or redistribution terms are resolved before those actions.",
+      "unresolved_or_blocked_condition": "No applicable terms, unclear rights holder, or unresolved restrictions for intended processing/publication/redistribution keep this field UNRESOLVED and block the affected reuse.",
+      "dependencies": ["source_resource_identity_and_export_completeness"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    },
+    {
+      "field": "source_water_level_unit_header_declaration",
+      "dataset_scope": "Both exact historical resources",
+      "evidence_required": "Provider confirmation or exact-resource authoritative data dictionary for the declared unit of River Water Level Telemetry Hourly (meter), including any station/time-specific unit changes and equivalence to the measured quantity.",
+      "authoritative_source_expected": "CWC/NWIC exact-resource data dictionary or written confirmation from the responsible measurement/data custodian.",
+      "tracker_question_numbers": [1, 2, 14],
+      "validation_procedure": "Tie unit evidence to the exact resource/version and compare it with the CSV header without treating the header/catalog label as sufficient. Check for documented exceptions by station or period.",
+      "reviewer_role": "Project hydrometry/data-semantics reviewer independent of the evidence preparer.",
+      "acceptance_criteria": "The exact historical resource's unit declaration and scope are authoritative and independently confirmed, and any exceptions are documented. This field's acceptance does not by itself resolve quantity, sign, datum, or QC semantics.",
+      "unresolved_or_blocked_condition": "Header-only or unrelated catalog evidence, missing resource linkage, ambiguity, or unreviewed exceptions keep this field UNRESOLVED.",
+      "dependencies": ["source_resource_identity_and_export_completeness", "water_level_quantity_unit_sign_and_negative_values"],
+      "evidence_state": {
+        "evidence_requested": "PLANNED_NOT_SENT",
+        "evidence_received": "NOT_RECORDED",
+        "evidence_independently_checked": "NOT_CHECKED",
+        "field_accepted": false
+      }
+    }
+  ],
+  "prioritized_sequence": [
+    {
+      "priority": 1,
+      "action": "Project team verifies the proposed recipient and appropriate CWC/NWIC office, reviews the existing draft, and only if approved manually sends a request for exact resource/version IDs, export completeness/integrity, data dictionary, station registry, time/measurement/QC specifications, station schedules, duplicate/revision rules, and reuse terms.",
+      "question_numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+      "dependencies": [],
+      "not_done_by_this_plan": "No contact verification, dispatch, or external communication is performed by this plan."
+    },
+    {
+      "priority": 2,
+      "action": "On receipt, preserve the original provider materials, record receipt and exact source in the tracker, then independently verify issuer, version, scope, dates, and applicability to both local CSVs before making any readiness-gate change.",
+      "question_numbers": [1, 2, 3, 4, 22, 23, 24],
+      "dependencies": ["priority 1; provider materials actually received"],
+      "not_done_by_this_plan": "No evidence is received, independently checked, or accepted."
+    },
+    {
+      "priority": 3,
+      "action": "Resolve station identity and effective-dated station crosswalk, then link coordinate/CRS, administrative, basin/reach, and operating-period metadata to those stable IDs.",
+      "question_numbers": [5, 6, 7, 8, 9, 12, 13],
+      "dependencies": ["source_resource_identity_and_export_completeness accepted", "authoritative station registry/crosswalk received and reviewed"],
+      "not_done_by_this_plan": "No station names are merged and no supplied coordinates or basin labels are treated as verified."
+    },
+    {
+      "priority": 4,
+      "action": "Resolve timestamp event/timezone/clock rules, measurement units and semantics, gauge-zero and vertical datum, QC/sentinels, duplicates/revisions, cadence/missingness, and Is_DischargeDataAvailable; review all cited conflicts and extremes against authoritative rules.",
+      "question_numbers": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+      "dependencies": ["source_resource_identity_and_export_completeness accepted", "stable station crosswalk accepted where station-specific semantics apply"],
+      "not_done_by_this_plan": "No records are transformed, deduplicated, discarded, interpolated, or assigned unsupported quality labels."
+    },
+    {
+      "priority": 5,
+      "action": "Complete independent field-by-field review and record evidence references, scope, decision, reviewer role, review date and limitations in the readiness gate. Reconcile dependencies; leave the dataset BLOCKED unless every mandatory prerequisite is accepted under the existing gate policy.",
+      "question_numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+      "dependencies": ["all field-specific authoritative evidence received and independently reviewed"],
+      "not_done_by_this_plan": "No gate status is changed and no normalization/readiness authorization is issued."
+    }
+  ],
+  "question_mapping_review": {
+    "tracker_question_numbers_expected": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+    "mapping_rule": "A question may support multiple readiness fields; each readiness field must map to at least one tracker question. Unmapped or newly added tracker questions require review of this plan before use.",
+    "unmapped_tracker_questions": [],
+    "unmapped_readiness_fields": []
+  },
+  "readiness_snapshot": {
+    "normalization_gate_decision": "BLOCKED",
+    "normalization_may_proceed": false,
+    "godavari_required_fields": 15,
+    "godavari_unresolved_fields": 15,
+    "krishna_required_fields": 15,
+    "krishna_unresolved_fields": 15,
+    "evidence_received_or_accepted_by_this_plan": false
+  }
+}

@@ -1,0 +1,1915 @@
+{
+  "report_version": "1.0",
+  "profiled_at_utc": "2026-10-28T12:15:58+00:00",
+  "script": "D:\\MajorProject\\disaster-management-system\\ml\\preprocessing\\profile_hydrological_forecasting_feasibility.py",
+  "commands_used": [
+    "python -m ml.preprocessing.profile_hydrological_forecasting_feasibility"
+  ],
+  "overall_status": "NOT_READY",
+  "interpretation_boundary": "Read-only dataset profiling and prediction-feasibility review. This is not a trained or validated water-level forecast and is not a validated flood prediction.",
+  "profiling_implementation": {
+    "csv_rows": "streamed row by row",
+    "duplicate_detection": "temporary SQLite tables on disk; no unbounded per-row Python sets",
+    "raw_inputs_modified": false,
+    "existing_processed_outputs_modified": false
+  },
+  "datasets": [
+    {
+      "dataset_id": "godavari",
+      "path": "D:\\MajorProject\\disaster-management-system\\ml\\datasets\\hydrological\\raw\\godavari_water_level_2021_2025.csv",
+      "file_size_bytes": 185715692,
+      "status": "PROFILED",
+      "schema": {
+        "columns": [
+          {
+            "name": "SlNo",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "integer-like numeric text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 1055737,
+            "parse_failures": 0
+          },
+          {
+            "name": "Station",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Agency",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "State LGD Code",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "integer-like numeric text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 1055737,
+            "parse_failures": 0
+          },
+          {
+            "name": "State",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "District LGD Code",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "integer-like numeric text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 1055737,
+            "parse_failures": 0
+          },
+          {
+            "name": "District",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Tehsil",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 990648,
+            "missing_values": 65089,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Block",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 205770,
+            "missing_values": 849967,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Village",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 205770,
+            "missing_values": 849967,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "River",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Basin",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Tributary",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 741804,
+            "missing_values": 313933,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Subtributary",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 506657,
+            "missing_values": 549080,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "SubSubtributary",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 191060,
+            "missing_values": 864677,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Local River",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Latitude",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 1055737,
+            "parse_failures": 0
+          },
+          {
+            "name": "Longitude",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 1055737,
+            "parse_failures": 0
+          },
+          {
+            "name": "Is_DischargeDataAvailable",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "RL_of_zeroGauge",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 1055737,
+            "parse_failures": 0
+          },
+          {
+            "name": "MeanSeaLevel",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 1055737,
+            "parse_failures": 0
+          },
+          {
+            "name": "Data Acquisition Time",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "timestamp text (timezone representation reported separately)",
+            "non_missing_values": 1055737,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "River Water Level Telemetry Hourly (meter)",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 1044843,
+            "missing_values": 10894,
+            "numeric_looking_values": 1044843,
+            "parse_failures": 0
+          }
+        ],
+        "malformed_rows": 0,
+        "missing_required_columns": []
+      },
+      "row_count": 1055737,
+      "station_coverage": {
+        "audit_identity_count": 66,
+        "identity_definition": "case-folded supplied station name + supplied State LGD Code + supplied District LGD Code; audit grouping only, not verified gauge IDs",
+        "missing_identity_rows": 0,
+        "stations": [
+          {
+            "station_name_as_supplied": "Ambabal (Narangi)",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "374",
+            "record_count": 24661,
+            "first_observed_timestamp": "2021-01-10T00:40:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Ashti",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "475",
+            "record_count": 9150,
+            "first_observed_timestamp": "2021-01-01T09:00:00",
+            "last_observed_timestamp": "2023-04-29T00:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Bakhari",
+            "state_code_as_supplied": "23",
+            "district_code_as_supplied": "428",
+            "record_count": 10911,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2023-07-22T06:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Betmogra",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "485",
+            "record_count": 20620,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2024-03-10T07:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Bhadrachalam",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "690",
+            "record_count": 31599,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Bhainsa(State Govt. Site)",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "680",
+            "record_count": 27265,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2024-12-10T14:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Bhatpalli",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "699",
+            "record_count": 18883,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-08-12T08:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Cherribeda (Bardha)",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "637",
+            "record_count": 29688,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Chindnar",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "376",
+            "record_count": 22847,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-05-17T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Degloor",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "485",
+            "record_count": 5342,
+            "first_observed_timestamp": "2021-01-01T01:00:00",
+            "last_observed_timestamp": "2022-11-27T04:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Dhalegaon",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "489",
+            "record_count": 28043,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-08-12T14:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Dowlaiswaram (State Govt Site)",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "505",
+            "record_count": 25280,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2024-10-24T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Eturunagaram",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "720",
+            "record_count": 7460,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2022-11-28T18:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "G.R.BRIDGE",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "489",
+            "record_count": 9321,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2024-04-12T05:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Gangakhed W/L Station",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "489",
+            "record_count": 3393,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2021-08-23T02:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Ghugus",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "473",
+            "record_count": 26794,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-22T08:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Gosikhurd Dam",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "471",
+            "record_count": 9243,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2023-08-29T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Hivra",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "498",
+            "record_count": 11008,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-04-10T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Jagdalpur",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "374",
+            "record_count": 20281,
+            "first_observed_timestamp": "2021-01-01T04:00:00",
+            "last_observed_timestamp": "2024-07-30T06:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Jaikwadi Dam",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "469",
+            "record_count": 11581,
+            "first_observed_timestamp": "2021-01-15T11:00:00",
+            "last_observed_timestamp": "2024-12-15T01:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Kaleswaram",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "687",
+            "record_count": 25229,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-08-12T13:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Kanhargaon",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "477",
+            "record_count": 22232,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T00:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Kiwaibalenga",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "374",
+            "record_count": 3429,
+            "first_observed_timestamp": "2021-01-19T12:00:00",
+            "last_observed_timestamp": "2022-08-15T12:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Koida",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "748",
+            "record_count": 22457,
+            "first_observed_timestamp": "2021-01-11T06:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Konta",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "642",
+            "record_count": 18180,
+            "first_observed_timestamp": "2021-01-01T01:00:00",
+            "last_observed_timestamp": "2025-08-24T09:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Kopergaon",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "466",
+            "record_count": 3073,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2023-06-09T12:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Kosagumda (Bhaskel)",
+            "state_code_as_supplied": "21",
+            "district_code_as_supplied": "366",
+            "record_count": 890,
+            "first_observed_timestamp": "2021-01-29T17:30:00",
+            "last_observed_timestamp": "2024-07-25T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Kumhari",
+            "state_code_as_supplied": "23",
+            "district_code_as_supplied": "392",
+            "record_count": 20524,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Lasur",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "469",
+            "record_count": 6841,
+            "first_observed_timestamp": "2021-01-14T13:00:00",
+            "last_observed_timestamp": "2023-05-19T07:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Magardharra",
+            "state_code_as_supplied": "23",
+            "district_code_as_supplied": "392",
+            "record_count": 8449,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2023-07-23T10:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Mancherial",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "501",
+            "record_count": 14285,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2022-07-22T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Mangrul",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "500",
+            "record_count": 18708,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-02-28T08:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Murthahandi (Journala)",
+            "state_code_as_supplied": "21",
+            "district_code_as_supplied": "363",
+            "record_count": 13106,
+            "first_observed_timestamp": "2021-01-06T01:00:00",
+            "last_observed_timestamp": "2024-02-21T00:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Nanded",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "485",
+            "record_count": 30658,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-06-22T12:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Nandgaon",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "498",
+            "record_count": 27098,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T00:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Nasik",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "487",
+            "record_count": 7582,
+            "first_observed_timestamp": "2024-07-25T14:30:00",
+            "last_observed_timestamp": "2025-12-23T06:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Nizamsagar Reservoir",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "685",
+            "record_count": 11581,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2025-11-15T16:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "NMD-Weir",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "487",
+            "record_count": 4873,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2024-02-24T14:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Nowrangpur",
+            "state_code_as_supplied": "21",
+            "district_code_as_supplied": "366",
+            "record_count": 16046,
+            "first_observed_timestamp": "2021-01-01T09:00:00",
+            "last_observed_timestamp": "2024-01-02T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "P.G. Bridge",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "500",
+            "record_count": 12521,
+            "first_observed_timestamp": "2021-01-01T19:00:00",
+            "last_observed_timestamp": "2023-05-16T06:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Pachegaon",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "466",
+            "record_count": 32594,
+            "first_observed_timestamp": "2021-01-01T01:00:00",
+            "last_observed_timestamp": "2025-12-23T06:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Pathagudem",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "636",
+            "record_count": 220,
+            "first_observed_timestamp": "2021-08-28T11:00:00",
+            "last_observed_timestamp": "2021-12-21T12:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Pauni",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "471",
+            "record_count": 18710,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2023-11-29T06:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Perur",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "720",
+            "record_count": 9408,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2022-06-21T03:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Polavaram site",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "748",
+            "record_count": 23749,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2025-12-29T19:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Potteru (Potteruvagu)",
+            "state_code_as_supplied": "21",
+            "district_code_as_supplied": "364",
+            "record_count": 23417,
+            "first_observed_timestamp": "2021-01-01T11:00:00",
+            "last_observed_timestamp": "2025-08-22T04:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Purna",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "489",
+            "record_count": 23825,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2024-08-04T07:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Rajegaon",
+            "state_code_as_supplied": "23",
+            "district_code_as_supplied": "392",
+            "record_count": 21025,
+            "first_observed_timestamp": "2021-01-02T00:00:00",
+            "last_observed_timestamp": "2023-11-22T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Rajoli",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "473",
+            "record_count": 25795,
+            "first_observed_timestamp": "2021-01-01T17:00:00",
+            "last_observed_timestamp": "2025-01-04T02:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Ramakona",
+            "state_code_as_supplied": "23",
+            "district_code_as_supplied": "436",
+            "record_count": 22702,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-01-02T03:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sakmur",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "473",
+            "record_count": 16979,
+            "first_observed_timestamp": "2021-06-29T08:00:00",
+            "last_observed_timestamp": "2025-05-15T16:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Salebardi",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "471",
+            "record_count": 20114,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2023-09-09T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sangam (Murredu)",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "690",
+            "record_count": 4056,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2022-09-08T08:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Singur Reservoir",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "691",
+            "record_count": 6327,
+            "first_observed_timestamp": "2021-01-01T07:00:00",
+            "last_observed_timestamp": "2023-08-27T20:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sirpur (Town)",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "699",
+            "record_count": 13749,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2023-12-29T06:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Somanpally(Seasonal)",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "508",
+            "record_count": 1360,
+            "first_observed_timestamp": "2021-01-01T08:00:00",
+            "last_observed_timestamp": "2022-09-02T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sonarpal (Narangi Markandi)",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "374",
+            "record_count": 3405,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2022-06-16T03:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sripada Yellampalli Project",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "508",
+            "record_count": 16903,
+            "first_observed_timestamp": "2021-01-01T07:30:00",
+            "last_observed_timestamp": "2025-12-29T14:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sriram Sagar Reservoir",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "516",
+            "record_count": 17812,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2025-12-29T12:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sukma",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "642",
+            "record_count": 3620,
+            "first_observed_timestamp": "2021-01-05T08:00:00",
+            "last_observed_timestamp": "2024-10-25T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Tekra",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "475",
+            "record_count": 23540,
+            "first_observed_timestamp": "2021-01-02T09:00:00",
+            "last_observed_timestamp": "2025-12-22T15:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Tumnar (Dantewara)",
+            "state_code_as_supplied": "22",
+            "district_code_as_supplied": "376",
+            "record_count": 30636,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Wairagarh",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "475",
+            "record_count": 20865,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-22T02:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Waraseoni",
+            "state_code_as_supplied": "23",
+            "district_code_as_supplied": "392",
+            "record_count": 8625,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2023-07-24T08:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Yelli",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "485",
+            "record_count": 21227,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-05-02T14:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Zari",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "489",
+            "record_count": 3942,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2022-10-24T09:00:00",
+            "source_order_regressions": 0
+          }
+        ]
+      },
+      "time_coverage": {
+        "minimum_parsed_source_time": "2021-01-01T00:00:00",
+        "maximum_parsed_source_time": "2025-12-29T19:00:00",
+        "timezone_representation": "timezone-naive only",
+        "timezone_inferred": false,
+        "timestamp_semantics": "UNRESOLVED; Data Acquisition Time meaning not established",
+        "missing_timestamps": 0,
+        "nonempty_parse_failures": 0,
+        "parseable_timestamps": 1055737,
+        "source_order_regressions_within_audit_identity": 0
+      },
+      "sampling_intervals": {
+        "status": "MEASURED_FROM_PARSED_SOURCE_TIMESTAMPS",
+        "unique_station_timestamps": 1055615,
+        "consecutive_intervals": 1055549,
+        "exactly_60_minutes": 848676,
+        "shorter_than_60_minutes": 128070,
+        "longer_than_60_minutes": 78803,
+        "gaps_at_least_24_hours": 3771,
+        "common_whole_minute_intervals": [
+          {
+            "minutes": 60,
+            "count": 848676
+          },
+          {
+            "minutes": 30,
+            "count": 124793
+          },
+          {
+            "minutes": 120,
+            "count": 37655
+          },
+          {
+            "minutes": 180,
+            "count": 11287
+          },
+          {
+            "minutes": 240,
+            "count": 5269
+          },
+          {
+            "minutes": 300,
+            "count": 3314
+          },
+          {
+            "minutes": 360,
+            "count": 2183
+          },
+          {
+            "minutes": 420,
+            "count": 1505
+          },
+          {
+            "minutes": 480,
+            "count": 1279
+          },
+          {
+            "minutes": 90,
+            "count": 1080
+          },
+          {
+            "minutes": 540,
+            "count": 998
+          },
+          {
+            "minutes": 720,
+            "count": 885
+          }
+        ],
+        "largest_gaps": [
+          {
+            "station_as_supplied": "Kosagumda (Bhaskel)",
+            "from": "2021-07-20T04:00:00",
+            "to": "2024-07-22T23:00:00",
+            "gap_hours": 26371.0
+          },
+          {
+            "station_as_supplied": "Wairagarh",
+            "from": "2024-07-18T09:00:00",
+            "to": "2025-12-17T21:00:00",
+            "gap_hours": 12420.0
+          },
+          {
+            "station_as_supplied": "Kumhari",
+            "from": "2023-04-13T04:00:00",
+            "to": "2024-08-20T07:00:00",
+            "gap_hours": 11883.0
+          },
+          {
+            "station_as_supplied": "Nizamsagar Reservoir",
+            "from": "2024-08-09T13:30:00",
+            "to": "2025-11-15T10:30:00",
+            "gap_hours": 11109.0
+          },
+          {
+            "station_as_supplied": "Koida",
+            "from": "2022-08-10T04:00:00",
+            "to": "2023-10-12T04:00:00",
+            "gap_hours": 10272.0
+          },
+          {
+            "station_as_supplied": "Bhatpalli",
+            "from": "2023-07-17T14:00:00",
+            "to": "2024-08-12T05:00:00",
+            "gap_hours": 9399.0
+          },
+          {
+            "station_as_supplied": "NMD-Weir",
+            "from": "2023-01-16T07:00:00",
+            "to": "2024-01-08T13:30:00",
+            "gap_hours": 8574.5
+          },
+          {
+            "station_as_supplied": "Somanpally(Seasonal)",
+            "from": "2021-09-22T15:00:00",
+            "to": "2022-09-02T04:00:00",
+            "gap_hours": 8269.0
+          },
+          {
+            "station_as_supplied": "Kanhargaon",
+            "from": "2021-05-10T01:18:00",
+            "to": "2022-03-30T10:00:00",
+            "gap_hours": 7784.7
+          },
+          {
+            "station_as_supplied": "Sangam (Murredu)",
+            "from": "2021-09-09T19:00:00",
+            "to": "2022-07-05T00:00:00",
+            "gap_hours": 7157.0
+          }
+        ],
+        "missing_station_identity_rows_excluded_from_intervals": 0,
+        "interval_basis": "Elapsed time between unique parsed source timestamps. No timezone was added to naive timestamps; source event semantics remain unknown."
+      },
+      "missing_values": {
+        "Block": 849967,
+        "River Water Level Telemetry Hourly (meter)": 10894,
+        "SubSubtributary": 864677,
+        "Subtributary": 549080,
+        "Tehsil": 65089,
+        "Tributary": 313933,
+        "Village": 849967
+      },
+      "water_level": {
+        "source_column": "River Water Level Telemetry Hourly (meter)",
+        "declared_unit_in_header": "meter",
+        "unit_verified_for_exact_historical_resource": false,
+        "valid_numeric_count": 1044843,
+        "missing_count": 10894,
+        "invalid_numeric_values": 0,
+        "nonfinite_values": 0,
+        "negative_values_flagged_for_review": 5630,
+        "minimum": -673.0,
+        "minimum_record": {
+          "source_row_number": 942909,
+          "station": "Sriram Sagar Reservoir",
+          "timestamp_as_supplied": "28-07-2024 08:00",
+          "water_level_as_supplied": "-673"
+        },
+        "maximum": 2583.0,
+        "maximum_record": {
+          "source_row_number": 883229,
+          "station": "Sangam (Murredu)",
+          "timestamp_as_supplied": "31-07-2022 17:00",
+          "water_level_as_supplied": "2583"
+        },
+        "largest_absolute_value_examples": [
+          {
+            "source_row_number": 883229,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "31-07-2022 17:00",
+            "water_level_as_supplied": "2583"
+          },
+          {
+            "source_row_number": 883159,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "28-07-2022 18:00",
+            "water_level_as_supplied": "2568"
+          },
+          {
+            "source_row_number": 883287,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "03-08-2022 06:00",
+            "water_level_as_supplied": "2563"
+          },
+          {
+            "source_row_number": 883248,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "01-08-2022 15:00",
+            "water_level_as_supplied": "2563"
+          },
+          {
+            "source_row_number": 882750,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "05-07-2022 14:00",
+            "water_level_as_supplied": "2557"
+          },
+          {
+            "source_row_number": 883168,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "29-07-2022 03:00",
+            "water_level_as_supplied": "2549"
+          },
+          {
+            "source_row_number": 882887,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "16-07-2022 07:00",
+            "water_level_as_supplied": "2548"
+          },
+          {
+            "source_row_number": 882908,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "17-07-2022 06:00",
+            "water_level_as_supplied": "2544"
+          },
+          {
+            "source_row_number": 883288,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "03-08-2022 08:00",
+            "water_level_as_supplied": "2514"
+          },
+          {
+            "source_row_number": 882909,
+            "station": "Sangam (Murredu)",
+            "timestamp_as_supplied": "17-07-2022 07:00",
+            "water_level_as_supplied": "2511"
+          }
+        ],
+        "interpretation": "Continuous target semantics, unit, sign, vertical datum, QC, and negative/extreme value meaning remain unresolved. Values were not removed or corrected."
+      },
+      "duplicates": {
+        "exact_duplicate_rows": 0,
+        "repeated_station_timestamp_rows_beyond_first": 122,
+        "repeated_station_timestamp_keys": 122,
+        "repeated_station_timestamp_rows_with_level_different_from_first": 18,
+        "conflicting_station_timestamp_keys": 18,
+        "duplicates_resolved_or_removed": false
+      },
+      "potential_leakage_risks": [
+        "Do not random-split this time series: nearby observations and overlapping target windows can leak temporal information across partitions.",
+        "Build future targets and lag/rolling predictors within an accepted stable gauge identity, after sorting by verified observation time; never use future or post-issue data in predictors.",
+        "Do not use source row numbers, SlNo, export order, fetched_at, or fields generated after the prediction issue time as predictors without a documented availability-time review.",
+        "Repeated station/timestamp records and revisions can leak or duplicate samples until provider resolution rules are reviewed.",
+        "Unknown station identity, time semantics, timezone, publication delay, and data revision timing prevent establishing what information would actually have been available at forecast issue time.",
+        "If the same gauges appear in train and test, results measure temporal generalization on known stations, not transfer to unseen stations; report a separate station-held-out evaluation after authoritative crosswalk review."
+      ]
+    },
+    {
+      "dataset_id": "krishna",
+      "path": "D:\\MajorProject\\disaster-management-system\\ml\\datasets\\hydrological\\raw\\krishna_water_level_2021_2025.csv",
+      "file_size_bytes": 74000976,
+      "status": "PROFILED",
+      "schema": {
+        "columns": [
+          {
+            "name": "SlNo",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "integer-like numeric text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 451445,
+            "parse_failures": 0
+          },
+          {
+            "name": "Station",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Agency",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "State LGD Code",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "integer-like numeric text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 451445,
+            "parse_failures": 0
+          },
+          {
+            "name": "State",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "District LGD Code",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "integer-like numeric text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 451445,
+            "parse_failures": 0
+          },
+          {
+            "name": "District",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Tehsil",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Block",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "unknown (all values missing)",
+            "non_missing_values": 0,
+            "missing_values": 451445,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Village",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "unknown (all values missing)",
+            "non_missing_values": 0,
+            "missing_values": 451445,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "River",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 442852,
+            "missing_values": 8593,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Basin",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Tributary",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 333557,
+            "missing_values": 117888,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Subtributary",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 90070,
+            "missing_values": 361375,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "SubSubtributary",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "unknown (all values missing)",
+            "non_missing_values": 0,
+            "missing_values": 451445,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Local River",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 442852,
+            "missing_values": 8593,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "Latitude",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 451445,
+            "parse_failures": 0
+          },
+          {
+            "name": "Longitude",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 451445,
+            "parse_failures": 0
+          },
+          {
+            "name": "Is_DischargeDataAvailable",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "RL_of_zeroGauge",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 451445,
+            "parse_failures": 0
+          },
+          {
+            "name": "MeanSeaLevel",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 451445,
+            "parse_failures": 0
+          },
+          {
+            "name": "Data Acquisition Time",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "timestamp text (timezone representation reported separately)",
+            "non_missing_values": 451445,
+            "missing_values": 0,
+            "numeric_looking_values": 0,
+            "parse_failures": 0
+          },
+          {
+            "name": "River Water Level Telemetry Hourly (meter)",
+            "csv_storage_type": "text",
+            "inferred_lexical_kind": "numeric text",
+            "non_missing_values": 450834,
+            "missing_values": 611,
+            "numeric_looking_values": 450834,
+            "parse_failures": 0
+          }
+        ],
+        "malformed_rows": 0,
+        "missing_required_columns": []
+      },
+      "row_count": 451445,
+      "station_coverage": {
+        "audit_identity_count": 30,
+        "identity_definition": "case-folded supplied station name + supplied State LGD Code + supplied District LGD Code; audit grouping only, not verified gauge IDs",
+        "missing_identity_rows": 0,
+        "stations": [
+          {
+            "station_name_as_supplied": "Almatti Reservoir",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "524",
+            "record_count": 12470,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2025-12-30T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Bawapuram",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "511",
+            "record_count": 32380,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Bhadra Reservoir",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "532",
+            "record_count": 21626,
+            "first_observed_timestamp": "2021-01-01T10:30:00",
+            "last_observed_timestamp": "2025-12-30T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Cholachagudda",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "524",
+            "record_count": 18311,
+            "first_observed_timestamp": "2021-03-12T03:00:00",
+            "last_observed_timestamp": "2025-05-10T14:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Deongaon Bridge",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "538",
+            "record_count": 193,
+            "first_observed_timestamp": "2021-02-12T02:00:00",
+            "last_observed_timestamp": "2021-08-14T16:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Deosugur",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "546",
+            "record_count": 4322,
+            "first_observed_timestamp": "2021-01-01T05:30:00",
+            "last_observed_timestamp": "2021-07-21T18:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Halia Vijaywada",
+            "state_code_as_supplied": "33",
+            "district_code_as_supplied": "568",
+            "record_count": 8593,
+            "first_observed_timestamp": "2021-01-01T07:00:00",
+            "last_observed_timestamp": "2024-04-09T16:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Haralahalli",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "540",
+            "record_count": 2705,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2022-11-15T11:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Huvinhedigi",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "546",
+            "record_count": 789,
+            "first_observed_timestamp": "2021-01-01T09:00:00",
+            "last_observed_timestamp": "2022-01-07T17:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Keesara",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "510",
+            "record_count": 4553,
+            "first_observed_timestamp": "2021-01-02T12:00:00",
+            "last_observed_timestamp": "2025-09-09T09:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Koyna",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "494",
+            "record_count": 6187,
+            "first_observed_timestamp": "2022-05-01T10:30:00",
+            "last_observed_timestamp": "2025-12-29T14:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "KURUNDWAD",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "480",
+            "record_count": 22444,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2024-08-29T21:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Madhira",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "509",
+            "record_count": 24542,
+            "first_observed_timestamp": "2021-01-01T13:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "MAHISHI",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "547",
+            "record_count": 17912,
+            "first_observed_timestamp": "2021-03-23T10:30:00",
+            "last_observed_timestamp": "2025-12-30T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Mantralayam",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "511",
+            "record_count": 29470,
+            "first_observed_timestamp": "2021-01-01T04:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Marol",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "540",
+            "record_count": 23135,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-06-17T13:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Nagarjuna Sagar Dam",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "514",
+            "record_count": 3447,
+            "first_observed_timestamp": "2021-01-01T10:30:00",
+            "last_observed_timestamp": "2024-10-10T04:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Narayanapur Reservoir",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "524",
+            "record_count": 5976,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2024-06-07T22:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "P.D. Jurala",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "512",
+            "record_count": 20536,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2025-12-30T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Paleru Bridge",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "510",
+            "record_count": 24415,
+            "first_observed_timestamp": "2021-01-01T01:00:00",
+            "last_observed_timestamp": "2025-04-15T19:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Polampalli",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "510",
+            "record_count": 29874,
+            "first_observed_timestamp": "2021-01-01T01:00:00",
+            "last_observed_timestamp": "2025-12-22T20:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Prakasam Barrage",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "510",
+            "record_count": 6934,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2023-10-25T13:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Sadalga (Seasonal)",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "527",
+            "record_count": 1112,
+            "first_observed_timestamp": "2021-01-01T01:00:00",
+            "last_observed_timestamp": "2022-03-09T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Shimoga",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "547",
+            "record_count": 4948,
+            "first_observed_timestamp": "2021-02-26T08:00:00",
+            "last_observed_timestamp": "2024-09-18T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Srisailam Reservoir",
+            "state_code_as_supplied": "28",
+            "district_code_as_supplied": "511",
+            "record_count": 5749,
+            "first_observed_timestamp": "2021-01-19T12:00:00",
+            "last_observed_timestamp": "2023-05-10T16:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Tungabhadra Dam",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "528",
+            "record_count": 20507,
+            "first_observed_timestamp": "2021-01-01T05:00:00",
+            "last_observed_timestamp": "2025-12-30T05:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Ujjani Reservoir",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "496",
+            "record_count": 6221,
+            "first_observed_timestamp": "2022-05-01T10:30:00",
+            "last_observed_timestamp": "2025-12-29T14:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Wadakbal",
+            "state_code_as_supplied": "27",
+            "district_code_as_supplied": "496",
+            "record_count": 32221,
+            "first_observed_timestamp": "2021-01-01T04:00:00",
+            "last_observed_timestamp": "2025-09-18T13:30:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Wadenepally",
+            "state_code_as_supplied": "36",
+            "district_code_as_supplied": "514",
+            "record_count": 26628,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-12-23T01:00:00",
+            "source_order_regressions": 0
+          },
+          {
+            "station_name_as_supplied": "Yadgir",
+            "state_code_as_supplied": "29",
+            "district_code_as_supplied": "635",
+            "record_count": 33245,
+            "first_observed_timestamp": "2021-01-01T00:00:00",
+            "last_observed_timestamp": "2025-08-08T03:00:00",
+            "source_order_regressions": 0
+          }
+        ]
+      },
+      "time_coverage": {
+        "minimum_parsed_source_time": "2021-01-01T00:00:00",
+        "maximum_parsed_source_time": "2025-12-30T05:00:00",
+        "timezone_representation": "timezone-naive only",
+        "timezone_inferred": false,
+        "timestamp_semantics": "UNRESOLVED; Data Acquisition Time meaning not established",
+        "missing_timestamps": 0,
+        "nonempty_parse_failures": 0,
+        "parseable_timestamps": 451445,
+        "source_order_regressions_within_audit_identity": 0
+      },
+      "sampling_intervals": {
+        "status": "MEASURED_FROM_PARSED_SOURCE_TIMESTAMPS",
+        "unique_station_timestamps": 451402,
+        "consecutive_intervals": 451372,
+        "exactly_60_minutes": 368289,
+        "shorter_than_60_minutes": 46143,
+        "longer_than_60_minutes": 36940,
+        "gaps_at_least_24_hours": 2078,
+        "common_whole_minute_intervals": [
+          {
+            "minutes": 60,
+            "count": 368289
+          },
+          {
+            "minutes": 30,
+            "count": 44927
+          },
+          {
+            "minutes": 120,
+            "count": 16306
+          },
+          {
+            "minutes": 180,
+            "count": 5320
+          },
+          {
+            "minutes": 240,
+            "count": 2724
+          },
+          {
+            "minutes": 300,
+            "count": 1619
+          },
+          {
+            "minutes": 360,
+            "count": 1068
+          },
+          {
+            "minutes": 420,
+            "count": 778
+          },
+          {
+            "minutes": 90,
+            "count": 678
+          },
+          {
+            "minutes": 480,
+            "count": 658
+          },
+          {
+            "minutes": 540,
+            "count": 520
+          },
+          {
+            "minutes": 600,
+            "count": 458
+          }
+        ],
+        "largest_gaps": [
+          {
+            "station_as_supplied": "Shimoga",
+            "from": "2021-11-03T08:00:00",
+            "to": "2023-12-18T06:00:00",
+            "gap_hours": 18598.0
+          },
+          {
+            "station_as_supplied": "Keesara",
+            "from": "2023-03-03T11:00:00",
+            "to": "2024-09-01T04:00:00",
+            "gap_hours": 13145.0
+          },
+          {
+            "station_as_supplied": "Koyna",
+            "from": "2022-05-02T10:30:00",
+            "to": "2023-10-10T03:30:00",
+            "gap_hours": 12617.0
+          },
+          {
+            "station_as_supplied": "Ujjani Reservoir",
+            "from": "2022-05-02T10:30:00",
+            "to": "2023-10-09T15:30:00",
+            "gap_hours": 12605.0
+          },
+          {
+            "station_as_supplied": "MAHISHI",
+            "from": "2021-09-11T21:00:00",
+            "to": "2022-12-03T00:00:00",
+            "gap_hours": 10731.0
+          },
+          {
+            "station_as_supplied": "Bhadra Reservoir",
+            "from": "2021-04-06T10:30:00",
+            "to": "2022-05-01T05:00:00",
+            "gap_hours": 9354.5
+          },
+          {
+            "station_as_supplied": "Cholachagudda",
+            "from": "2024-03-18T16:30:00",
+            "to": "2025-03-17T03:00:00",
+            "gap_hours": 8722.5
+          },
+          {
+            "station_as_supplied": "Marol",
+            "from": "2024-07-17T13:00:00",
+            "to": "2025-06-17T13:00:00",
+            "gap_hours": 8040.0
+          },
+          {
+            "station_as_supplied": "Nagarjuna Sagar Dam",
+            "from": "2023-11-16T21:00:00",
+            "to": "2024-10-10T03:30:00",
+            "gap_hours": 7878.5
+          },
+          {
+            "station_as_supplied": "Halia Vijaywada",
+            "from": "2023-05-25T15:00:00",
+            "to": "2024-04-08T20:00:00",
+            "gap_hours": 7661.0
+          }
+        ],
+        "missing_station_identity_rows_excluded_from_intervals": 0,
+        "interval_basis": "Elapsed time between unique parsed source timestamps. No timezone was added to naive timestamps; source event semantics remain unknown."
+      },
+      "missing_values": {
+        "Block": 451445,
+        "Local River": 8593,
+        "River": 8593,
+        "River Water Level Telemetry Hourly (meter)": 611,
+        "SubSubtributary": 451445,
+        "Subtributary": 361375,
+        "Tributary": 117888,
+        "Village": 451445
+      },
+      "water_level": {
+        "source_column": "River Water Level Telemetry Hourly (meter)",
+        "declared_unit_in_header": "meter",
+        "unit_verified_for_exact_historical_resource": false,
+        "valid_numeric_count": 450834,
+        "missing_count": 611,
+        "invalid_numeric_values": 0,
+        "nonfinite_values": 0,
+        "negative_values_flagged_for_review": 9311,
+        "minimum": -990.33,
+        "minimum_record": {
+          "source_row_number": 318148,
+          "station": "Prakasam Barrage",
+          "timestamp_as_supplied": "28-06-2022 20:00",
+          "water_level_as_supplied": "-990.33"
+        },
+        "maximum": 1602.237,
+        "maximum_record": {
+          "source_row_number": 49767,
+          "station": "Bhadra Reservoir",
+          "timestamp_as_supplied": "29-12-2022 02:30",
+          "water_level_as_supplied": "1602.237"
+        },
+        "largest_absolute_value_examples": [
+          {
+            "source_row_number": 49767,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "29-12-2022 02:30",
+            "water_level_as_supplied": "1602.237"
+          },
+          {
+            "source_row_number": 169694,
+            "station": "MAHISHI",
+            "timestamp_as_supplied": "19-07-2024 07:00",
+            "water_level_as_supplied": "1601.454"
+          },
+          {
+            "source_row_number": 47301,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "13-08-2022 22:00",
+            "water_level_as_supplied": "1599.6399"
+          },
+          {
+            "source_row_number": 49444,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "14-12-2022 02:00",
+            "water_level_as_supplied": "1599.6399"
+          },
+          {
+            "source_row_number": 49434,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "13-12-2022 13:00",
+            "water_level_as_supplied": "1599.631"
+          },
+          {
+            "source_row_number": 62795,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "05-02-2025 21:00",
+            "water_level_as_supplied": "1599.628"
+          },
+          {
+            "source_row_number": 47380,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "17-08-2022 23:00",
+            "water_level_as_supplied": "1599.6279"
+          },
+          {
+            "source_row_number": 46966,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "28-07-2022 22:00",
+            "water_level_as_supplied": "1599.6279"
+          },
+          {
+            "source_row_number": 62419,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "14-01-2025 20:00",
+            "water_level_as_supplied": "1598.629"
+          },
+          {
+            "source_row_number": 47173,
+            "station": "Bhadra Reservoir",
+            "timestamp_as_supplied": "07-08-2022 21:00",
+            "water_level_as_supplied": "1598.6279"
+          }
+        ],
+        "interpretation": "Continuous target semantics, unit, sign, vertical datum, QC, and negative/extreme value meaning remain unresolved. Values were not removed or corrected."
+      },
+      "duplicates": {
+        "exact_duplicate_rows": 0,
+        "repeated_station_timestamp_rows_beyond_first": 43,
+        "repeated_station_timestamp_keys": 43,
+        "repeated_station_timestamp_rows_with_level_different_from_first": 4,
+        "conflicting_station_timestamp_keys": 4,
+        "duplicates_resolved_or_removed": false
+      },
+      "potential_leakage_risks": [
+        "Do not random-split this time series: nearby observations and overlapping target windows can leak temporal information across partitions.",
+        "Build future targets and lag/rolling predictors within an accepted stable gauge identity, after sorting by verified observation time; never use future or post-issue data in predictors.",
+        "Do not use source row numbers, SlNo, export order, fetched_at, or fields generated after the prediction issue time as predictors without a documented availability-time review.",
+        "Repeated station/timestamp records and revisions can leak or duplicate samples until provider resolution rules are reviewed.",
+        "Unknown station identity, time semantics, timezone, publication delay, and data revision timing prevent establishing what information would actually have been available at forecast issue time.",
+        "If the same gauges appear in train and test, results measure temporal generalization on known stations, not transfer to unseen stations; report a separate station-held-out evaluation after authoritative crosswalk review."
+      ]
+    }
+  ],
+  "auxiliary_data_join_review": {
+    "manifest_path": "D:\\MajorProject\\disaster-management-system\\ml\\datasets\\hydrological\\processed\\hydrology_observations.manifest.json",
+    "status": "PRESENT_BUT_NOT_A_JOIN_AUTHORIZATION",
+    "row_count": 17957,
+    "observation_date_range": {
+      "end": "2026-09-27T21:30:00Z",
+      "start": "2025-12-31T20:30:00Z"
+    },
+    "missing_values": {
+      "discharge": 17957,
+      "district_name": 0,
+      "fetched_at": 0,
+      "latitude": 0,
+      "longitude": 0,
+      "observation_time": 0,
+      "rainfall": 17234,
+      "river_name": 40,
+      "source": 0,
+      "source_record_id": 0,
+      "source_resource_id": 0,
+      "state_name": 0,
+      "station_id": 0,
+      "station_name": 0,
+      "water_level": 723
+    },
+    "training_suitable": false,
+    "available_columns": [
+      "source",
+      "source_resource_id",
+      "source_record_id",
+      "station_id",
+      "station_name",
+      "river_name",
+      "state_name",
+      "district_name",
+      "latitude",
+      "longitude",
+      "observation_time",
+      "fetched_at",
+      "water_level",
+      "discharge",
+      "rainfall"
+    ],
+    "rainfall_or_discharge_join_approved": false,
+    "reason": "The existing processed snapshot is a separate collection product. Its manifest does not establish an authoritative station crosswalk or validated temporal alignment to these historical raw files; its discharge field is entirely missing and rainfall is mostly missing. No join or feature was created."
+  },
+  "candidate_forecasting_target": {
+    "status": "NOT_JUSTIFIED",
+    "candidate_definition": "For a provider-identified gauge, predict the valid measured water level at issue time + 60 minutes using only information available at issue time.",
+    "why_not_currently_justified": [
+      "Data Acquisition Time semantics and timezone remain unresolved; naive timestamps cannot safely define an issue instant or future horizon.",
+      "Observed intervals include both shorter and longer than 60 minutes, so the next row is not reliably a one-hour-ahead target; interpolation/resampling would invent measurements.",
+      "Stable physical gauge IDs, duplicate/revision rules, units, sign, datum, QC, and negative/extreme-value semantics remain unresolved.",
+      "Observation coverage includes missing levels and large station-specific gaps; no provider coverage or operating-period evidence supports complete windows."
+    ],
+    "conditions_before_considering": [
+      "Accept authoritative timestamp event semantics, timezone/clock rules, and stable station crosswalk.",
+      "Accept exact-resource water-level quantity, unit, sign and datum semantics, quality/sentinel rules, and duplicate/revision handling.",
+      "Define and domain-review a target-time matching tolerance and missing-target policy. Do not interpolate absent target values.",
+      "Demonstrate sufficient valid observations and coverage per station for the chosen horizon using only evidence-supported records."
+    ]
+  },
+  "evaluation_plan_if_later_approved": {
+    "split": "After all prerequisites are accepted, use globally chronological train/validation/test periods (initial proposal 70%/15%/15% by time, with boundaries fixed before evaluation). Assign rows by prediction issue time and purge any target window crossing a split boundary.",
+    "embargo": "Apply a temporal purge/embargo at least as long as the forecast horizon plus the maximum predictor lookback; establish exact duration after the feature contract is defined.",
+    "station_grouping": "Primary temporal evaluation may include the same verified gauges across periods and must be described as known-station generalization. Add a separate station-held-out group evaluation for unseen-station generalization only after station IDs are verified.",
+    "baselines_and_metrics": [
+      "Persistence: latest valid same-gauge observation available strictly before issue time, with the same target-time eligibility rules as the model.",
+      "Seasonal naive only if authoritative cadence and matching historical horizon are established.",
+      "Compare against persistence using MAE and RMSE; report per-station as well as pooled metrics and sample counts. Report metric units only after measurement units are verified.",
+      "Do not use random splits or report a single metric without temporal coverage, missing-target, station composition, and baseline context."
+    ]
+  },
+  "readiness_gate_snapshot": {
+    "path": "D:\\MajorProject\\disaster-management-system\\docs\\HYDROLOGICAL_METADATA_READINESS_GATE.json",
+    "status": "BLOCKED",
+    "fields_unresolved": 30,
+    "note": "The profiler does not modify or override the hydrological metadata readiness gate."
+  },
+  "blockers": [
+    "The metadata readiness gate is BLOCKED and all required fields remain UNRESOLVED.",
+    "The exact historical resource provenance, completeness, and reuse terms are not verified.",
+    "Timestamp meaning/timezone and stable physical station identities are not verified.",
+    "Water-level measurement semantics, units, vertical datum, quality-control rules, and duplicate handling are unresolved.",
+    "No verified rainfall/discharge join to these historical station/time records is available."
+  ]
+}

@@ -1,0 +1,532 @@
+{
+  "schema_version": "1.0",
+  "title": "Stage 2 Part B.3 Hydrological Metadata Readiness Gate",
+  "updated_at": "2026-10-28",
+  "status_values": {
+    "CONFIRMED": "Supported by authoritative, traceable evidence applicable to the exact dataset/resource and relevant station or observation.",
+    "UNRESOLVED": "Evidence is missing, insufficient, ambiguous, not authoritative, or not demonstrably applicable to the exact input.",
+    "NOT_APPLICABLE": "The field or requirement does not apply, with a specific documented justification and reviewer evidence."
+  },
+  "evidence_rules": [
+    "A CSV header, value, filename, plausible range, collector configuration, or consistency between fields is not by itself authoritative confirmation.",
+    "Evidence must identify the issuer, document/resource/version, retrieval or effective date, scope, and affected dataset/stations.",
+    "A blank or sentinel value must not be reinterpreted without an authoritative data dictionary.",
+    "Do not convert timestamps or levels, merge station identities, choose among revisions, impute gaps, or remove records while a required gate is unresolved."
+  ],
+  "normalization_gate": {
+    "decision": "BLOCKED",
+    "may_proceed": false,
+    "blocking_requirements": [
+      "Exact source provenance and export completeness",
+      "Authoritative stable station IDs and complete station crosswalk",
+      "Coordinate CRS, source, accuracy, station-location history",
+      "Timestamp meaning and timezone convention",
+      "Water-level quantity, units, sign convention, negative/sentinel semantics",
+      "Definitions of RL_of_zeroGauge and MeanSeaLevel and compatible vertical datum",
+      "Observation quality/status rules",
+      "Duplicate/revision/correction resolution policy",
+      "Station operating periods, expected cadence, and missing-observation semantics",
+      "Basin and administrative metadata review",
+      "Applicable license, attribution requirements, and permitted reuse"
+    ],
+    "unblock_evidence": [
+      "Written provider response or official, versioned data dictionary/resource documentation covering the exact source exports",
+      "Authoritative station registry crosswalk mapping every source identity to stable gauge ID and effective-dated station/location metadata",
+      "Explicit timestamp field semantics and timezone, applicable to both files",
+      "Documented units, sign/sentinel semantics, field definitions, vertical datum and any conversion rules",
+      "QC flag dictionary or explicit confirmation of no source QC flags, with a supported safe unresolved/suspect mapping policy",
+      "Written duplicate/revision handling rule and traceable source row/revision identifiers",
+      "Station schedules and coverage/outage semantics adequate to describe gaps without treating missing data as non-events",
+      "Exact resource provenance/completeness and integrity evidence for the local CSVs",
+      "Applicable license or written permission covering intended local processing, derivative creation, research use, publication, and redistribution as applicable",
+      "Documented human review of evidence and a per-station sign-off before generating a derivative"
+    ]
+  },
+  "datasets": [
+    {
+      "dataset_id": "godavari_water_level_2021_2025",
+      "input_path": "ml/datasets/hydrological/raw/godavari_water_level_2021_2025.csv",
+      "audit_report": "docs/STAGE_2_PART_B_HYDROLOGICAL_AUDIT.json",
+      "audit_summary": {
+        "rows": 1055737,
+        "station_identities_for_audit_only": 66,
+        "observed_timestamp_range_source_timezone_unknown": {
+          "minimum": "2021-01-01T00:00",
+          "maximum": "2025-12-29T19:00"
+        },
+        "exact_duplicate_rows": 0,
+        "repeated_station_timestamp_records": 122,
+        "repeated_station_timestamp_records_with_different_water_level": 18,
+        "missing_water_level_values": 10894,
+        "negative_water_level_values_requiring_provider_interpretation": 5630,
+        "timestamp_order_regressions": 0
+      },
+      "fields": [
+        {
+          "field": "source_resource_identity_and_export_completeness",
+          "status": "UNRESOLVED",
+          "evidence_required": "CWC/NWIC resource and version IDs, official source endpoint, generation/retrieval time, query/filter, completeness statement and exact source-to-local file linkage.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "stable_physical_gauge_id_and_station_crosswalk",
+          "status": "UNRESOLVED",
+          "evidence_required": "Authoritative stable ID for each of the 66 audit identities, including name/code/coordinate mapping, renaming/reuse/movement history and effective dates.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "coordinates_crs_source_accuracy_and_location_history",
+          "status": "UNRESOLVED",
+          "evidence_required": "Coordinate order, CRS/datum, survey/source, accuracy, represented physical feature, and effective-dated moves for each station.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "administrative_codes_and_names",
+          "status": "UNRESOLVED",
+          "evidence_required": "Authoritative code/name reference and version/effective dates applicable to each station.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "river_basin_and_reach_assignment",
+          "status": "UNRESOLVED",
+          "evidence_required": "Provider-confirmed basin, river, tributary/reach and station context; file metadata and filename agreement alone are insufficient.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "Data_Acquisition_Time_semantics_timezone_and_clock_rules",
+          "status": "UNRESOLVED",
+          "evidence_required": "Definition of measurement versus receipt/ingestion time; source timezone/offset; clock synchronization, precision, daylight-saving and late-correction conventions.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "water_level_quantity_unit_sign_and_negative_values",
+          "status": "UNRESOLVED",
+          "evidence_required": "Data dictionary defining the measured quantity, unit, sign, negative/extreme values, sentinel codes and relation to gauge zero.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "RL_of_zeroGauge_and_MeanSeaLevel_definitions",
+          "status": "UNRESOLVED",
+          "evidence_required": "Definitions, units, benchmark, reference elevation, vertical datum, survey epoch, validity period and conversion equation; explain zero/default values.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "vertical_datum_compatibility",
+          "status": "UNRESOLVED",
+          "evidence_required": "Verified gauge-specific datum and evidence of compatibility or valid transformations across stations and reference fields.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "observation_quality_flags_and_status",
+          "status": "UNRESOLVED",
+          "evidence_required": "QC/status dictionary and validation rules, or explicit provider confirmation that no observation QC flag exists plus an approved treatment policy.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "repeated_station_timestamp_and_revision_policy",
+          "status": "UNRESOLVED",
+          "evidence_required": "Provider classification of repeats, revision/correction identifiers, authoritative version selection policy and row traceability.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "station_operation_sampling_and_missingness",
+          "status": "UNRESOLVED",
+          "evidence_required": "Effective-dated commissioning/retirement/relocation, expected cadence, completeness/outage logs and the meaning of absent timestamps.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "Is_DischargeDataAvailable_semantics",
+          "status": "UNRESOLVED",
+          "evidence_required": "Definition and station/time scope; confirmation whether this field is unrelated to water-level quality.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "license_attribution_and_permitted_reuse",
+          "status": "UNRESOLVED",
+          "evidence_required": "Exact license/version or written permission covering retention, processing, derivative creation, research, publication, redistribution and commercial use as applicable.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "source_water_level_unit_header_declaration",
+          "status": "UNRESOLVED",
+          "evidence_required": "Provider confirmation for this exact historical resource. The header/catalog declaration of metres is not independently verified evidence.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        }
+      ],
+      "review": {
+        "reviewer": null,
+        "review_date": null,
+        "evidence_references": [],
+        "notes": "No field is NOT_APPLICABLE. Evidence is not yet available to justify excluding any required metadata."
+      },
+      "readiness_status": "BLOCKED"
+    },
+    {
+      "dataset_id": "krishna_water_level_2021_2025",
+      "input_path": "ml/datasets/hydrological/raw/krishna_water_level_2021_2025.csv",
+      "audit_report": "docs/STAGE_2_PART_B_HYDROLOGICAL_AUDIT.json",
+      "audit_summary": {
+        "rows": 451445,
+        "station_identities_for_audit_only": 30,
+        "observed_timestamp_range_source_timezone_unknown": {
+          "minimum": "2021-01-01T00:00",
+          "maximum": "2025-12-30T05:00"
+        },
+        "exact_duplicate_rows": 0,
+        "repeated_station_timestamp_records": 43,
+        "repeated_station_timestamp_records_with_different_water_level": 4,
+        "missing_water_level_values": 611,
+        "negative_water_level_values_requiring_provider_interpretation": 9311,
+        "timestamp_order_regressions": 0,
+        "rows_with_missing_River_metadata": 8593,
+        "affected_station_label": "Halia Vijaywada"
+      },
+      "fields": [
+        {
+          "field": "source_resource_identity_and_export_completeness",
+          "status": "UNRESOLVED",
+          "evidence_required": "CWC/NWIC resource and version IDs, official source endpoint, generation/retrieval time, query/filter, completeness statement and exact source-to-local file linkage.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "stable_physical_gauge_id_and_station_crosswalk",
+          "status": "UNRESOLVED",
+          "evidence_required": "Authoritative stable ID for each of the 30 audit identities, including name/code/coordinate mapping, renaming/reuse/movement history and effective dates.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "coordinates_crs_source_accuracy_and_location_history",
+          "status": "UNRESOLVED",
+          "evidence_required": "Coordinate order, CRS/datum, survey/source, accuracy, represented physical feature, and effective-dated moves for each station.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "administrative_codes_and_names",
+          "status": "UNRESOLVED",
+          "evidence_required": "Authoritative code/name reference and version/effective dates applicable to each station.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "river_basin_and_reach_assignment",
+          "status": "UNRESOLVED",
+          "evidence_required": "Provider-confirmed basin, river, tributary/reach and station context; file metadata and filename agreement alone are insufficient.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "Data_Acquisition_Time_semantics_timezone_and_clock_rules",
+          "status": "UNRESOLVED",
+          "evidence_required": "Definition of measurement versus receipt/ingestion time; source timezone/offset; clock synchronization, precision, daylight-saving and late-correction conventions.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "water_level_quantity_unit_sign_and_negative_values",
+          "status": "UNRESOLVED",
+          "evidence_required": "Data dictionary defining the measured quantity, unit, sign, negative/extreme values, sentinel codes and relation to gauge zero.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "RL_of_zeroGauge_and_MeanSeaLevel_definitions",
+          "status": "UNRESOLVED",
+          "evidence_required": "Definitions, units, benchmark, reference elevation, vertical datum, survey epoch, validity period and conversion equation; explain zero/default values.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "vertical_datum_compatibility",
+          "status": "UNRESOLVED",
+          "evidence_required": "Verified gauge-specific datum and evidence of compatibility or valid transformations across stations and reference fields.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "observation_quality_flags_and_status",
+          "status": "UNRESOLVED",
+          "evidence_required": "QC/status dictionary and validation rules, or explicit provider confirmation that no observation QC flag exists plus an approved treatment policy.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "repeated_station_timestamp_and_revision_policy",
+          "status": "UNRESOLVED",
+          "evidence_required": "Provider classification of repeats, revision/correction identifiers, authoritative version selection policy and row traceability.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "station_operation_sampling_and_missingness",
+          "status": "UNRESOLVED",
+          "evidence_required": "Effective-dated commissioning/retirement/relocation, expected cadence, completeness/outage logs and the meaning of absent timestamps.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "Is_DischargeDataAvailable_semantics",
+          "status": "UNRESOLVED",
+          "evidence_required": "Definition and station/time scope; confirmation whether this field is unrelated to water-level quality.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "license_attribution_and_permitted_reuse",
+          "status": "UNRESOLVED",
+          "evidence_required": "Exact license/version or written permission covering retention, processing, derivative creation, research, publication, redistribution and commercial use as applicable.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        },
+        {
+          "field": "source_water_level_unit_header_declaration",
+          "status": "UNRESOLVED",
+          "evidence_required": "Provider confirmation for this exact historical resource. The header/catalog declaration of metres is not independently verified evidence.",
+          "review": {
+            "evidence_source": null,
+            "evidence_scope": null,
+            "review_decision": "PENDING",
+            "reviewer": null,
+            "review_date": null,
+            "justification": null
+          }
+        }
+      ],
+      "review": {
+        "reviewer": null,
+        "review_date": null,
+        "evidence_references": [],
+        "notes": "No field is NOT_APPLICABLE. Evidence is not yet available to justify excluding any required metadata."
+      },
+      "readiness_status": "BLOCKED"
+    }
+  ],
+  "normalization_evidence_required_common": [
+    "Verified exact file/resource linkage and source completeness.",
+    "Authoritative station crosswalk covering every row and every effective-dated station identity/location.",
+    "Confirmed Data Acquisition Time semantics and timezone for each input.",
+    "Confirmed water-level unit, quantity, sign/sentinel rules, and compatible gauge vertical datum/reference conversion semantics.",
+    "Provider QC or status semantics and documented handling for missing/suspect measurements.",
+    "Provider rule for repeated station/timestamp records and revisions, preserving all source rows and provenance.",
+    "Explicit missing-observation and station operating-period semantics; no interpolation.",
+    "Applicable license/permission and attribution terms permitting the intended normalization and downstream use.",
+    "Human reviewer approval and recorded evidence references for every CONFIRMED field; all blocking fields in both datasets must be CONFIRMED before normalization."
+  ],
+  "field_review_policy": {
+    "accepted_review_decisions": [
+      "SUFFICIENT",
+      "NOT_APPLICABLE"
+    ],
+    "required_traceability_for_confirmed": [
+      "evidence_source",
+      "evidence_scope",
+      "review_decision",
+      "reviewer",
+      "review_date"
+    ],
+    "required_traceability_for_not_applicable": [
+      "evidence_source",
+      "evidence_scope",
+      "review_decision",
+      "reviewer",
+      "review_date",
+      "justification"
+    ],
+    "unresolved_fields_must_have_review_decision": "PENDING",
+    "unanswered_response_is_confirmation": false,
+    "provider_response_alone_is_sufficient": false,
+    "confirmation_rule": "Set a field to CONFIRMED only after an authorized reviewer establishes that authoritative evidence applies to the exact dataset, stations, and relevant time period, and records the evidence source, scope, decision, reviewer, and date on that field.",
+    "normalization_rule": "Normalization remains BLOCKED for both datasets while any required field is UNRESOLVED or lacks accepted field-level traceability."
+  }
+}
