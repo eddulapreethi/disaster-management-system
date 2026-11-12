@@ -2,7 +2,48 @@ import pytest
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError
 
-from app.database.database import _upgrade_sqlite_hydrology_schema, _upgrade_sqlite_resource_constraints
+from app.database.database import (
+    _upgrade_sqlite_incident_schema,
+    _upgrade_sqlite_hydrology_schema,
+    _upgrade_sqlite_provider_metadata_schema,
+    _upgrade_sqlite_resource_constraints,
+)
+
+
+def test_sqlite_provider_metadata_upgrade_preserves_existing_observations() -> None:
+    engine = create_engine("sqlite:///:memory:")
+    try:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "CREATE TABLE weather_observations "
+                    "(id INTEGER PRIMARY KEY, source VARCHAR(64) NOT NULL)"
+                )
+            )
+            connection.execute(
+                text(
+                    "CREATE TABLE hydrological_observations "
+                    "(id INTEGER PRIMARY KEY, source VARCHAR(120) NOT NULL)"
+                )
+            )
+            connection.execute(text("INSERT INTO weather_observations VALUES (1, 'open-meteo')"))
+            connection.execute(text("INSERT INTO hydrological_observations VALUES (2, 'nwdp:test')"))
+
+        _upgrade_sqlite_provider_metadata_schema(engine)
+        _upgrade_sqlite_provider_metadata_schema(engine)
+
+        with engine.connect() as connection:
+            weather = connection.execute(
+                text("SELECT id, source, provider_metadata FROM weather_observations")
+            ).one()
+            hydrology = connection.execute(
+                text("SELECT id, source, provider_metadata FROM hydrological_observations")
+            ).one()
+
+        assert weather == (1, "open-meteo", "{}")
+        assert hydrology == (2, "nwdp:test", "{}")
+    finally:
+        engine.dispose()
 
 
 def test_sqlite_hydrology_upgrade_adds_diagnostics_without_deleting_state() -> None:
@@ -85,5 +126,72 @@ def test_sqlite_resource_upgrade_rejects_invalid_writes_and_preserves_existing_r
                         ),
                         dict(zip(("id", "name", "resource_type", "quantity", "unit", "latitude", "longitude", "status"), values, strict=True)),
                     )
+    finally:
+        engine.dispose()
+
+
+def test_sqlite_incident_upgrade_preserves_legacy_rows_and_adds_private_owner_fields() -> None:
+    engine = create_engine("sqlite:///:memory:")
+    try:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL, "
+                    "email TEXT NOT NULL, hashed_password TEXT NOT NULL, created_at DATETIME NOT NULL)"
+                )
+            )
+            connection.execute(
+                text(
+                    "CREATE TABLE disasters (id INTEGER PRIMARY KEY, name TEXT NOT NULL, "
+                    "disaster_type VARCHAR(40) NOT NULL, description TEXT NOT NULL, latitude FLOAT NOT NULL, "
+                    "longitude FLOAT NOT NULL, status VARCHAR(30) NOT NULL, created_at DATETIME NOT NULL)"
+                )
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO users VALUES (1, 'Legacy User', 'legacy@example.test', 'hash', "
+                    "'2026-01-01 00:00:00')"
+                )
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO disasters VALUES (1, 'Legacy report', 'flood', 'old unowned report', "
+                    "9.9, 76.2, 'reported', '2026-01-02 03:04:05')"
+                )
+            )
+
+        _upgrade_sqlite_incident_schema(engine)
+        _upgrade_sqlite_incident_schema(engine)
+
+        with engine.connect() as connection:
+            user_columns = {column["name"] for column in inspect(connection).get_columns("users")}
+            disaster_columns = {column["name"] for column in inspect(connection).get_columns("disasters")}
+            user = connection.execute(text("SELECT role FROM users WHERE id = 1")).scalar_one()
+            report = connection.execute(
+                text(
+                    "SELECT user_id, status, submitted_at, source, source_metadata, evidence_metadata "
+                    "FROM disasters WHERE id = 1"
+                )
+            ).one()
+
+        assert "role" in user_columns
+        assert {
+            "user_id",
+            "incident_time",
+            "incident_timezone",
+            "source",
+            "source_metadata",
+            "evidence_metadata",
+            "submitted_at",
+        } <= disaster_columns
+        assert user == "user"
+        assert report == (
+            None,
+            "reported",
+            "2026-01-02 03:04:05",
+            "community_report",
+            "{}",
+            "[]",
+        )
     finally:
         engine.dispose()

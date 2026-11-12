@@ -23,12 +23,13 @@ from ml.preprocessing.feature_engineering import (
 )
 
 logger = logging.getLogger(__name__)
-DEFAULT_MODEL_PATH = Path(
-    os.getenv(
-        "DISASTERGUARD_MODEL_PATH",
-        str(Path(__file__).resolve().parents[1] / "models" / "trained_models" / "flood_risk_model.joblib"),
-    )
-)
+DEFAULT_MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "trained_models" / "flood_risk_model.joblib"
+
+
+def configured_model_path() -> Path:
+    """Return the configured artifact path, using the documented default when unset or blank."""
+    configured_path = os.getenv("DISASTERGUARD_MODEL_PATH", "").strip()
+    return Path(configured_path).expanduser() if configured_path else DEFAULT_MODEL_PATH
 
 
 def _validate_artifact(artifact: Any) -> dict[str, Any]:
@@ -132,15 +133,15 @@ def _load_model_artifact_cached(path: str, modified_ns: int, size: int) -> dict[
     return _validate_artifact(joblib.load(path))
 
 
-def load_model_artifact(model_path: str | Path = DEFAULT_MODEL_PATH) -> dict[str, Any]:
+def load_model_artifact(model_path: str | Path | None = None) -> dict[str, Any]:
     """Load and validate a model once per unchanged artifact file."""
-    path = Path(model_path).expanduser().resolve()
+    path = (Path(model_path).expanduser() if model_path is not None else configured_model_path()).resolve()
     stat = path.stat()
     return _load_model_artifact_cached(str(path), stat.st_mtime_ns, stat.st_size)
 
 
-def get_model_readiness(model_path: str | Path = DEFAULT_MODEL_PATH) -> dict[str, Any]:
-    path = Path(model_path).expanduser()
+def get_model_readiness(model_path: str | Path | None = None) -> dict[str, Any]:
+    path = Path(model_path).expanduser() if model_path is not None else configured_model_path()
     if not path.is_file():
         return {
             "status": "NOT_READY",
@@ -191,7 +192,7 @@ def _contributions(
 
 def predict_risk(
     inputs: dict[str, Any],
-    model_path: str | Path = DEFAULT_MODEL_PATH,
+    model_path: str | Path | None = None,
 ) -> dict[str, Any]:
     """Reject inference until the retired index schema has a verified replacement."""
     _ = inputs, model_path
@@ -204,7 +205,7 @@ def predict_risk(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Predict the documented continuous flood-risk index from JSON features.")
     parser.add_argument("input", type=Path, help="JSON file containing the canonical 20 flood features")
-    parser.add_argument("--model", type=Path, default=DEFAULT_MODEL_PATH, help="Validated joblib model")
+    parser.add_argument("--model", type=Path, default=configured_model_path(), help="Validated joblib model")
     arguments = parser.parse_args()
     with arguments.input.open(encoding="utf-8") as input_file:
         inputs = json.load(input_file)

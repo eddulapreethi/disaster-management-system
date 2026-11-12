@@ -27,12 +27,16 @@ class WeatherServiceTests(unittest.TestCase):
         self.addCleanup(self.engine.dispose)
 
     def test_collect_weather_cycle_skips_duplicate_station_observation_and_persists_source(self) -> None:
-        timestamp = datetime(2026, 10, 6, 12, 0, tzinfo=timezone.utc)
+        timestamp = datetime.now(timezone.utc)
         duplicate = {
             "station_id": "kochi",
             "station_name": "Kochi",
             "latitude": 9.9312,
             "longitude": 76.2673,
+            "provider_latitude": 9.947276,
+            "provider_longitude": 76.29921,
+            "requested_latitude": 9.9312,
+            "requested_longitude": 76.2673,
             "temperature_c": 30.0,
             "humidity_percent": 70.0,
             "precipitation_mm": 2.5,
@@ -42,6 +46,7 @@ class WeatherServiceTests(unittest.TestCase):
             "observation_time": timestamp,
             "fetched_at": timestamp,
             "source": "open-meteo",
+            "provider_metadata": {"timezone": "Etc/UTC", "provider_custom": "preserved"},
         }
 
         with patch.object(service, "configured_locations", return_value=[{"name": "Kochi", "latitude": 9.9312, "longitude": 76.2673}]), patch.object(service, "_fetch_batch", return_value=[duplicate, duplicate]):
@@ -52,6 +57,8 @@ class WeatherServiceTests(unittest.TestCase):
             rows = list(db.scalars(select(WeatherObservation)).all())
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0].source, "open-meteo")
+        self.assertEqual((rows[0].latitude, rows[0].longitude), (9.9312, 76.2673))
+        self.assertEqual(rows[0].provider_metadata, {"timezone": "Etc/UTC", "provider_custom": "preserved"})
         self.assertIsNotNone(rows[0].created_at)
         self.assertEqual(first_result["stored_observations"], 1)
         self.assertEqual(first_result["duplicates_skipped"], 1)
@@ -61,6 +68,19 @@ class WeatherServiceTests(unittest.TestCase):
 
     def test_parse_location_response_normalizes_open_meteo_fields_and_timestamps(self) -> None:
         payload = {
+            "latitude": 9.947276,
+            "longitude": 76.29921,
+            "timezone": "Europe/Paris",
+            "utc_offset_seconds": 3600,
+            "model_metadata": {"model": "provider-specific"},
+            "current_units": {
+                "temperature_2m": "°C",
+                "relative_humidity_2m": "%",
+                "precipitation": "mm",
+                "rain": "mm",
+                "wind_speed_10m": "km/h",
+                "surface_pressure": "hPa",
+            },
             "current": {
                 "time": "2026-10-06T12:00",
                 "temperature_2m": 28.5,
@@ -78,14 +98,55 @@ class WeatherServiceTests(unittest.TestCase):
 
         self.assertEqual(record["temperature_c"], 28.5)
         self.assertEqual(record["source"], "open-meteo")
+        self.assertEqual(record["latitude"], 9.9312)
+        self.assertEqual(record["provider_latitude"], 9.947276)
+        self.assertEqual(record["requested_latitude"], 9.9312)
         self.assertEqual(record["observation_time"].tzinfo, timezone.utc)
+        self.assertEqual(record["observation_time"], datetime(2026, 10, 6, 10, 0, tzinfo=timezone.utc))
         self.assertNotEqual(record["observation_time"], record["fetched_at"])
+        self.assertEqual(record["provider_metadata"]["timezone"], "Europe/Paris")
+        self.assertEqual(record["provider_metadata"]["model_metadata"], {"model": "provider-specific"})
+        self.assertEqual(record["provider_metadata"]["source_timestamp_raw"], "2026-10-06T12:00")
+        self.assertEqual(record["provider_metadata"]["source_timezone"], "Europe/Paris")
+        self.assertEqual(record["provider_metadata"]["source_current"]["temperature_2m"], 28.5)
 
     def test_parse_location_response_rejects_missing_requested_fields(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "missing requested fields"):
             service._parse_location_response(
                 {"name": "Kochi", "latitude": 9.9312, "longitude": 76.2673},
                 {"current": {"time": "2026-10-06T12:00", "temperature_2m": 28}},
+            )
+
+    def test_parse_location_response_rejects_invalid_timestamp_and_units(self) -> None:
+        payload = {
+            "latitude": 9.9,
+            "longitude": 76.2,
+            "current_units": {
+                "temperature_2m": "°F",
+                "relative_humidity_2m": "%",
+                "precipitation": "mm",
+                "rain": "mm",
+                "wind_speed_10m": "km/h",
+                "surface_pressure": "hPa",
+            },
+            "current": {
+                "time": "not-a-timestamp",
+                "temperature_2m": 28,
+                "relative_humidity_2m": 70,
+                "precipitation": 1,
+                "rain": 1,
+                "wind_speed_10m": 10,
+                "surface_pressure": 1008,
+            },
+        }
+        with self.assertRaisesRegex(RuntimeError, "units"):
+            service._parse_location_response(
+                {"name": "Kochi", "latitude": 9.9, "longitude": 76.2}, payload
+            )
+        payload["current_units"]["temperature_2m"] = "°C"
+        with self.assertRaisesRegex(RuntimeError, "invalid or ambiguous observation timestamp"):
+            service._parse_location_response(
+                {"name": "Kochi", "latitude": 9.9, "longitude": 76.2}, payload
             )
 
     def test_on_demand_weather_fetches_selected_coordinates_and_checks_freshness(self) -> None:
@@ -110,6 +171,18 @@ class WeatherServiceTests(unittest.TestCase):
 
         self.assertEqual(result["latitude"], 51.5072)
         self.assertEqual(result["longitude"], -0.1276)
+        self.assertEqual(result["coverage_status"], "SUPPORTED")
+        self.assertEqual(result["provenance"]["provider"], "Open-Meteo")
+        self.assertIsNone(result["provenance"]["source_record_id"])
+        self.assertEqual(result["provenance"]["observation_time"], observation_time.isoformat().replace("+00:00", "Z"))
+        self.assertEqual(result["provenance"]["units"]["temperature_c"], "°C")
+        self.assertTrue(result["provenance"]["location"]["station_id_is_internal"])
+        self.assertEqual(result["canonical_record"]["record_type"], "observation")
+        self.assertEqual(result["canonical_record"]["payload"]["measurement_basis"], "model_derived")
+        self.assertEqual(
+            result["canonical_record"]["timestamps"]["observation_time_utc"],
+            observation_time.isoformat().replace("+00:00", "Z"),
+        )
         fetch_batch.assert_called_once_with(
             [{"name": "Selected location (51.50720, -0.12760)", "latitude": 51.5072, "longitude": -0.1276}]
         )
@@ -123,11 +196,28 @@ class WeatherServiceTests(unittest.TestCase):
             service.fetch_location_weather(True, 0)
 
         stale = {
+            "temperature_c": 14.0,
+            "precipitation_mm": 0.0,
+            "wind_speed_kmh": 8.0,
             "observation_time": datetime.now(timezone.utc) - timedelta(hours=3),
             "fetched_at": datetime.now(timezone.utc),
         }
         with patch.object(service, "_fetch_batch", return_value=[stale]):
-            with self.assertRaisesRegex(RuntimeError, "freshness window"):
+            result = service.fetch_location_weather(0, 0)
+        self.assertEqual(result["freshness_status"], "STALE")
+        self.assertEqual(result["status"], "STALE")
+        self.assertIn("freshness window", result["freshness_message"])
+
+    def test_on_demand_weather_rejects_missing_required_measurements(self) -> None:
+        reading = {
+            "temperature_c": None,
+            "precipitation_mm": 1.0,
+            "wind_speed_kmh": 8.0,
+            "observation_time": datetime.now(timezone.utc),
+            "fetched_at": datetime.now(timezone.utc),
+        }
+        with patch.object(service, "_fetch_batch", return_value=[reading]):
+            with self.assertRaisesRegex(RuntimeError, "required measurements: temperature_c"):
                 service.fetch_location_weather(0, 0)
 
     def test_on_demand_weather_endpoint_returns_selected_location_or_provider_error(self) -> None:
@@ -143,6 +233,8 @@ class WeatherServiceTests(unittest.TestCase):
             "temperature_c": 14.0,
             "precipitation_mm": 0.0,
             "wind_speed_kmh": 8.0,
+            "freshness_status": "READY",
+            "measurement_units": service.WEATHER_MEASUREMENT_UNITS,
         }
         with patch("app.api.weather.fetch_location_weather", return_value=reading):
             self.assertEqual(current_weather(51.5072, -0.1276, user), reading)
@@ -216,6 +308,9 @@ class WeatherServiceTests(unittest.TestCase):
             source="open-meteo",
             latitude=9.9312,
             longitude=76.2673,
+            temperature_c=28.5,
+            precipitation_mm=0.1,
+            wind_speed_kmh=9.0,
             observation_time=datetime.now(timezone.utc),
             fetched_at=datetime.now(timezone.utc),
         )
@@ -224,7 +319,12 @@ class WeatherServiceTests(unittest.TestCase):
         ):
             status = service.get_weather_status()
         self.assertEqual(status["status"], "READY")
+        self.assertEqual(status["freshness_status"], "READY")
+        self.assertEqual(status["collection_status"], "SUCCESS")
         self.assertTrue(status["last_observation"].endswith("Z"))
+        self.assertNotEqual(status["observation_fetched_at"], status["last_observation"])
+        self.assertEqual(status["latitude"], 9.9312)
+        self.assertEqual(status["measurement_units"]["precipitation_mm"], "mm")
 
     def test_weather_status_rejects_observation_too_far_in_future(self) -> None:
         observation = WeatherObservation(
@@ -240,7 +340,7 @@ class WeatherServiceTests(unittest.TestCase):
             service, "get_collector_status", return_value={"failed_locations": []}
         ):
             status = service.get_weather_status()
-        self.assertEqual(status["status"], "ERROR")
+        self.assertEqual(status["freshness_status"], "ERROR")
         self.assertIn("future", status["message"])
 
     def test_weather_api_marks_sqlite_naive_utc_timestamps_as_utc(self) -> None:
@@ -265,6 +365,20 @@ class WeatherServiceTests(unittest.TestCase):
         serialized = response.model_dump(mode="json")
         self.assertEqual(serialized["observation_time"], "2026-10-10T17:45:00Z")
         self.assertEqual(serialized["fetched_at"], "2026-10-10T17:45:00Z")
+        self.assertIn(serialized["freshness_status"], {"READY", "STALE"})
+        self.assertEqual(serialized["measurement_units"]["wind_speed_kmh"], "km/h")
+        self.assertIn(serialized["coverage_status"], {"SUPPORTED", "STALE"})
+        self.assertEqual(serialized["provenance"]["provider"], "Open-Meteo")
+        self.assertEqual(serialized["provenance"]["product"], "Stored current weather point observation")
+        self.assertEqual(serialized["provenance"]["observation_time"], "2026-10-10T17:45:00Z")
+        self.assertFalse(serialized["provenance"]["provider_metadata"]["provider_specific_metadata_persisted"])
+        self.assertEqual(serialized["canonical_record"]["record_type"], "observation")
+        expected_quality = (
+            "STALE"
+            if serialized["freshness_status"] == "STALE"
+            else "INCOMPLETE_METADATA"
+        )
+        self.assertEqual(serialized["canonical_record"]["quality_status"], expected_quality)
 
     def test_weather_status_distinguishes_unavailable_from_error(self) -> None:
         with patch.object(service, "get_latest_observations", return_value=[]), patch.object(
@@ -275,7 +389,50 @@ class WeatherServiceTests(unittest.TestCase):
         with patch.object(service, "get_latest_observations", return_value=[]), patch.object(
             service, "get_collector_status", return_value={"failed_locations": [{"location": "collector"}]}
         ):
-            self.assertEqual(service.get_weather_status()["status"], "ERROR")
+            status = service.get_weather_status()
+            self.assertEqual(status["status"], "UNAVAILABLE")
+            self.assertEqual(status["collection_status"], "ERROR")
+
+    def test_weather_freshness_is_independent_of_collection_failure(self) -> None:
+        observation = WeatherObservation(
+            station_id="kochi",
+            station_name="Kochi",
+            source="open-meteo",
+            latitude=9.9312,
+            longitude=76.2673,
+            temperature_c=28.5,
+            precipitation_mm=0.1,
+            wind_speed_kmh=9.0,
+            observation_time=datetime.now(timezone.utc),
+            fetched_at=datetime.now(timezone.utc),
+        )
+        with patch.object(service, "get_latest_observations", return_value=[observation]), patch.object(
+            service, "get_collector_status", return_value={"failed_locations": [{"location": "Kochi"}]}
+        ):
+            status = service.get_weather_status()
+        self.assertEqual(status["freshness_status"], "READY")
+        self.assertEqual(status["collection_status"], "ERROR")
+
+    def test_recent_weather_with_missing_required_values_is_unavailable_not_ready(self) -> None:
+        observation = WeatherObservation(
+            station_id="kochi",
+            station_name="Kochi",
+            source="open-meteo",
+            latitude=9.9312,
+            longitude=76.2673,
+            temperature_c=None,
+            precipitation_mm=0.1,
+            wind_speed_kmh=9.0,
+            observation_time=datetime.now(timezone.utc),
+            fetched_at=datetime.now(timezone.utc),
+        )
+        with patch.object(service, "get_latest_observations", return_value=[observation]), patch.object(
+            service, "get_collector_status", return_value={"last_successful_fetch_at": "fetched"}
+        ):
+            status = service.get_weather_status()
+        self.assertEqual(status["freshness_status"], "READY")
+        self.assertEqual(status["measurement_status"], "UNAVAILABLE")
+        self.assertEqual(status["status"], "UNAVAILABLE")
 
     def test_sqlite_upgrade_preserves_legacy_duplicates_without_unique_index(self) -> None:
         legacy_engine = create_engine("sqlite:///:memory:")

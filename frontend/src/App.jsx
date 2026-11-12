@@ -13,8 +13,11 @@ import Recommendations from './pages/Recommendations'
 import ResourceAllocation from './pages/ResourceAllocation'
 import Alerts from './pages/Alerts'
 import Assistant from './pages/Assistant'
+import Incidents from './pages/Incidents'
+import EarthquakeEvents from './pages/EarthquakeEvents'
 import { isAuthenticated } from './services/authService'
 import { checkBackend } from './services/api'
+import { LocationProvider } from './services/LocationContext'
 
 function ProtectedRoute({ children }) {
   return isAuthenticated() ? children : <Navigate to="/login" replace />
@@ -36,30 +39,34 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="app">
-        <Navbar backendOnline={backendOnline} theme={theme} onToggleTheme={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))} />
-        <div className="app-body">
-          {isAuthenticated() && <Sidebar />}
-          <main>
-            <Routes>
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-              <Route path="/risk-prediction" element={<ProtectedRoute><RiskPrediction /></ProtectedRoute>} />
-              <Route path="/risk-map" element={<ProtectedRoute><RiskMapPage /></ProtectedRoute>} />
-              <Route path="/simulation" element={<ProtectedRoute><Simulation /></ProtectedRoute>} />
-              <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
-              <Route path="/resource-allocation" element={<ProtectedRoute><ResourceAllocation /></ProtectedRoute>} />
-              <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
-              <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
+      <LocationProvider>
+        <div className="app">
+          <Navbar backendOnline={backendOnline} theme={theme} onToggleTheme={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))} />
+          <div className="app-body">
+            {isAuthenticated() && <Sidebar />}
+            <main>
+              <Routes>
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                <Route path="/risk-prediction" element={<ProtectedRoute><RiskPrediction /></ProtectedRoute>} />
+                <Route path="/risk-map" element={<ProtectedRoute><RiskMapPage /></ProtectedRoute>} />
+                <Route path="/simulation" element={<ProtectedRoute><Simulation /></ProtectedRoute>} />
+                <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
+                <Route path="/resource-allocation" element={<ProtectedRoute><ResourceAllocation /></ProtectedRoute>} />
+                <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+                <Route path="/incidents" element={<ProtectedRoute><Incidents /></ProtectedRoute>} />
+                <Route path="/earthquake-events" element={<ProtectedRoute><EarthquakeEvents /></ProtectedRoute>} />
+                <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+          </div>
+          <footer>Backend: {import.meta.env.VITE_API_BASE || 'http://localhost:8000'}. Offline estimates are not generated when the backend is unavailable.</footer>
         </div>
-        <footer>Backend: {import.meta.env.VITE_API_BASE || 'http://localhost:8000'}. Offline estimates are not generated when the backend is unavailable.</footer>
-      </div>
+      </LocationProvider>
     </BrowserRouter>
   )
 }

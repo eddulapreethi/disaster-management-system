@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -21,6 +22,7 @@ class UserRead(BaseModel):
     name: str
     email: EmailStr
     created_at: datetime
+    role: Literal["user", "reviewer"] = "user"
 
 
 class TokenResponse(BaseModel):

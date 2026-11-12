@@ -5,12 +5,14 @@ export default function RiskCard({ station, selected, onClick }) {
     <div className={`risk-card${selected ? ' selected' : ''}`} onClick={onClick}>
       <div className="risk-card-top">
         <span className="risk-card-name">{station.name}</span>
-        <span className={`pill ${riskBand(station.risk)}`}>{station.risk}</span>
+        <span className={`pill ${riskBand(station.risk)}`} aria-label={`Unverified legacy score ${station.risk}`}>
+          Legacy score {station.risk}
+        </span>
       </div>
       <div className="risk-card-region">{station.region}</div>
       <div className="risk-card-meta">
         <span>{station.latitude.toFixed(3)}, {station.longitude.toFixed(3)}</span>
-        <span>{station.risk_level}</span>
+        <span>Legacy score band: {station.risk_level}</span>
         <span>{new Date(station.created_at).toLocaleDateString()}</span>
       </div>
     </div>

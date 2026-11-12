@@ -6,7 +6,27 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import alerts, assistant, auth, geocoding, gis, historical_data, hydrology, predictions, readiness, recommendations, resources, satellite, simulations, users, weather
+from app.api import (
+    alerts,
+    assistant,
+    auth,
+    coverage,
+    earthquake_events,
+    environmental_data,
+    geocoding,
+    gis,
+    historical_data,
+    hydrology,
+    incidents,
+    predictions,
+    readiness,
+    recommendations,
+    resources,
+    satellite,
+    simulations,
+    users,
+    weather,
+)
 from app.database.database import create_tables
 from app.services.hydrology_service import run_hydrology_collector
 from app.services.weather_service import run_weather_collector
@@ -31,7 +51,11 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="DisasterGuard AI API",
-    description="Disaster risk, alert, simulation, GIS, and resource API.",
+    description=(
+        "Experimental disaster-management tools with location-based and regional reference data. "
+        "Data availability varies by location; prediction capability is not validated. "
+        "Flood prediction remains unavailable until its readiness requirements are met."
+    ),
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -47,6 +71,15 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "X-Satellite-Metadata",
+        "X-Catalog-Item-ID",
+        "X-Acquisition-Time",
+        "X-Catalog-Fetched-At",
+        "X-Process-Requested-At",
+        "X-Download-Time",
+        "X-Scene-Match-Status",
+    ],
 )
 
 app.include_router(auth.router, prefix="/api")
@@ -64,6 +97,10 @@ app.include_router(geocoding.router, prefix="/api")
 app.include_router(satellite.router, prefix="/api")
 app.include_router(hydrology.router, prefix="/api")
 app.include_router(readiness.router, prefix="/api")
+app.include_router(coverage.router, prefix="/api")
+app.include_router(environmental_data.router, prefix="/api")
+app.include_router(incidents.router, prefix="/api")
+app.include_router(earthquake_events.router, prefix="/api")
 
 
 @app.get("/")

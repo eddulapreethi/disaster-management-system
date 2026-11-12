@@ -1,5 +1,5 @@
 // Base fetch wrapper for the FastAPI backend.
-export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+export const API_BASE = import.meta.env?.VITE_API_BASE || 'http://localhost:8000'
 
 const TOKEN_KEY = 'disasterguard_access_token'
 const USER_KEY = 'disasterguard_user'
@@ -20,7 +20,7 @@ function endpointUrl(path) {
   return normalized === '/' ? `${API_BASE}/` : `${API_BASE}/api${normalized}`
 }
 
-async function request(path, options = {}) {
+async function request(path, options = {}, responseType = 'json') {
   const { timeoutMs = 8000, ...fetchOptions } = options
   const headers = new Headers(options.headers || {})
   const token = localStorage.getItem(TOKEN_KEY)
@@ -55,11 +55,18 @@ async function request(path, options = {}) {
     throw error
   }
   if (response.status === 204) return null
+  if (responseType === 'blob') {
+    return { blob: await response.blob(), headers: response.headers }
+  }
   return response.json()
 }
 
 export function apiGet(path, opts = {}) {
   return request(path, opts)
+}
+
+export function apiGetBlob(path, opts = {}) {
+  return request(path, opts, 'blob')
 }
 
 export function apiPost(path, body, opts = {}) {

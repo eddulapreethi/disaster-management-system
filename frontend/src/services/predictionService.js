@@ -1,14 +1,14 @@
-import { apiPost } from './api'
-import { fetchLiveWeather } from './weatherService'
+import { apiPost } from './api.js'
+import { fetchOnDemandWeather } from './weatherService.js'
 
-export async function predictRisk(station) {
-  if (station?.lat == null || station?.lng == null) {
-    throw new Error('Select a location with valid coordinates before requesting a weather estimate.')
+export async function predictRisk(location) {
+  const weather = await fetchOnDemandWeather(location)
+  if (weather.freshnessStatus !== 'READY') {
+    throw new Error('The weather observation is stale; no estimate was created.')
   }
-  const weather = await fetchLiveWeather(station.lat, station.lng)
   const rainfall = weather.rainMm ?? weather.precipitationMm
   if (rainfall == null || weather.temperatureC == null || weather.windKmh == null) {
-    throw new Error('A stored weather observation is missing rainfall, temperature, or wind; no estimate was created.')
+    throw new Error('The current weather response is missing rainfall, temperature, or wind; no estimate was created.')
   }
 
   const data = await apiPost('/predictions', {

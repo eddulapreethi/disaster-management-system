@@ -8,10 +8,11 @@ from app.utils.utc_timestamps import utc_isoformat
 
 
 class PredictionCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     disaster_type: Literal["flood", "wildfire", "storm"]
     latitude: float = Field(ge=-90, le=90, allow_inf_nan=False, strict=True)
     longitude: float = Field(ge=-180, le=180, allow_inf_nan=False, strict=True)
-    weather_observation_id: int | None = Field(default=None, gt=0)
     rainfall_mm: float = Field(ge=0, le=2000, allow_inf_nan=False, strict=True)
     temperature_c: float = Field(ge=-100, le=100, allow_inf_nan=False, strict=True)
     wind_speed_kmh: float = Field(ge=0, le=500, allow_inf_nan=False, strict=True)
@@ -58,7 +59,9 @@ class PredictionResult(BaseModel):
     target_value: float | None = None
     target_interpretation: Literal["continuous_index"] | None = None
     input_provenance: dict[str, str] = Field(default_factory=dict)
-    risk_band: Literal["low", "medium", "high"]
+    risk_band: Literal["low", "medium", "high"] = Field(
+        description="Existing heuristic display band; cutoffs are not scientifically calibrated."
+    )
     explanation: str
     top_contributions: list[dict[str, float | str]] = Field(default_factory=list)
     alert_generated: bool = False

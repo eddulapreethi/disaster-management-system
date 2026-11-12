@@ -8,6 +8,8 @@ const LINKS = [
   ['/recommendations', 'Recommendations', '🧠'],
   ['/resource-allocation', 'Resources', '🚑'],
   ['/alerts', 'Alerts', '🚨'],
+  ['/incidents', 'Incident reports', '📍'],
+  ['/earthquake-events', 'Earthquake events', '🌐'],
   ['/assistant', 'Assistant', '💬'],
 ]
 

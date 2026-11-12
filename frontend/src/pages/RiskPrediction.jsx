@@ -3,36 +3,24 @@ import { predictRisk } from '../services/predictionService'
 import PredictionCard from '../components/PredictionCard'
 import Loading from '../components/Loading'
 import WeatherCard from '../components/WeatherCard'
+import LocationCoverage from '../components/LocationCoverage'
+import EnvironmentalDataSummary from '../components/EnvironmentalDataSummary'
+import SatelliteSceneCard from '../components/SatelliteSceneCard'
 import LocationSearchField from '../components/LocationSearchField'
-
-const DEFAULT_LOCATION = {
-  id: 'kochi-default',
-  name: 'Kochi',
-  admin1: 'Kerala',
-  admin2: 'Ernakulam',
-  country: 'India',
-  display_name: 'Kochi, Kerala, India',
-  latitude: 9.9312,
-  longitude: 76.2673,
-}
+import { useSelectedLocation } from '../services/LocationContext'
 
 export default function RiskPrediction() {
-  const [selected, setSelected] = useState(DEFAULT_LOCATION)
+  const { selectedLocation, setSelectedLocation } = useSelectedLocation()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   async function run() {
+    if (!selectedLocation) return
     setError('')
     setLoading(true)
     try {
-      const weatherAwareStation = {
-        ...selected,
-        name: selected.display_name || selected.name,
-        lat: selected.latitude,
-        lng: selected.longitude,
-      }
-      const r = await predictRisk(weatherAwareStation)
+      const r = await predictRisk(selectedLocation)
       setResult(r)
     } catch (requestError) {
       setError(requestError.message || 'Could not run prediction.')
@@ -41,27 +29,35 @@ export default function RiskPrediction() {
     }
   }
 
-  const canPredict = Number.isFinite(selected.latitude)
-    && selected.latitude >= -90
-    && selected.latitude <= 90
-    && Number.isFinite(selected.longitude)
-    && selected.longitude >= -180
-    && selected.longitude <= 180
+  const canPredict = Boolean(selectedLocation)
+    && Number.isFinite(selectedLocation.latitude)
+    && selectedLocation.latitude >= -90
+    && selectedLocation.latitude <= 90
+    && Number.isFinite(selectedLocation.longitude)
+    && selectedLocation.longitude >= -180
+    && selectedLocation.longitude <= 180
 
   return (
     <div>
       <h2 className="title">Risk prediction</h2>
-      <p className="sub">Flood predictions are currently unavailable because this installation has no validated trained model or runtime feature pipeline. The page will show the backend's readiness error and will not save a heuristic score as a flood prediction.</p>
+      <p className="sub">Flood prediction remains unavailable until validated model readiness is established. No hazard-specific prediction capability is currently validated; selecting a location does not make one available.</p>
       <div className="twocol">
         <div className="card">
           <div className="sectitle">Inputs</div>
-          <LocationSearchField value={selected} onChange={setSelected} label="Location search" />
+          <LocationSearchField value={selectedLocation} onChange={location => {
+            setSelectedLocation(location)
+            setResult(null)
+            setError('')
+          }} label="Search for a city or place" />
 
           <div style={{ marginTop: '.9rem' }} className="formgrid">
-            <div className="kv"><span>Location</span><span>{selected.display_name || selected.name}</span></div>
-            <div className="kv"><span>Latitude</span><span>{Number(selected.latitude).toFixed(4)}</span></div>
-            <div className="kv"><span>Longitude</span><span>{Number(selected.longitude).toFixed(4)}</span></div>
-            <div className="kv"><span>Country</span><span>{selected.country || 'Unknown'}</span></div>
+            <div className="kv"><span>Selected place</span><span>{selectedLocation?.display_name || 'No location selected'}</span></div>
+            <div className="kv"><span>Latitude</span><span>{selectedLocation ? selectedLocation.latitude.toFixed(5) : '—'}</span></div>
+            <div className="kv"><span>Longitude</span><span>{selectedLocation ? selectedLocation.longitude.toFixed(5) : '—'}</span></div>
+            <div className="kv"><span>Country</span><span>{selectedLocation?.country || 'Not identified for this selection'}</span></div>
+          </div>
+          <div style={{ marginTop: '.9rem' }}>
+            <LocationCoverage location={selectedLocation} />
           </div>
 
           <p className="explain">The 20 model inputs are not shown as sliders: their units and data sources are not validated, so manually selected values would not be meaningful model features.</p>
@@ -70,9 +66,20 @@ export default function RiskPrediction() {
         </div>
 
         <div>
-          {loading && !result ? <div className="card"><Loading label="Checking stored weather…" /></div> : <PredictionCard result={result} title={`Estimate — ${selected.display_name || selected.name}`} />}
+          {loading && !result ? <div className="card"><Loading label="Checking flood-prediction readiness…" /></div> : <PredictionCard result={result} title={`Estimate — ${selectedLocation?.display_name || 'selected location'}`} />}
           <div style={{ marginTop: '1rem' }}>
-            <WeatherCard station={{ name: selected.display_name || selected.name, lat: selected.latitude, lng: selected.longitude }} />
+            {selectedLocation
+              ? <WeatherCard location={selectedLocation} />
+              : <div className="card explain">Select a place to request its current weather.</div>}
+          </div>
+          <div style={{ marginTop: '1rem' }}>
+            <EnvironmentalDataSummary location={selectedLocation} />
+          </div>
+          <div style={{ marginTop: '1rem' }}>
+            <SatelliteSceneCard
+              key={selectedLocation ? `${selectedLocation.latitude}:${selectedLocation.longitude}` : 'no-location'}
+              location={selectedLocation}
+            />
           </div>
         </div>
       </div>
