@@ -43,7 +43,7 @@ export default function RiskMapPage() {
   return (
     <div>
       <h2 className="title">Regional risk map</h2>
-      <p className="sub">Saved historical records for your account only. Scores are unverified saved values, not forecasts or emergency guidance.</p>
+      <p className="sub">Saved historical records for your account only. Reference GIS overlays cover the Kochi study area only; saved markers may be elsewhere. Scores are unverified saved values, not forecasts or emergency guidance.</p>
       {loading && <div className="card">Loading saved risk locations...</div>}
       {error && <div className="card" role="alert">{error}</div>}
       {!loading && !error && points.length === 0 && <div className="card">No saved predictions to map yet. Run a prediction first.</div>}

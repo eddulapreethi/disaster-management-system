@@ -11,7 +11,7 @@ export default function AlertCard({ alert }) {
       <h3>{alert.title}</h3>
       <p className="alert-card-msg">{alert.message}</p>
       <div className="alert-card-time">{alertTimestamp(alert)}</div>
-      <p className="explain">Automated estimate, not an official warning. Follow local authority guidance.</p>
+      <p className="explain">Saved automated estimate, not live hazard monitoring or an official warning. Follow local authority guidance.</p>
     </div>
   )
 }

@@ -1,6 +1,5 @@
 // Regional monitoring stations. Coordinates are approximate and used to position
-// markers on the map; risk figures are illustrative starting values — Risk
-// Prediction and Simulation pages call the live backend for real scores.
+// markers on the map; risk figures are illustrative starting values.
 export const stations = [
   { id: 'kochi', name: 'Kochi', region: 'Kerala coast', lat: 9.9312, lng: 76.2673, risk: 78, rain: 210, river: 82, soil: 74, pop: 2.1 },
   { id: 'wayanad', name: 'Wayanad', region: 'Western Ghats', lat: 11.6854, lng: 76.1320, risk: 66, rain: 170, river: 58, soil: 81, pop: 0.8 },
@@ -13,9 +12,10 @@ export const stations = [
 ]
 
 export function riskBand(v) {
-  return v >= 65 ? 'high' : v >= 45 ? 'medium' : 'low'
+  return v >= 60 ? 'high' : v >= 30 ? 'medium' : 'low'
 }
 
 export function riskColor(v) {
-  return v >= 65 ? '#d2452c' : v >= 45 ? '#d68b1f' : '#1f9d6b'
+  const band = riskBand(v)
+  return band === 'high' ? '#d2452c' : band === 'medium' ? '#d68b1f' : '#1f9d6b'
 }

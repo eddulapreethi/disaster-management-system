@@ -3,7 +3,7 @@ import RiskCard from './RiskCard'
 
 export default function Dashboard({ predictions, selected, onSelect }) {
   if (!predictions.length) {
-    return <div className="card">No saved predictions yet. Run a prediction to populate your dashboard.</div>
+    return <div className="card">No saved estimates are available. Current flood prediction remains unavailable.</div>
   }
 
   const avg = predictions.reduce((total, item) => total + item.risk, 0) / predictions.length
@@ -16,20 +16,20 @@ export default function Dashboard({ predictions, selected, onSelect }) {
         <div className="card stat">
           <div className="label">Average legacy score (unverified)</div>
           <div className="num">{avg.toLocaleString(undefined, { maximumFractionDigits: 1 })}<span style={{ fontSize: '1rem', color: 'var(--ink2)' }}>/100</span></div>
-          <div className={`delta pill ${riskBand(avg) === 'medium' ? 'med' : riskBand(avg)}`}>{riskBand(avg)} concern</div>
+          <div className={`delta pill ${riskBand(avg) === 'medium' ? 'med' : riskBand(avg)}`}>Legacy band: {riskBand(avg)}</div>
         </div>
         <div className="card stat">
-          <div className="label">Saved high-risk predictions</div>
+          <div className="label">Saved high-band legacy scores</div>
           <div className="num">{highCount}</div>
           <div className="delta" style={{ color: 'var(--ink2)' }}>of {predictions.length} saved</div>
         </div>
         <div className="card stat">
-          <div className="label">Saved predictions</div>
+          <div className="label">Saved legacy scores</div>
           <div className="num">{predictions.length}</div>
           <div className="delta" style={{ color: 'var(--ink2)' }}>for your account</div>
         </div>
         <div className="card stat">
-          <div className="label">Highest priority</div>
+          <div className="label">Highest saved score</div>
           <div className="num" style={{ fontSize: '1.15rem', fontFamily: 'Space Grotesk' }}>{top.name}</div>
           <div className={`delta pill ${riskBand(top.risk) === 'medium' ? 'med' : riskBand(top.risk)}`}>score {top.risk}</div>
         </div>

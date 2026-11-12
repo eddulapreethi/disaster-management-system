@@ -78,6 +78,10 @@ class HydrologyServiceTests(unittest.TestCase):
         self.assertEqual(normalized["river_name"], "Bhima")
         self.assertEqual(normalized["observation_time"], datetime(2026, 9, 27, 20, 30, tzinfo=timezone.utc))
         self.assertEqual(normalized["fetched_at"], fetched)
+        self.assertEqual(
+            normalized["provider_metadata"]["source_timezone_assumption"],
+            "Asia/Kolkata",
+        )
 
     def test_normalizes_rainfall_and_missing_values_are_not_fabricated(self) -> None:
         normalized = service.normalize_record(
@@ -87,6 +91,23 @@ class HydrologyServiceTests(unittest.TestCase):
         self.assertEqual(normalized["rainfall"], 0.5)
         self.assertIsNone(normalized["water_level"])
         self.assertIsNone(normalized["discharge"])
+
+    def test_public_resource_ids_fall_back_to_the_documented_defaults(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "NWDP_CWC_KRISHNA_WATER_LEVEL_RESOURCE_ID": "",
+                "NWDP_CWC_ANDHRA_RAINFALL_RESOURCE_ID": "",
+            },
+        ):
+            resources = service.configured_resources()
+        self.assertEqual(
+            [resource["resource_id"] for resource in resources],
+            [
+                "d80798b9-4b11-4626-8b63-964202ba7216",
+                "349a10bc-bbe3-40e5-b415-92aa9a797065",
+            ],
+        )
 
     def test_hydrology_api_exposes_utc_timestamps_and_measurement_units(self) -> None:
         normalized = service.normalize_record(
@@ -98,6 +119,19 @@ class HydrologyServiceTests(unittest.TestCase):
         serialized = response.model_dump(mode="json")
         self.assertEqual(serialized["observation_time"], "2026-09-27T20:30:00Z")
         self.assertEqual(serialized["measurement_units"], {"water_level": "m", "rainfall": "mm"})
+        self.assertTrue(serialized["station_id_is_internal"])
+        self.assertEqual(serialized["provenance"]["provider"], "NWDP/NWIC CWC")
+        self.assertEqual(serialized["provenance"]["source_record_id"], 5)
+        self.assertTrue(serialized["provenance"]["location"]["station_id_is_internal"])
+        self.assertEqual(serialized["provenance"]["provider_metadata"]["measurement_metadata_status"], "UNVERIFIED")
+        self.assertEqual(serialized["provenance"]["units"]["water_level"], "m")
+        canonical = serialized["canonical_record"]
+        self.assertEqual(canonical["record_type"], "observation")
+        self.assertEqual(canonical["hazard_type"], "flood")
+        self.assertIn(canonical["availability_status"], {"REGIONAL", "STALE"})
+        self.assertEqual(canonical["timestamps"]["timezone_assumption"], "Asia/Kolkata")
+        self.assertEqual(canonical["source"]["source_record_id"], 5)
+        self.assertFalse(canonical["geography"]["coverage_verified"])
 
     def test_rejects_malformed_timestamp_and_coordinates(self) -> None:
         with self.assertRaisesRegex(ValueError, "timestamp"):
@@ -118,6 +152,7 @@ class HydrologyServiceTests(unittest.TestCase):
             water_fixture(2, "Yadgir", "28-09-2026 02:00"),
             water_fixture(1, "Other Gauge", "28-09-2026 01:00"),
         ]
+        water_rows[0]["Provider QC Flag"] = "source-specific"
         rain_rows = [rain_fixture(1, "01-05-2026 14:30")]
 
         def request_page(resource_id: str, *, offset: int, limit: int) -> dict:
@@ -138,6 +173,12 @@ class HydrologyServiceTests(unittest.TestCase):
             self.assertTrue(water_state.newer_observation_found)
             self.assertEqual(water_state.source_record_high_watermark, 3)
             self.assertEqual(first_cycle["sources"][0]["inserted"], 2)
+            preserved = next(row for row in observations if row.source_record_id == 3)
+            self.assertEqual(
+                preserved.provider_metadata["source_record"]["Provider QC Flag"],
+                "source-specific",
+            )
+            self.assertEqual(preserved.provider_metadata["source_timestamp_raw"], "28-09-2026 02:00")
 
             # Second cycle sees only records at/below the persisted high-water mark.
             second_cycle = service.collect_hydrology_cycle()
@@ -208,6 +249,12 @@ class HydrologyServiceTests(unittest.TestCase):
         self.assertGreater(status["sources"][0]["observation_age_seconds"], 0)
         self.assertEqual(status["sources"][0]["update_frequency"], "Hourly telemetry; publication delays are source-controlled.")
         self.assertEqual(status["sources"][0]["latest_station"], "Yadgir")
+        self.assertEqual(status["sources"][0]["river_name"], "Bhima")
+        self.assertEqual(status["sources"][0]["state_name"], "Karnataka")
+        self.assertEqual(status["sources"][0]["district_name"], "Yadgir")
+        self.assertEqual(status["sources"][0]["latitude"], 16.7375)
+        self.assertTrue(status["sources"][0]["station_id_is_internal"])
+        self.assertEqual(status["sources"][0]["observation_fetched_at"], old_time.isoformat().replace("+00:00", "Z"))
 
     def test_future_source_observation_is_an_error_not_ready(self) -> None:
         future = datetime.now(timezone.utc) + timedelta(hours=1)
@@ -436,6 +483,32 @@ class HydrologyServiceTests(unittest.TestCase):
 
         self.assertEqual(status["sources"][0]["collection_status"], "SUCCESS_WITH_NEW_DATA")
         self.assertEqual(status["sources"][0]["freshness_status"], "STALE")
+
+    def test_collection_error_does_not_override_freshness_status(self) -> None:
+        observed_at = datetime.now(timezone.utc)
+        normalized = service.normalize_record(
+            water_fixture(1, "Yadgir", "12-11-2026 12:00"),
+            WATER_RESOURCE,
+            observed_at,
+        )
+        normalized["observation_time"] = observed_at.replace(tzinfo=None)
+        normalized["fetched_at"] = observed_at.replace(tzinfo=None)
+        with self.session_factory() as db:
+            db.add(HydrologicalObservation(**normalized))
+            db.add(HydrologyCollectionState(
+                source=service._source_name(WATER_RESOURCE),
+                source_resource_id=WATER_RESOURCE["resource_id"],
+                status="ERROR",
+                last_successful_fetch_at=observed_at.replace(tzinfo=None),
+                last_error="temporary provider failure",
+            ))
+            db.commit()
+            status = get_hydrology_status(db)["sources"][0]
+
+        self.assertEqual(status["status"], "READY")
+        self.assertEqual(status["freshness_status"], "READY")
+        self.assertEqual(status["collection_status"], "ERROR")
+        self.assertEqual(status["latest_error"], "temporary provider failure")
 
     def test_status_api_schema_includes_diagnostics(self) -> None:
         with self.session_factory() as db:

@@ -174,6 +174,23 @@ def normalize_record(record: dict[str, Any], resource: dict[str, str], fetched_a
     if latitude is None or longitude is None or latitude > 90 or longitude > 180:
         raise ValueError("NWDP record has invalid station coordinates.")
     observation_time = _parse_timestamp(record.get("Data Acquisition Time"))
+    raw_timestamp = record.get("Data Acquisition Time")
+    try:
+        parsed_source_timestamp = datetime.fromisoformat(str(raw_timestamp).strip().replace("Z", "+00:00"))
+    except ValueError:
+        parsed_source_timestamp = None
+    source_timezone = (
+        parsed_source_timestamp.tzname()
+        if parsed_source_timestamp is not None
+        and parsed_source_timestamp.tzinfo is not None
+        and parsed_source_timestamp.utcoffset() is not None
+        else None
+    )
+    timezone_assumption = (
+        None
+        if source_timezone is not None
+        else observation_timezone().key
+    )
     measured_value = _optional_number(record.get(resource["value_column"]), resource["measurement"], minimum=0)
     if measured_value is None:
         raise ValueError(f"NWDP record has no measured {resource['measurement']} value.")
@@ -204,6 +221,13 @@ def normalize_record(record: dict[str, Any], resource: dict[str, str], fetched_a
         "rainfall": measured_value if resource["measurement"] == "rainfall" else None,
         "observation_time": observation_time,
         "fetched_at": fetched_at,
+        "provider_metadata": {
+            "source_record": record,
+            "source_timestamp_raw": record.get("Data Acquisition Time"),
+            "source_timezone": source_timezone,
+            "source_timezone_assumption": timezone_assumption,
+            "source_value_column": resource["value_column"],
+        },
     }
 
 

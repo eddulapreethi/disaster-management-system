@@ -73,6 +73,7 @@ def test_actual_nwdp_format_normalizes_without_asserting_unknown_qc_or_datum(
     output = tmp_path / "canonical_observations.csv"
     _write_rows(source, NWDP_HEADERS, [_source_row()])
     _write_rows(mapping, tuple(_mapping_row()), [_mapping_row()])
+    source_sha256 = sha256_file(source)
 
     manifest = normalize_nwdp_csv(
         source,
@@ -92,6 +93,7 @@ def test_actual_nwdp_format_normalizes_without_asserting_unknown_qc_or_datum(
         "quality_flag": "UNVERIFIED",
     }
     assert manifest["source_sha256"] == sha256_file(source)
+    assert manifest["source_sha256"] == source_sha256
     assert manifest["unresolved_quality_or_vertical_datum_rows"] == 1
     assert "does not authenticate" in manifest["evidence_boundary"]
     assert json.loads(output.with_suffix(".manifest.json").read_text(encoding="utf-8")) == manifest

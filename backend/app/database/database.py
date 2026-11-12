@@ -80,6 +80,27 @@ def _upgrade_sqlite_hydrology_schema(bind=engine) -> None:
                 )
 
 
+def _upgrade_sqlite_provider_metadata_schema(bind=engine) -> None:
+    if bind.dialect.name != "sqlite":
+        return
+
+    with bind.begin() as connection:
+        for table_name in ("weather_observations", "hydrological_observations"):
+            if not inspect(connection).has_table(table_name):
+                continue
+            columns = {
+                column["name"]
+                for column in inspect(connection).get_columns(table_name)
+            }
+            if "provider_metadata" not in columns:
+                connection.execute(
+                    text(
+                        f"ALTER TABLE {table_name} "
+                        "ADD COLUMN provider_metadata JSON NOT NULL DEFAULT '{}'"
+                    )
+                )
+
+
 def _upgrade_sqlite_resource_constraints(bind=engine) -> None:
     if bind.dialect.name != "sqlite" or not inspect(bind).has_table("resources"):
         return
@@ -98,6 +119,48 @@ def _upgrade_sqlite_resource_constraints(bind=engine) -> None:
             )
 
 
+def _upgrade_sqlite_incident_schema(bind=engine) -> None:
+    if bind.dialect.name != "sqlite":
+        return
+
+    with bind.begin() as connection:
+        inspector = inspect(connection)
+        if inspector.has_table("users"):
+            columns = {column["name"] for column in inspector.get_columns("users")}
+            if "role" not in columns:
+                connection.execute(
+                    text("ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user'")
+                )
+
+        if not inspector.has_table("disasters"):
+            return
+        columns = {column["name"] for column in inspector.get_columns("disasters")}
+        additions = {
+            "user_id": "INTEGER REFERENCES users(id)",
+            "incident_time": "DATETIME",
+            "incident_timezone": "VARCHAR(64)",
+            "source": "VARCHAR(64) NOT NULL DEFAULT 'community_report'",
+            "source_metadata": "JSON NOT NULL DEFAULT '{}'",
+            "evidence_metadata": "JSON NOT NULL DEFAULT '[]'",
+            "submitted_at": "DATETIME",
+        }
+        for name, definition in additions.items():
+            if name not in columns:
+                connection.execute(
+                    text(f"ALTER TABLE disasters ADD COLUMN {name} {definition}")
+                )
+        if "created_at" in columns or "created_at" in additions:
+            connection.execute(
+                text("UPDATE disasters SET submitted_at = created_at WHERE submitted_at IS NULL")
+            )
+        connection.execute(
+            text("CREATE INDEX IF NOT EXISTS ix_disasters_user_id ON disasters (user_id)")
+        )
+        connection.execute(
+            text("CREATE INDEX IF NOT EXISTS ix_disasters_status_time ON disasters (status, incident_time)")
+        )
+
+
 def create_tables() -> None:
     # Import models so SQLAlchemy registers their tables before create_all.
     from app.models import (  # noqa: F401
@@ -106,6 +169,7 @@ def create_tables() -> None:
         hydrological_observation,
         hydrology_collection_state,
         prediction,
+        disaster_review,
         resource,
         simulation,
         user,
@@ -113,9 +177,11 @@ def create_tables() -> None:
     )
 
     Base.metadata.create_all(bind=engine)
+    _upgrade_sqlite_provider_metadata_schema()
     _upgrade_sqlite_weather_schema()
     _upgrade_sqlite_hydrology_schema()
     _upgrade_sqlite_resource_constraints()
+    _upgrade_sqlite_incident_schema()
 
 
 def get_db() -> Generator[Session, None, None]:

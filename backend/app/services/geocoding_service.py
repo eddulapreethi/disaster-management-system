@@ -28,7 +28,7 @@ def _normalize_result(item: dict[str, Any]) -> dict[str, Any]:
 
     admin1 = item.get("admin1") or item.get("admin_name")
     admin2 = item.get("admin2")
-    country = item.get("country") or item.get("country_code") or "Unknown"
+    country = item.get("country") or item.get("country_code")
     display_name = ", ".join(part for part in [name, admin1, admin2, country] if part)
 
     return {

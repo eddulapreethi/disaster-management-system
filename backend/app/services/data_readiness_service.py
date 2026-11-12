@@ -49,20 +49,17 @@ def _source_readiness(
     )
     if latest is None:
         freshness_status = "UNAVAILABLE"
-        status = "ERROR" if state and state.status == "ERROR" else "UNAVAILABLE"
         message = state.message if state and state.message else "No observation has been collected from this source yet."
     elif observation_age_seconds is not None and observation_age_seconds < -300:
         freshness_status = "ERROR"
-        status = "ERROR"
         message = "The latest observation timestamp is more than five minutes in the future."
     elif observation_age_seconds is not None and observation_age_seconds > stale_after.total_seconds():
         freshness_status = "STALE"
-        status = "ERROR" if state and state.status == "ERROR" else "STALE"
         message = f"Latest source observation is older than {stale_after.total_seconds() / 3600:g} hours."
     else:
         freshness_status = "READY"
-        status = "ERROR" if state and state.status == "ERROR" else "READY"
         message = "Latest observation is within the configured freshness window."
+    status = freshness_status
     if state is None or state.last_successful_fetch_at is None:
         collection_status = "UNAVAILABLE"
     elif state.status == "ERROR":
@@ -89,10 +86,17 @@ def _source_readiness(
         "collection_status": collection_status,
         "message": message,
         "last_observation": utc_isoformat(latest.observation_time) if latest else None,
+        "observation_fetched_at": utc_isoformat(latest.fetched_at) if latest else None,
         "observation_age_seconds": max(0, int(observation_age_seconds)) if observation_age_seconds is not None else None,
         "last_fetch": utc_isoformat(last_fetch),
         "station_id": latest.station_id if latest else None,
+        "station_id_is_internal": True,
         "latest_station": latest.station_name if latest else None,
+        "river_name": latest.river_name if latest else None,
+        "state_name": latest.state_name if latest else None,
+        "district_name": latest.district_name if latest else None,
+        "latitude": latest.latitude if latest else None,
+        "longitude": latest.longitude if latest else None,
         "update_frequency": update_frequency,
         "stale_after_hours": int(stale_after.total_seconds() / 3600),
         "water_level": latest.water_level if latest else None,
@@ -235,8 +239,12 @@ def _readiness_fingerprint(project_root: Path, model_path: Path, user_id: int) -
 def get_data_readiness(db: Session, user: User) -> dict[str, Any]:
     """Report evidence-based readiness without initiating automatic predictions."""
     project_root = Path(__file__).resolve().parents[3]
-    default_model = project_root / "ml" / "models" / "trained_models" / "flood_risk_model.joblib"
-    model_path = Path(os.getenv("DISASTERGUARD_MODEL_PATH", str(default_model)))
+    project_root_string = str(project_root)
+    if project_root_string not in sys.path:
+        sys.path.insert(0, project_root_string)
+    from ml.prediction.predict import configured_model_path
+
+    model_path = configured_model_path()
     cache_key = ("data_readiness", str(project_root), _readiness_fingerprint(project_root, model_path, user.id))
     now = time.monotonic()
     with _READINESS_CACHE_LOCK:

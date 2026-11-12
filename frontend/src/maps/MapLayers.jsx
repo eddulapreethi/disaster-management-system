@@ -2,9 +2,9 @@ import { GEOJSON_LAYERS } from './geoJsonLayers'
 
 // Simple legend/layer-toggle control shown alongside the Leaflet map.
 const RISK_LAYERS = [
-  { key: 'high', label: 'High risk', color: '#d2452c' },
-  { key: 'medium', label: 'Medium risk', color: '#d68b1f' },
-  { key: 'low', label: 'Low risk', color: '#1f9d6b' },
+  { key: 'high', label: 'High legacy score', color: '#d2452c' },
+  { key: 'medium', label: 'Medium legacy score', color: '#d68b1f' },
+  { key: 'low', label: 'Low legacy score', color: '#1f9d6b' },
 ]
 
 export default function MapLayers({
@@ -18,7 +18,7 @@ export default function MapLayers({
 }) {
   return (
     <div>
-      <div className="map-layers" aria-label="Risk marker filters">
+      <div className="map-layers" aria-label="Saved legacy score marker filters">
         {RISK_LAYERS.map(layer => (
           <label key={layer.key} className="map-layer-item">
             <input type="checkbox" checked={active[layer.key]} onChange={() => onToggle(layer.key)} />
@@ -27,8 +27,9 @@ export default function MapLayers({
           </label>
         ))}
       </div>
+      <p className="explain">Saved score markers are historical and unverified; they do not show current hazard conditions.</p>
       <fieldset className="gis-layer-controls">
-        <legend>Reference GIS layers — not flood predictions</legend>
+        <legend>Reference GIS layers · Kochi study area only · not flood predictions</legend>
         <div className="gis-layer-list">
           {GEOJSON_LAYERS.map(layer => (
             <div className="gis-layer-row" key={layer.key}>

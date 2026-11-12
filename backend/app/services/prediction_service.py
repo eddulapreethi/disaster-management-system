@@ -18,6 +18,13 @@ class RiskInputs(Protocol):
     wind_speed_kmh: float
 
 
+def classify_risk_score(score: float) -> tuple[str, str]:
+    """Return the existing heuristic risk level and display band for a score."""
+    level = "low" if score < 30 else "moderate" if score < 60 else "high" if score < 80 else "critical"
+    band = "low" if score < 30 else "medium" if score < 60 else "high"
+    return level, band
+
+
 def assess_risk(data: RiskInputs) -> tuple[float, str]:
     """Simple demonstrator heuristic; replace with a trained model for real forecasts."""
     if data.disaster_type == "flood":
@@ -34,7 +41,7 @@ def assess_risk(data: RiskInputs) -> tuple[float, str]:
         score = min(100, data.wind_speed_kmh * 0.8 + data.rainfall_mm * 0.25)
 
     score = round(max(0, score), 2)
-    level = "low" if score < 30 else "moderate" if score < 60 else "high" if score < 80 else "critical"
+    level, _ = classify_risk_score(score)
     return score, level
 
 
@@ -52,9 +59,10 @@ def create_prediction(db: Session, user: User, data: PredictionCreate) -> tuple[
 
     prediction_inputs: RiskInputs = data
     score, level = assess_risk(prediction_inputs)
+    _, band = classify_risk_score(score)
     details = {
         "model_source": "weather_heuristic",
-        "risk_band": "low" if score < 30 else "medium" if score < 60 else "high",
+        "risk_band": band,
         "explanation": (
             "This result uses an unvalidated demonstrator weather heuristic, not a forecast or probability; "
             "it has no SHAP explanation."
