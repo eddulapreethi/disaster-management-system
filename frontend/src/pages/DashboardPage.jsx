@@ -3,8 +3,16 @@ import Dashboard from '../components/Dashboard'
 import WeatherCard from '../components/WeatherCard'
 import { CountryRanking } from '../components/CountryRanking'
 import { apiGet } from '../services/api'
+import { useSelectedLocation } from '../services/LocationContext'
+
+function formatTimestamp(value) {
+  if (!value) return 'Unavailable'
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? 'Invalid source timestamp' : parsed.toLocaleString()
+}
 
 export default function DashboardPage() {
+  const { selectedLocation, setSelectedLocation } = useSelectedLocation()
   const [predictions, setPredictions] = useState([])
   const [selected, setSelected] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -104,10 +112,20 @@ export default function DashboardPage() {
   const yearAggregation = historicalAnalytics?.summary?.year_aggregation || {}
   const yearlyExcluded = yearAggregation.excluded_events_total || 0
 
+  function selectPredictionLocation(prediction) {
+    setSelected(prediction)
+    setSelectedLocation({
+      name: prediction.name,
+      display_name: prediction.name,
+      latitude: prediction.latitude,
+      longitude: prediction.longitude,
+    })
+  }
+
   return (
     <div>
       <h2 className="title">Situation overview</h2>
-      <p className="sub">Summary of your saved predictions. Select a prediction to view current weather at its coordinates.</p>
+      <p className="sub">Your saved experimental scores and available source checks. Scores are not live hazard monitoring or validated predictions. Weather uses the shared selected location.</p>
       <section className="card" aria-label="Data readiness">
         <div className="sectitle">Data readiness</div>
         {readinessError && <p role="alert">{readinessError}</p>}
@@ -125,27 +143,37 @@ export default function DashboardPage() {
             ))}
           </div>
           <p className="explain">{readiness.sources.hydrology.message}</p>
+          <p className="explain">CWC Krishna-basin water-level and Andhra Pradesh rainfall readings cover their reported source stations only. They are not matched to the selected place, do not represent Kochi observations, and may be stale or unavailable.</p>
           <div className="detailbox">
-            <div className="kv"><span>Weather data</span><span className={`pill ${readiness.sources.weather.status === 'READY' ? 'low' : readiness.sources.weather.status === 'STALE' ? 'med' : 'high'}`}>{readiness.sources.weather.status}</span></div>
-            <div className="kv"><span>Last observation</span><span>{readiness.sources.weather.last_observation ? new Date(readiness.sources.weather.last_observation).toLocaleString() : 'Unavailable'}</span></div>
-            <div className="kv"><span>Last checked</span><span>{readiness.sources.weather.last_checked ? new Date(readiness.sources.weather.last_checked).toLocaleString() : 'Not checked yet'}</span></div>
+            <div className="kv"><span>Weather freshness</span><span className={`pill ${readiness.sources.weather.freshness_status === 'READY' ? 'low' : readiness.sources.weather.freshness_status === 'STALE' ? 'med' : 'high'}`}>{readiness.sources.weather.freshness_status || readiness.sources.weather.status}</span></div>
+            <div className="kv"><span>Weather measurements</span><span>{readiness.sources.weather.measurement_status || 'Unavailable'}</span></div>
+            <div className="kv"><span>Collection status</span><span>{readiness.sources.weather.collection_status || 'Unavailable'}</span></div>
+            <div className="kv"><span>Last observation</span><span>{formatTimestamp(readiness.sources.weather.last_observation)}</span></div>
+            <div className="kv"><span>Observation age</span><span>{readiness.sources.weather.observation_age_seconds == null ? 'Unavailable' : `${Math.floor(readiness.sources.weather.observation_age_seconds / 60)}m`}</span></div>
+            <div className="kv"><span>Observation fetched</span><span>{formatTimestamp(readiness.sources.weather.observation_fetched_at)}</span></div>
+            <div className="kv"><span>Stored location</span><span>{readiness.sources.weather.station_name || 'Unavailable'}{readiness.sources.weather.latitude != null && readiness.sources.weather.longitude != null ? ` (${readiness.sources.weather.latitude.toFixed(5)}, ${readiness.sources.weather.longitude.toFixed(5)})` : ''}</span></div>
+            <div className="kv"><span>Collection checked</span><span>{formatTimestamp(readiness.sources.weather.last_checked)}</span></div>
             <div className="kv"><span>Source</span><span>{readiness.sources.weather.source || 'Open-Meteo'}</span></div>
-            <p className="explain">{readiness.sources.weather.message} Checks run every {readiness.sources.weather.poll_interval_seconds || 300} seconds; Open-Meteo does not necessarily publish a new observation on every check.</p>
+            <p className="explain">{readiness.sources.weather.message} {readiness.sources.weather.collection_message} Checks run every {readiness.sources.weather.poll_interval_seconds || 300} seconds; Open-Meteo does not necessarily publish a new observation on every check. Stored weather describes a provider grid, not a local sensor observation.</p>
           </div>
           {readiness.sources.hydrology.sources.map(source => (
             <div className="detailbox" key={source.source}>
               <div className="kv"><span>{source.source}</span><span className={`pill ${source.status === 'READY' ? 'low' : source.status === 'STALE' ? 'med' : 'high'}`}>{source.status}</span></div>
-              <div className="kv"><span>Latest observation</span><span>{source.last_observation ? new Date(source.last_observation).toLocaleString() : 'Unavailable'}</span></div>
+              <div className="kv"><span>Latest observation</span><span>{formatTimestamp(source.last_observation)}</span></div>
               {source.latest_station && <div className="kv"><span>Latest station</span><span>{source.latest_station}</span></div>}
-              {source.station_id && <div className="kv"><span>Station ID</span><span className="mono">{source.station_id}</span></div>}
+              {source.station_id && <div className="kv"><span>Internal station key (not source ID)</span><span className="mono">{source.station_id}</span></div>}
+              {(source.river_name || source.state_name || source.district_name) && <div className="kv"><span>Reported location</span><span>{[source.river_name, source.district_name, source.state_name].filter(Boolean).join(', ')}</span></div>}
+              {source.latitude != null && source.longitude != null && <div className="kv"><span>Station coordinates</span><span>{source.latitude.toFixed(5)}, {source.longitude.toFixed(5)}</span></div>}
               <div className="kv"><span>Observation age</span><span>{source.observation_age_seconds == null ? 'Unavailable' : `${Math.floor(source.observation_age_seconds / 3600)}h ${Math.floor((source.observation_age_seconds % 3600) / 60)}m`}</span></div>
+              <div className="kv"><span>Observation fetched</span><span>{formatTimestamp(source.observation_fetched_at)}</span></div>
               {source.water_level != null && <div className="kv"><span>Water level</span><span>{source.water_level} {source.water_level_unit || 'm'}</span></div>}
               {source.rainfall != null && <div className="kv"><span>Rainfall</span><span>{source.rainfall} {source.rainfall_unit || 'mm'}</span></div>}
-              <div className="kv"><span>Collection / freshness</span><span>{source.collection_status} / {source.freshness_status}</span></div>
+              <div className="kv"><span>Collection status</span><span>{source.collection_status}</span></div>
+              <div className="kv"><span>Observation freshness</span><span>{source.freshness_status}</span></div>
               <div className="kv"><span>Rows scanned / fetched new / valid new / inserted new</span><span>{source.records_returned} / {source.records_received} / {source.valid_records} / {source.inserted_count}</span></div>
               <div className="kv"><span>Duplicate / parse-error rows</span><span>{source.duplicates_skipped} / {source.parse_errors}</span></div>
               <div className="kv"><span>Newer observation found</span><span>{source.newer_observation_found ? 'Yes' : 'No'}</span></div>
-              <div className="kv"><span>Last successful fetch</span><span>{source.last_fetch ? new Date(source.last_fetch).toLocaleString() : 'Not fetched yet'}</span></div>
+              <div className="kv"><span>Last successful fetch</span><span>{formatTimestamp(source.last_fetch)}</span></div>
               <div className="kv"><span>Provider update frequency</span><span>{source.update_frequency}</span></div>
               {source.message && <p className="explain">{source.message}</p>}
               {source.latest_error && <p className="error" role="alert">Latest source error: {source.latest_error}</p>}
@@ -156,7 +184,7 @@ export default function DashboardPage() {
               {source.collection_status === 'PARSE_ERRORS' && <p className="error" role="alert">Some returned rows failed validation and were skipped; see the latest error above.</p>}
             </div>
           ))}
-          <p className="explain">Status checked at {new Date(readiness.checked_at).toLocaleString()}. The collector checks on its configured interval; CWC telemetry is labeled hourly and source publication may be delayed. Data collection does not trigger predictions.</p>
+          <p className="explain">Status checked at {formatTimestamp(readiness.checked_at)}. The collector checks on its configured interval; CWC telemetry is labeled hourly and source publication may be delayed. Data collection does not trigger predictions.</p>
         </>}
       </section>
       <section className="card" aria-label="Historical disaster analytics">
@@ -238,15 +266,18 @@ export default function DashboardPage() {
               {dataset.license && <div className="kv"><span>Source license</span><span>{dataset.license}</span></div>}
             </div>
           ))}
-          <CountryRanking eventsByCountry={historicalAnalytics.summary.events_by_country} />
+          <CountryRanking
+            eventsByCountry={historicalAnalytics.summary.events_by_country}
+            datasets={historicalAnalytics.dataset_inventory}
+          />
           <p className="explain">Impact totals include only source records with reported values. Missing coordinates and impacts are retained as missing—not inferred. Historical event records do not supply verified no-flood examples or continuous flood-risk targets.</p>
           </>}
         </>}
       </section>
       {loading && <div className="card">Loading prediction history...</div>}
       {error && <div className="card" role="alert">{error}</div>}
-      {!loading && !error && <Dashboard predictions={predictions} selected={selected} onSelect={setSelected} />}
-      {selected && <div style={{ marginTop: '1rem' }}><WeatherCard station={selected} /></div>}
+      {!loading && !error && <Dashboard predictions={predictions} selected={selected} onSelect={selectPredictionLocation} />}
+      {selectedLocation && <div style={{ marginTop: '1rem' }}><WeatherCard location={selectedLocation} /></div>}
     </div>
   )
 }

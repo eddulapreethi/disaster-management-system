@@ -19,24 +19,24 @@ The FastAPI lifespan starts one background task. It polls once immediately, then
 
 Only one cycle per source can run at a time in a process. Run one Uvicorn worker; multiple workers would create independent schedulers and duplicate polling.
 
-Each row records `observation_time` from Open-Meteo, `fetched_at` when the backend fetched the response, and `created_at` when the database row was created. A unique `(station_id, observation_time, source)` database constraint and conflict-safe inserts prevent repeated observations from being stored. The source can continue returning the same observation time across multiple checks; those checks are counted as skipped duplicates.
+Each row records `observation_time` from Open-Meteo, `fetched_at` when the backend fetched the response, and `created_at` when the database row was created. Persisted latitude/longitude are the configured/requested location; the on-demand response also returns Open-Meteo's resolved grid coordinates. Temperature, precipitation, wind, humidity and pressure units are requested explicitly, validated against the provider response, and included in API responses. A unique `(station_id, observation_time, source)` database constraint and conflict-safe inserts prevent repeated observations from being stored. The source can continue returning the same observation time across multiple checks; those checks are counted as skipped duplicates.
 
 For an existing PostgreSQL database, inspect possible duplicate rows and apply `database/migrations/003_weather_observation_dedup.sql` before using the updated collector. This migration deliberately stops if it finds duplicates; it does not delete data. New installations should use `database/schemas/weather_observations.sql`. SQLite local development gets the unique constraint through SQLAlchemy `create_all`; startup adds missing metadata columns to older SQLite tables without deleting rows. If an older SQLite database contains duplicate keys, those rows are retained, the upgrade does not create a unique index, and the single-process collector checks existing keys before writing. Resolve those historical duplicates deliberately before adding an index if multi-process collection is later required.
 
 ## Readiness and API
 
-`GET /api/weather/latest` returns the latest stored record per configured location, including `observation_time`, `fetched_at`, `created_at`, and `source`.
+`GET /api/weather/latest` returns the latest stored record per configured location, including `observation_time`, `fetched_at`, `created_at`, provider-grid coordinates, measurement units, age, freshness, and required-measurement availability.
 
-`GET /api/weather/current?latitude=51.5072&longitude=-0.1276` requests fresh Open-Meteo current conditions for the authenticated user's selected coordinates. This on-demand endpoint is independent of `WEATHER_LOCATIONS_JSON`, validates the provider timestamp and required measurements, and returns an explicit error when the provider cannot serve the location. It does not create an observation record.
+`GET /api/weather/current?latitude=51.5072&longitude=-0.1276` requests Open-Meteo current data for the authenticated user's selected coordinates. This on-demand endpoint is independent of `WEATHER_LOCATIONS_JSON`, validates units, provider coordinates, timestamp and required measurements, returns stale observations with `freshness_status: "STALE"` when outside the configured window, and returns an explicit error when the provider cannot serve or validate the location. It does not create an observation record.
 
 `GET /api/weather/status` reports:
 
-- `READY`: a recent valid observation exists in the database and the latest collection cycle did not fail.
+- `READY`: the latest stored observation is recent and its required measurements are available.
 - `STALE`: a stored observation exists but is older than `WEATHER_MAX_AGE_SECONDS`.
-- `UNAVAILABLE`: no valid observation has been stored and no failed latest attempt is recorded.
-- `ERROR`: no observation is available, or the latest collection attempt failed (the last stored row, if any, remains visible).
+- `UNAVAILABLE`: no stored observation exists or required measurements are missing.
+- `ERROR`: the stored observation timestamp is implausibly in the future.
 
-`last_observation` is the provider's observation timestamp. `last_checked` is the latest completed polling cycle; `last_successful_fetch` can advance even if that cycle found only an already-stored observation. The existing `/api/data-readiness` response includes the same weather readiness evidence. These routes require the existing bearer-token authentication.
+`freshness_status`, `measurement_status`, and `collection_status` are separate: a failed latest collection does not make an older stored observation appear fresher or hide its freshness. `last_observation` is the provider's observation timestamp; `observation_fetched_at` is the fetch time for that row; `last_checked` is the latest completed polling cycle; `last_successful_fetch` can advance even if that cycle found only an already-stored observation. The existing `/api/data-readiness` response includes the same weather readiness evidence. These routes require the existing bearer-token authentication.
 
 ## Run and Verify
 
@@ -67,7 +67,7 @@ The assistant stores its transcript and unsent prompt draft in per-tab `sessionS
 
 The public NWDP collector uses descending `_id` pagination and a persisted per-resource high-water cursor. It retries a bounded number of times on request failures, does not overlap cycles within one process, and does not equate a successful source check with a fresh observation. `records_returned` is the count read from provider pages; `records_received` is new-to-cursor raw rows; `valid_records` counts normalized new rows; `inserted_count` excludes station/time duplicates. A provider can return no new rows while the last fetch is successful and the latest observation remains stale.
 
-`GET /api/hydrology/status` exposes per-resource status, freshness, observation age, latest fetch, station identity, source update cadence, counts, parse errors, and whether an observation newer than the stored maximum was discovered. `GET /api/data-readiness` also includes GIS file validation and hash-checked EM-DAT manifests. Historical event files can validate as source datasets while remaining explicitly ineligible for model training. Both endpoints require the existing bearer-token authentication.
+`GET /api/hydrology/status` exposes per-resource collection status separately from freshness, observation and fetch timestamps, age, available station/location metadata, units, source update cadence, counts, parse errors, and whether an observation newer than the stored maximum was discovered. `station_id` is an internal deduplication key derived from source station metadata, not a source-issued CWC station ID. The source rows do not provide an official stable station ID, a water-level datum, or a danger threshold; none is inferred. `GET /api/data-readiness` also includes GIS file validation and hash-checked EM-DAT manifests. Historical event files can validate as source datasets while remaining explicitly ineligible for model training. Both endpoints require the existing bearer-token authentication.
 
 SQLite startup adds the diagnostic columns (`records_returned`, `valid_records`, `newer_observation_found`, and `last_error`) without deleting stored collection state. Existing PostgreSQL deployments must apply `database/migrations/004_hydrology_collection_diagnostics.sql` once before deploying code that reads the new columns. Verify the migration on a backup/staging database before applying it to production.
 

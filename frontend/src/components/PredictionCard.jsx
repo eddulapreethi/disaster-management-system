@@ -7,12 +7,14 @@ export default function PredictionCard({ result, title }) {
 
   return (
     <div className="card">
-      <div className="sectitle">{title}{result.offline ? ' (offline demo estimate)' : result.model_source === 'weather_heuristic' ? ' (weather heuristic)' : ''}</div>
+      <div className="sectitle">{title}{result.offline ? ' (offline demonstration)' : result.model_source === 'weather_heuristic' ? ' (experimental heuristic)' : ''}</div>
       <div className="gauge-wrap">
         <div style={{ fontFamily: 'Space Grotesk', fontSize: '2.6rem', fontWeight: 700, color: riskColor(result.risk_score) }}>
           {Number(result.risk_score).toLocaleString(undefined, { maximumFractionDigits: 1 })}
         </div>
-        <span className={`pill ${result.risk_band === 'medium' ? 'med' : result.risk_band}`}>{result.risk_band} risk</span>
+        <span className={`pill ${result.risk_band === 'medium' ? 'med' : result.risk_band}`}>
+          {result.model_source === 'weather_heuristic' ? `Unvalidated band: ${result.risk_band}` : `${result.risk_band} risk band`}
+        </span>
       </div>
       <div style={{ marginTop: '1rem' }} className="sectitle">{contribs.length ? 'SHAP factor contributions' : 'Model explanation'}</div>
       {contribs.map(c => (
@@ -25,7 +27,7 @@ export default function PredictionCard({ result, title }) {
         </div>
       ))}
       {!contribs.length && <p className="explain">This estimate has no validated feature-attribution explanation.</p>}
-      {result.model_source === 'weather_heuristic' && <p className="explain">Demonstrator-only weather calculation; this score is not a calibrated event probability or flood forecast.</p>}
+      {result.model_source === 'weather_heuristic' && <p className="explain">Experimental demonstrator-only weather calculation. This score is not calibrated, is not a validated hazard forecast, and should not guide emergency decisions.</p>}
       <div className="explain">{result.explanation}</div>
     </div>
   )

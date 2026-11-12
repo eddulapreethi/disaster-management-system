@@ -221,7 +221,7 @@ def _retrieve_project_context(
                 ranked.append((len(overlap), relative_path, heading or title, excerpt))
 
     ranked.sort(key=lambda item: (-item[0], item[1], item[2]))
-    minimum_relevance = 0.25
+    minimum_relevance = 0.5
     selected = [
         item for item in ranked
         if item[0] / max(1, len(matching_terms)) >= minimum_relevance

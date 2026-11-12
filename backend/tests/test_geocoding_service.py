@@ -58,3 +58,13 @@ class GeocodingServiceTests(unittest.TestCase):
 
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["country"], "France")
+
+    def test_geocoding_keeps_country_optional_when_provider_omits_it(self) -> None:
+        result = service._normalize_result({
+            "name": "Open ocean",
+            "latitude": 0,
+            "longitude": -150,
+        })
+
+        self.assertIsNone(result["country"])
+        self.assertEqual(result["display_name"], "Open ocean")

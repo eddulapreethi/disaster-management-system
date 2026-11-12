@@ -1,9 +1,13 @@
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import CheckConstraint, DateTime, Float, Index, Integer, String, UniqueConstraint
+from sqlalchemy import JSON, CheckConstraint, DateTime, Float, Index, Integer, String, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
+
+JSON_DOCUMENT = JSON().with_variant(JSONB, "postgresql")
 
 
 class HydrologicalObservation(Base):
@@ -42,3 +46,8 @@ class HydrologicalObservation(Base):
     rainfall: Mapped[float | None] = mapped_column(Float, nullable=True)
     observation_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    provider_metadata: Mapped[dict[str, Any]] = mapped_column(
+        JSON_DOCUMENT,
+        nullable=False,
+        default=dict,
+    )

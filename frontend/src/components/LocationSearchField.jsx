@@ -1,35 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { searchLocations } from '../services/locationSearchService'
+import RiskMap from '../maps/RiskMap'
+import { locationFromCoordinates, requestCurrentLocation, selectLocation } from '../services/location'
 
-const DEFAULT_LOCATION = {
-  id: 'kochi-default',
-  name: 'Kochi',
-  admin1: 'Kerala',
-  admin2: 'Ernakulam',
-  country: 'India',
-  display_name: 'Kochi, Kerala, India',
-  latitude: 9.9312,
-  longitude: 76.2673,
-}
-
-export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange, label = 'Location search' }) {
-  const [query, setQuery] = useState(value?.display_name || value?.name || 'Kochi')
+export default function LocationSearchField({ value = null, onChange, label = 'Location search', showMap = true }) {
+  const [query, setQuery] = useState(value?.display_name || value?.name || '')
   const [results, setResults] = useState([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const [currentLocationLoading, setCurrentLocationLoading] = useState(false)
+  const [currentLocationError, setCurrentLocationError] = useState('')
   const [manualLatitude, setManualLatitude] = useState('')
   const [manualLongitude, setManualLongitude] = useState('')
   const [coordinateError, setCoordinateError] = useState('')
   const requestIdRef = useRef(0)
 
   useEffect(() => {
-    if (value?.display_name || value?.name) {
-      setQuery(value.display_name || value.name)
-    }
-    if (Number.isFinite(Number(value?.latitude)) && Number.isFinite(Number(value?.longitude))) {
+    setQuery(value?.display_name || value?.name || '')
+    if (value) {
       setManualLatitude(String(value.latitude))
       setManualLongitude(String(value.longitude))
+    } else {
+      setManualLatitude('')
+      setManualLongitude('')
     }
   }, [value])
 
@@ -69,30 +63,17 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
   }, [query])
 
   function handleLocationSelect(location) {
-    const latitude = Number(location?.latitude)
-    const longitude = Number(location?.longitude)
-    if (
-      !location
-      || !Number.isFinite(latitude)
-      || !Number.isFinite(longitude)
-      || latitude < -90
-      || latitude > 90
-      || longitude < -180
-      || longitude > 180
-    ) {
-      setSearchError('The chosen location is missing valid coordinates.')
+    let nextLocation
+    try {
+      nextLocation = selectLocation(location, onChange)
+    } catch (error) {
+      setSearchError(error.message)
       return
     }
-    const nextLocation = {
-      ...location,
-      latitude,
-      longitude,
-      display_name: location.display_name || [location.name, location.admin1, location.country].filter(Boolean).join(', '),
-    }
-    onChange?.(nextLocation)
     setManualLatitude(String(nextLocation.latitude))
     setManualLongitude(String(nextLocation.longitude))
     setCoordinateError('')
+    setCurrentLocationError('')
     setResults([])
     setSearchError('')
     setHighlightedIndex(-1)
@@ -111,17 +92,34 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
       return
     }
     const displayName = `Coordinates ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`
-    onChange?.({
-      name: 'Selected coordinates',
-      display_name: displayName,
-      country: '',
-      latitude,
-      longitude,
-    })
+    onChange?.(locationFromCoordinates(latitude, longitude, 'Selected coordinates'))
     setQuery(displayName)
     setResults([])
     setSearchError('')
     setCoordinateError('')
+  }
+
+  async function useCurrentLocation() {
+    setCurrentLocationLoading(true)
+    setCurrentLocationError('')
+    try {
+      handleLocationSelect(await requestCurrentLocation())
+    } catch (error) {
+      setCurrentLocationError(error.message || 'Could not determine your current location.')
+    } finally {
+      setCurrentLocationLoading(false)
+    }
+  }
+
+  function clearLocation() {
+    onChange?.(null)
+    setQuery('')
+    setManualLatitude('')
+    setManualLongitude('')
+    setResults([])
+    setSearchError('')
+    setCoordinateError('')
+    setCurrentLocationError('')
   }
 
   function handleSearchKeyDown(event) {
@@ -146,10 +144,17 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
         value={query}
         onChange={event => setQuery(event.target.value)}
         onKeyDown={handleSearchKeyDown}
-        placeholder="Search for Kochi, Hyderabad, Telangana, Paris, Nairobi…"
+        placeholder="Search for a city, region, or place anywhere"
         autoComplete="off"
       />
-      {searchLoading && <div className="explain" style={{ marginTop: '.5rem' }}>Searching supported locations…</div>}
+      <div className="location-actions">
+        <button className="btn-outline" type="button" onClick={useCurrentLocation} disabled={currentLocationLoading}>
+          {currentLocationLoading ? 'Finding location…' : 'Use my current location'}
+        </button>
+        {value && <button className="btn-outline" type="button" onClick={clearLocation}>Clear selection</button>}
+      </div>
+      {currentLocationError && <p className="error" role="alert">{currentLocationError}</p>}
+      {searchLoading && <div className="explain" style={{ marginTop: '.5rem' }}>Searching place names…</div>}
       {searchError && <p className="error" role="alert">{searchError}</p>}
       {results.length > 0 && (
         <div className="search-results" style={{ marginTop: '.75rem' }} role="listbox" aria-label="Location search results">
@@ -180,7 +185,7 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
         </div>
       )}
       {!searchLoading && query.trim().length >= 2 && !searchError && !results.length && (
-        <p className="explain" style={{ marginTop: '.75rem' }}>No supported locations matched that search. Try a broader city, district, or state name.</p>
+        <p className="explain" style={{ marginTop: '.75rem' }}>No places matched that search. Try a broader place name or enter coordinates.</p>
       )}
       <div className="formgrid" style={{ marginTop: '.8rem' }}>
         <div>
@@ -194,7 +199,21 @@ export default function LocationSearchField({ value = DEFAULT_LOCATION, onChange
       </div>
       <button className="btn-outline" type="button" style={{ marginTop: '.5rem' }} onClick={applyCoordinates}>Use coordinates</button>
       {coordinateError && <p className="error" role="alert">{coordinateError}</p>}
-      <p className="explain">Weather availability depends on the configured provider and selected coordinates; a coordinate does not guarantee hazard-model coverage.</p>
+      {showMap && (
+        <>
+          <p className="explain">Map selection supplies coordinates only; it does not identify a place or gauge. Weather availability depends on the provider, and location selection does not guarantee flood-prediction availability.</p>
+          <div className="location-map">
+            <div className="sectitle">Select a point on the map</div>
+            <RiskMap
+              locationSelectionMode
+              location={value}
+              onLocationSelect={({ latitude, longitude }) => {
+                handleLocationSelect(locationFromCoordinates(latitude, longitude))
+              }}
+            />
+          </div>
+        </>
+      )}
     </>
   )
 }

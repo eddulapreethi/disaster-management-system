@@ -1,11 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { getCurrentUser, logout } from '../services/authService'
+import { useSelectedLocation } from '../services/LocationContext'
 
 export default function Navbar({ backendOnline, theme, onToggleTheme }) {
   const navigate = useNavigate()
+  const { setSelectedLocation } = useSelectedLocation()
   const user = getCurrentUser()
 
   function handleLogout() {
+    setSelectedLocation(null)
     logout()
     navigate('/login')
   }

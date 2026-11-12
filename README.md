@@ -8,21 +8,22 @@ DisasterGuard AI is an academic disaster-management demonstration that integrate
 
 ---
 
-## ✨ Features
+## ✨ Feature status
 
-- 🤖 Flood model readiness gate and demonstrator weather estimates for supported non-flood hazards
-- 🔍 SHAP explanations only when a compatible trained model is available
-- 🗺 GIS-Based Risk Visualization
-- 🧪 Digital Twin Disaster Simulation
-- 🧠 AI-Based Emergency Recommendations
-- 🚑 Emergency Resource Optimization
-- 🚨 In-app estimate alerts (no SMS/email/push delivery)
-- 🌦 Weather Data Integration
-- 💧 Hydrological Data Integration
-- 🛰 Satellite Data Integration
-- 📚 Historical Disaster Data Analysis
-- 📊 Disaster Risk Analysis
-- 👤 Bearer-token user authentication (no role-based access control)
+| Area | Submission status |
+|---|---|
+| Accounts and protected pages | Bearer-token authentication. Incident review access is assigned to existing accounts by an offline administrator command; there is no self-service role change. |
+| Weather | On-demand Open-Meteo current weather and a configurable background collector. This is model-derived weather, not a local sensor. Collection is limited to configured locations; coordinate acceptance does not prove provider coverage everywhere. |
+| Hydrology | Background collector and status/observation views for two regional CWC/NWDP resources (Krishna-basin water level and Andhra Pradesh rainfall). These are not global gauge coverage. |
+| Environmental catalog and coverage | Authenticated stored-record query and configured-scope panel. Counts are page-scoped; the panel does not verify global provider coverage. |
+| Maps and GIS | Interactive location selection, a separate community incident map, saved legacy estimate markers, and Kochi-area reference layers. Community reports are unverified until reviewed; prediction markers are not observed hazard extents; GIS layers are not global. |
+| Community incident reports | Authenticated global-coordinate reports with pending/review statuses, owner edits, reviewer history, redacted global map listings, and descriptive counts. They are user submissions—not official observations or warnings. No evidence files are uploaded. |
+| Satellite | Authenticated Sentinel Catalog search and bounded Sentinel-2 TIFF request/download paths exist. Live application access depends on backend credentials and was not proven by automated tests; imagery is not hazard detection and is not guaranteed to be pinned to the displayed Catalog item. |
+| Historical analytics | Descriptive summaries from supplied EM-DAT extracts. These are not live event monitoring, complete global surveillance, or model labels. |
+| Digital Twin | React Stage 1 is a deterministic, illustrative Kochi rainfall-input scenario. It is not a physical flood model, forecast, inundation map, or emergency warning. The separate backend simulation API is a weather-based what-if workflow. |
+| Resources, recommendations, alerts | Inventory and planning workflows are available. Demand priority is user-entered; route ordering is straight-line. Alerts are saved application estimates, not official warnings or external notifications. |
+| Assistant | Requires a separately running local Ollama service and configured model. It has no web search and does not replace source-backed application results. |
+| Flood prediction / ML | **Unavailable.** Readiness is `NOT_READY`; the flood prediction endpoint returns HTTP 503. Non-flood heuristic scores are unvalidated demonstrations. No validated global accuracy claim is available. |
 
 ---
 
@@ -63,133 +64,110 @@ disaster-management-system/
 ```
 ---
 
-## 🏗 System Modules
+## 🏗 Architecture and workflow
 
-🤖 Disaster Risk Prediction
+The React/Vite client uses the FastAPI REST API for authentication and protected application workflows. SQLAlchemy stores application records in SQLite by default; PostgreSQL/PostGIS support files exist, but production deployment/migrations are not certified. Leaflet/OpenStreetMap provides maps; configured backend collectors store weather and regional hydrology observations. Historical EM-DAT analytics and local reference GIS are separate from live observations.
 
-Flood inference remains unavailable until validated training data, model artifact and matching runtime features are supplied. Existing wildfire/storm estimates are demonstrator heuristics, not validated forecasts.
-
-🔍 Explainable AI
-
-Uses SHAP when a compatible trained artifact is installed; no fabricated explanations are returned when it is unavailable.
-
-🗺 GIS Risk Visualization
-
-Displays predicted disaster-risk areas and locations using an interactive GIS map.
-
-🧪 Digital Twin Simulation
-
-The Stage 1 Digital Twin provides a local, deterministic rainfall what-if timeline over the Kochi reference GIS map. Its animated symbol is not a flood extent, forecast, or warning. See the [Stage 1 Digital Twin guide](./docs/DIGITAL_TWIN_STAGE_1.md) for usage, assumptions, validation, and Stage 2 requirements.
-
-🧠 AI Emergency Recommendations
-
-Generates emergency guidance and recommendations based on predicted risks, explanations, and simulation results.
-
-🚑 Resource Optimization
-
-Supports emergency resource allocation based on predicted risk areas and available resources.
-
-🚨 Emergency Alerts
-
-Persists in-app alerts for eligible demonstrator estimates above a configurable threshold. These are not official warnings and have no external message delivery.
-
----
-
-## 📊 Data Sources
-
-The system works with multiple categories of disaster-related data:
-
-🌦 Weather Data  
-💧 Hydrological Data  
-📚 Historical Disaster Data  
-🛰 Satellite Data  
-🗺 GIS Data  
-
-These data sources are processed and integrated before being used for disaster-risk prediction.
-
----
-
-## 🚀 Project Workflow
+Typical workflow:
 
 ```text
-
-Data Collection
-      │
-      ▼
-Data Preprocessing
-      │
-      ▼
-Feature Engineering
-      │
-      ▼
-AI/ML Disaster Prediction
-      │
-      ▼
-Risk Assessment
-      │
-      ├──► SHAP Explanation
-      │
-      ├──► GIS Risk Map
-      │
-      └──► Digital Twin Simulation
-                    │
-                    ▼
-            AI Recommendations
-                    │
-                    ▼
-            Resource Optimization
-                    │
-                    ▼
-             Emergency Alerts
+Register / sign in
+      → choose a WGS 84 location
+      → inspect on-demand weather, configured source status and stored environmental records
+      → review descriptive history and reference GIS
+      → submit or review clearly labeled community incident reports
+      → use resource-planning, recommendations or in-app estimate-alert workflows as demonstrations
+      → optionally run the illustrative Digital Twin
 ```
+
+The workflow does not produce a validated worldwide hazard forecast. Flood inference remains gated with HTTP 503. Existing saved estimates and heuristic categories must not be used for emergency decisions.
+
+### System modules
+
+- **Risk/readiness:** `/api/data-readiness` reports model/data state. Flood inference remains unavailable until validated training data, labels, a compatible artifact, and a matching runtime feature builder and evaluation evidence exist.
+- **Explainability:** SHAP contributions are only meaningful for compatible model output; they do not establish model validity.
+- **Maps:** displays saved account estimates and available Kochi reference layers, not predicted hazard extents or global GIS.
+- **Incident reports:** authenticated community submissions are separate from observations, historical datasets, forecasts, satellite imagery, and prediction records. Only offline-provisioned reviewers may verify them. Country/region attribution and file upload are not implemented.
+- **Digital Twin:** see the [Stage 1 guide](./docs/DIGITAL_TWIN_STAGE_1.md) for its illustrative inputs, limits, and non-physical method.
+- **Recommendations/resources/alerts:** application workflows, not official emergency authority or automatic impact assessment. No SMS/email/push delivery is configured.
+
 ---
 
-## ⚙ Installation
+## 📊 Scope and limitations
 
-Clone the Repository  
-- git clone https://github.com/eddulapreethi/disaster-management-system.git  
-Navigate to the Project  
-- cd disaster-management-system
-Backend Setup  
-- cd backend
-- py -m venv .venv
-- .\.venv\Scripts\Activate.ps1
-- pip install -r requirements.txt
-- Copy-Item .env.example .env
-- Set a long random JWT_SECRET_KEY in backend\.env
+The product intent is global: users may select valid WGS 84 coordinates worldwide. This does **not** establish global environmental data availability, complete coverage, or validated prediction capability. Kochi, Godavari, and Krishna are development/test regions only. Current CWC/NWDP feeds and packaged GIS are regional; weather is model-derived and depends on provider availability; satellite requests are query-specific. See the [global hazard coverage audit](./docs/PHASE_2_12_GLOBAL_HAZARD_DATA_COVERAGE_AUDIT.md) and [final submission readiness report](./docs/FINAL_SUBMISSION_READINESS.md).
 
-Start the backend from the `backend` directory:
+Flood ML remains `NOT_READY` and the flood inference API returns HTTP 503. Historical reports are incomplete and descriptive, not event-free labels. The Digital Twin is illustrative, non-physical, and Kochi-only. Do not present any score, saved marker, data gap, or empty result as an official warning or proof that a hazard is absent.
 
-- uvicorn app.main:app --reload
+## ⚙ Installation and startup (Windows PowerShell)
 
-In a second terminal, start the frontend:
+### Prerequisites
 
-- cd frontend
-- npm ci
-- npm run dev
+- Python 3.10 or newer and pip
+- Node.js 18 or newer and npm
+- Git
+- Optional: Ollama and the configured model for the assistant
+- Optional: backend-only Copernicus OAuth credentials for satellite routes
 
-Run automated checks:
+### 1. Configure and start the backend
 
-- From the repository root: `python -m pytest backend\tests ml -q`
-- From `frontend`: `npm test` and `npm run build`
+From the repository root:
 
-The backend defaults to a local SQLite database. External Ollama and Copernicus services require their own local installation or server-side credentials. Review [`backend/README.md`](./backend/README.md) and [`docs/`](./docs) before enabling integrations or using the project operationally.
+```powershell
+cd backend
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Edit `backend\.env` and replace `JWT_SECRET_KEY` with a long random secret. Keep this file private and uncommitted. The default database is local SQLite; `DATABASE_URL` can be left at its example value for local use. `FRONTEND_ORIGINS` defaults to `http://localhost:5173`. Do not add provider credentials to frontend configuration.
+
+Start the backend from `backend\`:
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+The API is at <http://localhost:8000>; interactive API docs are at <http://localhost:8000/docs>. Startup launches the configured Open-Meteo and NWDP/CWC background collectors, which require provider/network access to collect data. One Uvicorn worker is recommended for the in-process schedulers.
+
+### 2. Configure and start the frontend
+
+In a second PowerShell terminal, from the repository root:
+
+```powershell
+cd frontend
+Copy-Item .env.example .env
+npm ci
+npm run dev
+```
+
+Vite serves <http://localhost:5173>. `VITE_API_BASE` defaults to `http://localhost:8000`; change it in `frontend\.env` only when the backend runs elsewhere. The backend `FRONTEND_ORIGINS` must include the frontend origin.
+
+### 3. Tests and production build
+
+From the repository root:
+
+```powershell
+python -m pytest backend\tests ml -q
+```
+
+From `frontend\`:
+
+```powershell
+npm.cmd test
+npm.cmd run build
+```
+
+Backend and frontend tests mock external providers; these checks do not prove live provider access. See [`backend/README.md`](./backend/README.md), [`frontend/README.md`](./frontend/README.md), and [`docs/`](./docs) for module and source details.
 
 All project code and data should remain under this project directory. The active local SQLite database is `backend/disasterguard.db`; relative SQLite `DATABASE_URL` values resolve there even when the backend is started from another directory. Older local database files, if present, are preserved separately in `backend/data/legacy/` and are not used at runtime. Temporary caches, virtual environments, and generated test output are local tooling artifacts, not project data.
 
 ---
 
-## 🎯 Project Objectives
+## 🎯 Project objectives
 
-- Predict potential disaster risks using AI/ML.
-- Integrate multiple disaster-related data sources.
-- Explain AI predictions using SHAP.
-- Visualize disaster risks using GIS.
-- Simulate disaster scenarios using Digital Twin technology.
-- Generate AI-based emergency recommendations.
-- Optimize emergency resource allocation.
-- Provide timely disaster alerts.
-- Support data-driven emergency decision-making.
+The academic project explores how environmental data, historical context, mapping, scenario tools, and planning workflows could support disaster decision-making. Validated multi-hazard and worldwide prediction is a future objective, not a current capability. Any eventual operational use requires hazard-specific sources, permissions, validated targets and models, uncertainty evaluation, and responsible deployment.
 
 ---
 

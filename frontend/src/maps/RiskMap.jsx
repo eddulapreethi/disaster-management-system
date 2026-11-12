@@ -12,6 +12,7 @@ import {
 } from './geoJsonLayers'
 
 const KOCHI_STUDY_BOUNDS = [[9.8, 76.0], [10.1, 76.5]]
+const WORLD_VIEW = [20, 0]
 
 function FitKochiStudyBounds({ enabled }) {
   const map = useMap()
@@ -37,17 +38,30 @@ function FitSelectionBounds({ bounds, enabled }) {
   return null
 }
 
-function MapPointSelector({ enabled, bounds, onSelect }) {
+function FollowSelectedLocation({ location, enabled }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (enabled && location) {
+      map.setView([location.latitude, location.longitude], 10)
+    }
+  }, [enabled, location?.latitude, location?.longitude, map])
+
+  return null
+}
+
+function MapPointSelector({ enabled, bounds, onSelect, allowAnyLocation = false }) {
   useMapEvents({
     click(event) {
-      if (!enabled || !bounds || typeof onSelect !== 'function') return
+      if (!enabled || typeof onSelect !== 'function') return
       const { lat, lng } = event.latlng
-      if (
+      const withinBounds = bounds && (
         lat >= bounds[0][0]
         && lat <= bounds[1][0]
         && lng >= bounds[0][1]
         && lng <= bounds[1][1]
-      ) {
+      )
+      if (allowAnyLocation || withinBounds) {
         onSelect({ latitude: lat, longitude: lng })
       }
     },
@@ -65,6 +79,9 @@ export default function RiskMap({
   simulationCenter = null,
   selectionBounds = null,
   onSimulationCenterChange,
+  locationSelectionMode = false,
+  location = null,
+  onLocationSelect,
 }) {
   const [active, setActive] = useState({ high: true, medium: true, low: true })
   const [geoActive, setGeoActive] = useState(() => ({ ...INITIAL_GEOJSON_VISIBILITY }))
@@ -77,7 +94,12 @@ export default function RiskMap({
   const isSimulationMap = Boolean(onSimulationCenterChange)
   const center = simulationCenter
     ? [simulationCenter.latitude, simulationCenter.longitude]
-    : [22.5, 80]
+    : locationSelectionMode && location
+      ? [location.latitude, location.longitude]
+      : locationSelectionMode
+      ? WORLD_VIEW
+        : [22.5, 80]
+  const isLocationSelector = locationSelectionMode && typeof onLocationSelect === 'function'
 
   const loadGeoLayer = key => {
     if (geoData[key] || geoLoading[key]) return
@@ -103,7 +125,7 @@ export default function RiskMap({
 
   return (
     <div className="card">
-      <MapLayers
+      {!isLocationSelector && <MapLayers
         active={active}
         onToggle={toggle}
         geoActive={geoActive}
@@ -111,10 +133,10 @@ export default function RiskMap({
         geoLoading={geoLoading}
         geoErrors={geoErrors}
         onGeoRetry={loadGeoLayer}
-      />
+      />}
       <MapContainer
         center={center}
-        zoom={isSimulationMap ? 8 : 4.3}
+        zoom={isSimulationMap ? 8 : isLocationSelector ? (location ? 10 : 2) : 4.3}
         scrollWheelZoom={true}
         className="leaflet-map"
       >
@@ -124,11 +146,22 @@ export default function RiskMap({
         />
         <FitKochiStudyBounds enabled={!isSimulationMap && anyGeoLayerActive} />
         <FitSelectionBounds bounds={selectionBounds} enabled={isSimulationMap} />
+        <FollowSelectedLocation location={location} enabled={isLocationSelector} />
         <MapPointSelector
-          enabled={isSimulationMap}
-          bounds={selectionBounds}
-          onSelect={onSimulationCenterChange}
+          enabled={isSimulationMap || isLocationSelector}
+          bounds={isSimulationMap ? selectionBounds : null}
+          onSelect={isLocationSelector ? onLocationSelect : onSimulationCenterChange}
+          allowAnyLocation={isLocationSelector}
         />
+        {isLocationSelector && location && (
+          <CircleMarker
+            center={[location.latitude, location.longitude]}
+            radius={8}
+            pathOptions={{ color: '#0e7c8c', fillColor: '#37c2d1', fillOpacity: 0.8, weight: 2 }}
+          >
+            <Tooltip direction="top">Selected coordinates — not a gauge location</Tooltip>
+          </CircleMarker>
+        )}
         {GEOJSON_LAYERS.map(layer => (
           geoActive[layer.key] && geoData[layer.key] && (
             <GeoJSON
@@ -172,7 +205,7 @@ export default function RiskMap({
             </Tooltip>
           </CircleMarker>
         )}
-        {visible.map(point => (
+        {!isLocationSelector && visible.map(point => (
           <CircleMarker
             key={point.id}
             center={[point.lat, point.lng]}
@@ -180,7 +213,7 @@ export default function RiskMap({
             pathOptions={{ color: riskColor(point.risk), fillColor: riskColor(point.risk), fillOpacity: 0.75, weight: 2 }}
             eventHandlers={{ click: () => onSelect(point) }}
           >
-            <Tooltip direction="top">{point.name} — unverified legacy score {point.risk}</Tooltip>
+            <Tooltip direction="top">{point.name} — saved, unverified legacy score {point.risk}; not current hazard monitoring</Tooltip>
           </CircleMarker>
         ))}
       </MapContainer>

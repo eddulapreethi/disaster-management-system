@@ -21,7 +21,16 @@ from app.utils.authentication import get_current_user
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 
 
-@router.post("", response_model=PredictionResult)
+@router.post(
+    "",
+    response_model=PredictionResult,
+    summary="Request an experimental hazard estimate",
+    description=(
+        "Flood requests remain unavailable with HTTP 503 until validated model readiness is established. "
+        "Current wildfire and storm responses use unvalidated demonstrator heuristics; they are not "
+        "calibrated forecasts, warnings, or operational hazard monitoring."
+    ),
+)
 def predict(
     data: PredictionCreate,
     db: Session = Depends(get_db),
@@ -59,7 +68,15 @@ def predict(
     }
 
 
-@router.get("", response_model=list[PredictionRead])
+@router.get(
+    "",
+    response_model=list[PredictionRead],
+    summary="List saved estimates",
+    description=(
+        "Returns the authenticated user's saved estimate records. They are historical application data, "
+        "not live hazard monitoring; earlier records may predate current readiness gates."
+    ),
+)
 def prediction_history(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),

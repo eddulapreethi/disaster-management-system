@@ -45,10 +45,17 @@ class HydrologySourceStatus(BaseModel):
     collection_status: str
     message: str | None
     last_observation: datetime | None
+    observation_fetched_at: datetime | None = None
     observation_age_seconds: int | None
     last_fetch: datetime | None
     station_id: str | None
+    station_id_is_internal: bool = True
     latest_station: str | None
+    river_name: str | None = None
+    state_name: str | None = None
+    district_name: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
     update_frequency: str
     stale_after_hours: int
     water_level: float | None
@@ -65,7 +72,7 @@ class HydrologySourceStatus(BaseModel):
     newer_observation_found: bool
     latest_error: str | None
 
-    @field_serializer("last_observation", "last_fetch", when_used="json")
+    @field_serializer("last_observation", "observation_fetched_at", "last_fetch", when_used="json")
     def serialize_utc_timestamp(self, value: datetime | None) -> str | None:
         return utc_isoformat(value)
 

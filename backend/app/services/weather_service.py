@@ -16,6 +16,15 @@ from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 
 from app.database.database import SessionLocal
 from app.models.weather_observation import WeatherObservation
+from app.schemas.provider import (
+    ProviderLocation,
+    ProviderProvenance,
+    coverage_status_from_freshness,
+)
+from app.services.environmental_normalization_service import (
+    normalize_source_timestamp,
+    normalize_weather_record,
+)
 from app.utils.utc_timestamps import utc_isoformat
 
 DEFAULT_POLL_INTERVAL_SECONDS = 300
@@ -23,6 +32,15 @@ DEFAULT_MAX_AGE_SECONDS = 7200
 RETENTION_DAYS = 30
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 DEFAULT_LOCATION = {"name": "Kochi", "latitude": 9.9312, "longitude": 76.2673}
+WEATHER_MEASUREMENT_UNITS = {
+    "temperature_c": "°C",
+    "humidity_percent": "%",
+    "precipitation_mm": "mm",
+    "rain_mm": "mm",
+    "wind_speed_kmh": "km/h",
+    "pressure_hpa": "hPa",
+}
+REQUIRED_WEATHER_MEASUREMENTS = ("temperature_c", "precipitation_mm", "wind_speed_kmh")
 logger = logging.getLogger(__name__)
 
 _status_lock = threading.Lock()
@@ -112,6 +130,8 @@ def _observation_key(station_id: str, observation_time: datetime, source: str) -
 
 
 def _parse_location_response(location: dict[str, float | str], payload: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise RuntimeError("Open-Meteo response for a location was not an object.")
     current = payload.get("current")
     if not isinstance(current, dict) or not current.get("time"):
         raise RuntimeError("Open-Meteo response did not include current observations.")
@@ -128,12 +148,58 @@ def _parse_location_response(location: dict[str, float | str], payload: dict[str
     if missing_fields:
         raise RuntimeError(f"Open-Meteo response is missing requested fields: {', '.join(missing_fields)}.")
 
+    current_units = payload.get("current_units")
+    expected_units = {
+        "temperature_2m": "°C",
+        "relative_humidity_2m": "%",
+        "precipitation": "mm",
+        "rain": "mm",
+        "wind_speed_10m": "km/h",
+        "surface_pressure": "hPa",
+    }
+    if not isinstance(current_units, dict):
+        raise RuntimeError("Open-Meteo response did not include measurement units.")
+    invalid_units = [
+        field for field, expected in expected_units.items()
+        if current_units.get(field) != expected
+    ]
+    if invalid_units:
+        raise RuntimeError(
+            "Open-Meteo returned unexpected or missing units for: "
+            + ", ".join(invalid_units)
+            + "."
+        )
+
     try:
-        observation_time = datetime.fromisoformat(str(current["time"]).replace("Z", "+00:00"))
-    except ValueError as error:
-        raise RuntimeError("Open-Meteo returned an invalid observation timestamp.") from error
-    if observation_time.tzinfo is None:
-        observation_time = observation_time.replace(tzinfo=timezone.utc)
+        timestamp = str(current["time"]).strip()
+        if "T" not in timestamp and " " not in timestamp:
+            raise ValueError("timestamp has no time component")
+        returned_timezone = payload.get("timezone")
+        if returned_timezone is not None and not isinstance(returned_timezone, str):
+            raise ValueError("provider timezone was not a string")
+        timestamp_result = normalize_source_timestamp(
+            timestamp,
+            source_timezone=returned_timezone,
+            timezone_assumption=(
+                "UTC because the request explicitly supplied timezone=UTC"
+                if not returned_timezone
+                else None
+            ),
+        )
+        observation_time = timestamp_result.utc
+    except (TypeError, ValueError) as error:
+        raise RuntimeError("Open-Meteo returned an invalid or ambiguous observation timestamp.") from error
+
+    try:
+        latitude = float(payload["latitude"])
+        longitude = float(payload["longitude"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise RuntimeError("Open-Meteo response did not include valid provider coordinates.") from error
+    if (
+        not math.isfinite(latitude) or not -90 <= latitude <= 90
+        or not math.isfinite(longitude) or not -180 <= longitude <= 180
+    ):
+        raise RuntimeError("Open-Meteo returned invalid provider coordinates.")
 
     values = {
         "temperature_c": current.get("temperature_2m"),
@@ -165,6 +231,17 @@ def _parse_location_response(location: dict[str, float | str], payload: dict[str
         "source": "open-meteo",
         "latitude": location["latitude"],
         "longitude": location["longitude"],
+        "provider_latitude": latitude,
+        "provider_longitude": longitude,
+        "requested_latitude": location["latitude"],
+        "requested_longitude": location["longitude"],
+        "provider_metadata": {
+            **{key: value for key, value in payload.items() if key != "current"},
+            "source_current": current,
+            "source_timestamp_raw": timestamp_result.source_timestamp_raw,
+            "source_timezone": timestamp_result.source_timezone,
+            "timezone_assumption": timestamp_result.timezone_assumption,
+        },
         "observation_time": observation_time,
         "fetched_at": datetime.now(timezone.utc),
         **values,
@@ -179,6 +256,9 @@ def _fetch_batch(locations: list[dict[str, float | str]]) -> list[dict[str, Any]
             "longitude": ",".join(str(location["longitude"]) for location in locations),
             "current": "temperature_2m,relative_humidity_2m,precipitation,rain,wind_speed_10m,surface_pressure",
             "timezone": "UTC",
+            "temperature_unit": "celsius",
+            "wind_speed_unit": "kmh",
+            "precipitation_unit": "mm",
         }
     )
     request = Request(
@@ -192,6 +272,8 @@ def _fetch_batch(locations: list[dict[str, float | str]]) -> list[dict[str, Any]
         logger.warning("Weather source unavailable: %s", error)
         raise RuntimeError(f"Open-Meteo request failed: {error}") from error
 
+    if not isinstance(payload, (dict, list)):
+        raise RuntimeError("Open-Meteo returned an unexpected response format.")
     response_items = payload if isinstance(payload, list) else [payload]
     if len(response_items) != len(locations):
         raise RuntimeError(
@@ -223,15 +305,56 @@ def fetch_location_weather(latitude: float, longitude: float) -> dict[str, Any]:
     age_seconds = (datetime.now(timezone.utc) - _as_utc(record["observation_time"])).total_seconds()
     if age_seconds < -300:
         raise RuntimeError("Open-Meteo returned an observation more than five minutes in the future.")
-    if age_seconds > get_max_age_seconds():
-        raise RuntimeError("Open-Meteo returned an observation outside the configured freshness window.")
     required = ("temperature_c", "precipitation_mm", "wind_speed_kmh")
     missing = [field for field in required if record[field] is None]
     if missing:
         raise RuntimeError(
             "Open-Meteo did not provide required measurements: " + ", ".join(missing) + "."
         )
-    return record
+    max_age_seconds = get_max_age_seconds()
+    is_stale = age_seconds > max_age_seconds
+    freshness_status = "STALE" if is_stale else "READY"
+    provenance = ProviderProvenance(
+        provider="Open-Meteo",
+        product="Current weather point API",
+        source_record_id=None,
+        location=ProviderLocation(
+            name=record.get("station_name", "Selected location"),
+            latitude=record.get("provider_latitude", latitude),
+            longitude=record.get("provider_longitude", longitude),
+            station_id=record.get("station_id", _station_id(str(location["name"]))),
+            station_id_is_internal=True,
+        ),
+        observation_time=record["observation_time"],
+        fetched_at=record["fetched_at"],
+        units=WEATHER_MEASUREMENT_UNITS,
+        freshness_status=freshness_status,
+        provider_metadata={
+            **record.get("provider_metadata", {}),
+            "requested_latitude": latitude,
+            "requested_longitude": longitude,
+            "provider_latitude": record.get("provider_latitude", latitude),
+            "provider_longitude": record.get("provider_longitude", longitude),
+        },
+    ).model_dump(mode="json")
+    result = {
+        **record,
+        "status": "STALE" if is_stale else "READY",
+        "freshness_status": freshness_status,
+        "coverage_status": coverage_status_from_freshness(freshness_status),
+        "measurement_status": "READY",
+        "freshness_message": (
+            f"The provider observation is older than the {max_age_seconds}-second freshness window."
+            if is_stale
+            else "The provider observation is within the configured freshness window."
+        ),
+        "observation_age_seconds": max(0, int(age_seconds)),
+        "max_age_seconds": max_age_seconds,
+        "measurement_units": WEATHER_MEASUREMENT_UNITS,
+        "provenance": provenance,
+    }
+    result["canonical_record"] = normalize_weather_record(result).model_dump(mode="json")
+    return result
 
 
 def collect_weather_cycle() -> dict[str, Any]:
@@ -291,7 +414,13 @@ def _collect_weather_cycle() -> dict[str, Any]:
     inserted_count = 0
     try:
         if unique_records:
-            statement_values = unique_records
+            persisted_fields = {
+                column.name for column in WeatherObservation.__table__.columns
+            } - {"id", "created_at"}
+            statement_values = [
+                {key: value for key, value in record.items() if key in persisted_fields}
+                for record in unique_records
+            ]
             dialect_name = db.get_bind().dialect.name
             if dialect_name == "postgresql":
                 statement = postgresql_insert(WeatherObservation).values(statement_values)
@@ -317,7 +446,10 @@ def _collect_weather_cycle() -> dict[str, Any]:
                     record for record in unique_records
                     if _observation_key(record["station_id"], record["observation_time"], record["source"]) not in existing_keys
                 ]
-                db.add_all(WeatherObservation(**record) for record in pending)
+                db.add_all(
+                    WeatherObservation(**{key: value for key, value in record.items() if key in persisted_fields})
+                    for record in pending
+                )
                 inserted_count = len(pending)
         cutoff = datetime.now(timezone.utc) - timedelta(days=RETENTION_DAYS)
         db.query(WeatherObservation).filter(WeatherObservation.fetched_at < cutoff).delete(synchronize_session=False)
@@ -401,28 +533,67 @@ def get_weather_status() -> dict[str, Any]:
     now = datetime.now(timezone.utc)
     latest = max(observations, key=lambda row: _as_utc(row.observation_time), default=None)
     max_age_seconds = get_max_age_seconds()
-
+    age_seconds = (now - _as_utc(latest.observation_time)).total_seconds() if latest else None
     if latest is None:
-        status = "ERROR" if collector.get("failed_locations") else "UNAVAILABLE"
-        message = "The latest weather collection attempt failed." if status == "ERROR" else "No weather observation has been stored yet."
-    elif collector.get("failed_locations"):
-        status = "ERROR"
-        message = "The latest weather collection attempt failed; the last stored observation is shown."
-    elif (age_seconds := (now - _as_utc(latest.observation_time)).total_seconds()) < -300:
-        status = "ERROR"
-        message = "The latest stored observation has a timestamp more than five minutes in the future."
+        freshness_status = "UNAVAILABLE"
+        freshness_message = "No weather observation has been stored yet."
+    elif age_seconds is not None and age_seconds < -300:
+        freshness_status = "ERROR"
+        freshness_message = "The latest stored observation has a timestamp more than five minutes in the future."
     elif age_seconds > max_age_seconds:
-        status = "STALE"
-        message = f"The latest stored observation is older than the {max_age_seconds}-second freshness window."
+        freshness_status = "STALE"
+        freshness_message = f"The latest stored observation is older than the {max_age_seconds}-second freshness window."
     else:
-        status = "READY"
-        message = "A recent, valid weather observation is stored in the database."
+        freshness_status = "READY"
+        freshness_message = "The latest stored observation is within the configured freshness window."
+
+    missing_measurements = [
+        field for field in REQUIRED_WEATHER_MEASUREMENTS
+        if latest is not None and getattr(latest, field) is None
+    ]
+    measurement_status = "UNAVAILABLE" if missing_measurements else ("READY" if latest else "UNAVAILABLE")
+    status = (
+        freshness_status
+        if freshness_status != "READY"
+        else measurement_status
+    )
+    if latest and missing_measurements and freshness_status == "READY":
+        message = "The latest observation is recent but is missing required measurements: " + ", ".join(missing_measurements) + "."
+    else:
+        message = freshness_message
+
+    if collector.get("failed_locations"):
+        collection_status = "ERROR"
+        collection_message = "The latest weather collection attempt failed."
+    elif collector.get("last_successful_fetch_at"):
+        collection_status = "SUCCESS"
+        collection_message = "The latest weather collection cycle completed successfully."
+    elif latest:
+        collection_status = "SUCCESS"
+        collection_message = (
+            "The stored observation has a recorded fetch timestamp; no collection attempt "
+            "has been observed in this process."
+        )
+    else:
+        collection_status = "UNAVAILABLE"
+        collection_message = "No successful weather collection cycle has been recorded."
 
     return {
         "source": latest.source if latest else "open-meteo",
         "status": status,
+        "freshness_status": freshness_status,
+        "measurement_status": measurement_status,
+        "collection_status": collection_status,
         "message": message,
+        "collection_message": collection_message,
         "last_observation": utc_isoformat(latest.observation_time) if latest else None,
+        "observation_fetched_at": utc_isoformat(latest.fetched_at) if latest else None,
+        "observation_age_seconds": max(0, int(age_seconds)) if age_seconds is not None else None,
+        "station_id": latest.station_id if latest else None,
+        "station_name": latest.station_name if latest else None,
+        "latitude": latest.latitude if latest else None,
+        "longitude": latest.longitude if latest else None,
+        "measurement_units": WEATHER_MEASUREMENT_UNITS,
         "last_checked": _mark_utc_offset(collector.get("last_cycle_finished_at")),
         "last_successful_fetch": _mark_utc_offset(collector.get("last_successful_fetch_at")),
         "max_age_seconds": max_age_seconds,
